@@ -48,8 +48,8 @@ Note: clear the credentials and set these.
 ## Push to ECR
 
 1. docker images
-2. aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/b9x5z8y4
-3. docker tag <docker_image_id> ecr_uri
+2. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+3. docker tag <docker_image_id> ecr_uri 
 4. docker push ecr_uri
 
 ## ToDo
@@ -60,6 +60,8 @@ Note: clear the credentials and set these.
 - [x] Make container image
 - [x] Deploy to Elastic Container Registry
 - [x] Deploy to lambda
-- [ ] Test ECR image with lambda function - "The config profile (lambdauser) could not be found", but is present in image aws configure list -p lambdauser
+- [x] Test ECR image with lambda function
+- [ ] Add code to remove converted files later.
 - [ ] Use concurrent processing to reduce time
 - [ ] Process for single folder in S3
+- [ ] Solve the limit of 512 in /tmp in aws lambda

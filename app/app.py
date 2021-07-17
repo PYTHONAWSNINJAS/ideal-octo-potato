@@ -51,32 +51,32 @@ def lambda_handler(event, context):
     s3_client = session.client('s3')
     bucket_name='filestorageexchange'
     s3_folder='case_number/exhibits'
-    path = '.'
-    download_dir(prefix=s3_folder, local=path, bucket=bucket_name, client=s3_client)
+    lambda_write_path = '/tmp/'
+    download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
-    for item in os.listdir(main_path := os.path.abspath(os.path.join('case_number','exhibits'))):
+    for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, 'case_number','exhibits'))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
             for file in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
                 Converted = False
                 file_path = os.path.join(sub_folder_path, file)
-                print(f'Processing text file...{file_path}')
+                print(f'\nProcessing text file...{file_path}')
                 pdf_file_name = file_path.replace(file_path.split('.')[1], 'pdf')
                 s3_folder = 'case_number' + '/' + 'exhibits' + '/' + item + '/' + folder
                 s3_object = pdf_file_name.split(os.sep)[-1]
                 try:
                     if file_path.endswith('txt'):
                         pdf.cell(200, 10, txt="".join(open(file_path)))
-                        pdf.output(pdf_file_name)
+                        pdf.output(os.path.join(lambda_write_path, pdf_file_name))
                         Converted=True
                     if file_path.lower().endswith(('png', 'jpg', 'gif', 'tif')):
                         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path, extension='pdf')
-                        with open(pdf_file_name, 'w+b') as f:
+                        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
                             f.write(pdf_png)
                         Converted=True    
                     if file_path.endswith(('pcd')):                       
                         Image.open(file_path).save(temp_file:=file_path.replace(file_path.split('.')[1], 'png'))
                         pdf_png = pytesseract.image_to_pdf_or_hocr(temp_file, extension='pdf')
-                        with open(pdf_file_name, 'pdf', 'w+b') as f:
+                        with open(os.path.join(lambda_write_path, pdf_file_name), 'pdf', 'w+b') as f:
                             f.write(pdf_png)
                             os.remove(temp_file)
                         Converted=True
@@ -84,12 +84,12 @@ def lambda_handler(event, context):
                     print(e)
 
                 if Converted:
-                    print(f"Created - {pdf_file_name}")
-                    with open(pdf_file_name, 'rb') as data:
+                    print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
+                    with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
                         s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
                     print(f"Uploaded to - {s3_folder + '/' + s3_object}")
                 else:
-                    print(f"Not Created - {pdf_file_name}")
+                    print(f"Not Created - {os.path.join(lambda_write_path, pdf_file_name)}")
 
 if __name__ == "__main__":
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'#'tesseract/4.1.1/bin/tesseract'
