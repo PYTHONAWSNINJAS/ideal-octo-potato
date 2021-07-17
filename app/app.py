@@ -47,7 +47,7 @@ def lambda_handler(event, context):
     pdf.add_page()
     pdf.set_font('Arial', size=20)
 
-    session = boto3.Session(profile_name='lambdauser')
+    session = boto3.Session()
     s3_client = session.client('s3')
     bucket_name='filestorageexchange'
     s3_folder='case_number/exhibits'

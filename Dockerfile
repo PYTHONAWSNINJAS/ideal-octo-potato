@@ -9,9 +9,9 @@ RUN yum -y install tesseract
 
 COPY ./app/app.py   ./
 
-RUN aws configure set aws_access_key_id "" --profile lambdauser
-RUN aws configure set aws_secret_access_key "" --profile lambdauser
-RUN aws configure set region "us-east-1" --profile lambdauser
-RUN aws configure set output "text" --profile lambdauser
+RUN aws configure set aws_access_key_id "AKIAWFP72WY7VYVFY76G"
+RUN aws configure set aws_secret_access_key "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"
+RUN aws configure set region "us-east-1"
+RUN aws configure set output "text"
 
 CMD ["app.lambda_handler"]
