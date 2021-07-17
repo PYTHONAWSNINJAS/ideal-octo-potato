@@ -46,13 +46,13 @@ These two files store the info:
 Note: clear the credentials and set these.
 
 ## Push to ECR
+
 1. docker images
 2. aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/b9x5z8y4
 3. docker tag <docker_image_id> ecr_uri
 4. docker push ecr_uri
 
-
-## ToDo:
+## ToDo
 
 - [x] Install tesseract for amazonlinux2
 - [x] Change to S3 code
