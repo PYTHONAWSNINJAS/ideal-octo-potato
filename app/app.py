@@ -92,5 +92,9 @@ def lambda_handler(event, context):
                     print(f"Not Created - {os.path.join(lambda_write_path, pdf_file_name)}")
 
 if __name__ == "__main__":
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'#'tesseract/4.1.1/bin/tesseract'
+    if os.name == 'nt':
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    else:
+        pytesseract.pytesseract.tesseract_cmd = r'tesseract/4.1.1/bin/tesseract'
+    
     lambda_handler(None, None)
