@@ -1,5 +1,8 @@
-FROM public.ecr.aws/lambda/python:3.8
+# FROM public.ecr.aws/lambda/python:3.8
+FROM amazon/aws-lambda-python:3.8
 
+HEALTHCHECK NONE
+ 
 COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt 
 

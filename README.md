@@ -84,3 +84,6 @@ failed to solve with frontend dockerfile.v0: failed to create LLB definition: un
 The terminal process "C:\Windows\System32\cmd.exe /d /c docker build --pull --rm -f "Dockerfile" -t idealoctopotato:latest "."" terminated with exit code: 1.
 
 Terminal will be reused by tasks, press any key to close it.```
+
+Most probably the IP address/mac address is blocked by public ecr aws site.
+Fix: Chnage the base image or Use a different device.
