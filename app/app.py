@@ -3,6 +3,8 @@ import os
 import pytesseract
 import boto3
 from PIL import Image
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
 
 def download_dir(prefix, local, bucket, client):
     """
@@ -73,20 +75,30 @@ def lambda_handler(event, context):
                         with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
                             f.write(pdf_png)
                         Converted=True    
-                    if file_path.endswith(('pcd')):                       
+                    if file_path.endswith(('pcd', 'bmp')):                       
                         Image.open(file_path).save(temp_file:=file_path.replace(file_path.split('.')[1], 'png'))
                         pdf_png = pytesseract.image_to_pdf_or_hocr(temp_file, extension='pdf')
-                        with open(os.path.join(lambda_write_path, pdf_file_name), 'pdf', 'w+b') as f:
+                        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
                             f.write(pdf_png)
                             os.remove(temp_file)
                         Converted=True
+                    if file_path.endswith('svg'):
+                        drawing = svg2rlg(file_path,resolve_entities=True)
+                        renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[1], 'png'), fmt='PNG') 
+                        pdf_png = pytesseract.image_to_pdf_or_hocr(temp_file, extension='pdf')
+                        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
+                            f.write(pdf_png)
+                            os.remove(temp_file)
+                        Converted=True
+                
+                
                 except Exception as e:
                     print(e)
 
                 if Converted:
                     print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
-                    with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
-                        s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
+                    # with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
+                    #     s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
                     print(f"Uploaded to - {s3_folder + '/' + s3_object}")
                 else:
                     print(f"Not Created - {os.path.join(lambda_write_path, pdf_file_name)}")

@@ -49,7 +49,7 @@ Note: clear the credentials and set these.
 
 1. docker images
 2. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
-3. docker tag <docker_image_id> ecr_uri 
+3. docker tag <docker_image_id> ecr_uri
 4. docker push ecr_uri
 
 ## ToDo
@@ -65,3 +65,22 @@ Note: clear the credentials and set these.
 - [ ] Use concurrent processing to reduce time
 - [ ] Process for single folder in S3
 - [ ] Solve the limit of 512 in /tmp in aws lambda
+
+## Current Blocker
+
+Details:
+
+```[+] Building 9.6s (4/4) FINISHED
+ => [internal] load build definition from Dockerfile                                                                       0.5s 
+ => => transferring dockerfile: 32B                                                                                        0.0s 
+ => [internal] load .dockerignore                                                                                          0.8s 
+ => => transferring context: 2B                                                                                            0.0s 
+ => ERROR [internal] load metadata for public.ecr.aws/lambda/python:3.8                                                    8.5s 
+ => [auth] aws:: lambda/python:pull token for public.ecr.aws                                                               0.0s 
+------
+ > [internal] load metadata for public.ecr.aws/lambda/python:3.8:
+------
+failed to solve with frontend dockerfile.v0: failed to create LLB definition: unexpected status code [manifests 3.8]: 403 Forbidden
+The terminal process "C:\Windows\System32\cmd.exe /d /c docker build --pull --rm -f "Dockerfile" -t idealoctopotato:latest "."" terminated with exit code: 1.
+
+Terminal will be reused by tasks, press any key to close it.```

@@ -8,7 +8,7 @@ RUN yum -y update
 RUN yum -y install tesseract
 
 COPY ./app/app.py   ./
-
+ 
 RUN aws configure set aws_access_key_id "AKIAWFP72WY7VYVFY76G"
 RUN aws configure set aws_secret_access_key "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"
 RUN aws configure set region "us-east-1"
