@@ -3,5 +3,5 @@ pillow
 pytesseract
 awscli
 boto3
-svg2rlg
+svglib
 reportlab

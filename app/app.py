@@ -44,6 +44,19 @@ def download_dir(prefix, local, bucket, client):
             os.makedirs(os.path.dirname(dest_pathname))
         client.download_file(bucket, k, dest_pathname)
 
+def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
+    try:
+        pdf_png = pytesseract.image_to_pdf_or_hocr(file_path, extension='pdf')
+        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
+            f.write(pdf_png)
+        if temp_file:
+            print(f"removing temp file {file_path}")
+            os.remove(file_path)
+        return True    
+    except Exception as e:
+        print(e)
+        return False
+
 def lambda_handler(event, context):
     pdf = FPDF()
     pdf.add_page()
@@ -54,14 +67,14 @@ def lambda_handler(event, context):
     bucket_name='filestorageexchange'
     s3_folder='case_number/exhibits'
     lambda_write_path = '/tmp/'
-    download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
+    # download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, 'case_number','exhibits'))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
             for file in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
                 Converted = False
                 file_path = os.path.join(sub_folder_path, file)
-                print(f'\nProcessing text file...{file_path}')
+                print(f'\nProcessing file...{file_path}')
                 pdf_file_name = file_path.replace(file_path.split('.')[1], 'pdf')
                 s3_folder = 'case_number' + '/' + 'exhibits' + '/' + item + '/' + folder
                 s3_object = pdf_file_name.split(os.sep)[-1]
@@ -71,25 +84,14 @@ def lambda_handler(event, context):
                         pdf.output(os.path.join(lambda_write_path, pdf_file_name))
                         Converted=True
                     if file_path.lower().endswith(('png', 'jpg', 'gif', 'tif')):
-                        pdf_png = pytesseract.image_to_pdf_or_hocr(file_path, extension='pdf')
-                        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
-                            f.write(pdf_png)
-                        Converted=True    
+                        Converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
                     if file_path.endswith(('pcd', 'bmp')):                       
                         Image.open(file_path).save(temp_file:=file_path.replace(file_path.split('.')[1], 'png'))
-                        pdf_png = pytesseract.image_to_pdf_or_hocr(temp_file, extension='pdf')
-                        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
-                            f.write(pdf_png)
-                            os.remove(temp_file)
-                        Converted=True
+                        Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
                     if file_path.endswith('svg'):
                         drawing = svg2rlg(file_path,resolve_entities=True)
                         renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[1], 'png'), fmt='PNG') 
-                        pdf_png = pytesseract.image_to_pdf_or_hocr(temp_file, extension='pdf')
-                        with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
-                            f.write(pdf_png)
-                            os.remove(temp_file)
-                        Converted=True
+                        Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
                 
                 
                 except Exception as e:
