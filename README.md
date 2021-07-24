@@ -66,7 +66,7 @@ Note: clear the credentials and set these.
 - [ ] Process for single folder in S3
 - [ ] Solve the limit of 512 in /tmp in aws lambda
 
-## Current Blocker
+## Fix for failed to solve with frontend dockerfile.v0
 
 Details:
 
@@ -83,7 +83,26 @@ Details:
 failed to solve with frontend dockerfile.v0: failed to create LLB definition: unexpected status code [manifests 3.8]: 403 Forbidden
 The terminal process "C:\Windows\System32\cmd.exe /d /c docker build --pull --rm -f "Dockerfile" -t idealoctopotato:latest "."" terminated with exit code: 1.
 
-Terminal will be reused by tasks, press any key to close it.```
+Terminal will be reused by tasks, press any key to close it.
+```
 
+Fix:
 Most probably the IP address/mac address is blocked by public ecr aws site.
-Fix: Chnage the base image or Use a different device.
+Fix: Change the base image or Use a different device.
+
+## Fix for wkhtmltopdf: cannot connect to X server
+
+```You will need to run wkhtmltopdf within a "virtual" X server.
+Go to the link below for more information
+https://github.com/JazzCore/python-pdfkit/wiki/Using-wkhtmltopdf-without-X-server
+```
+
+Fix:
+yum install xorg-x11-server-Xvfb
+printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
+chmod a+x /usr/bin/wkhtmltopdf.sh
+ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
+
+If you cannot acquire the root shell (e.g. on an Azure/AWS Devops Agent) change the third line to:
+
+printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' | sudo tee /usr/bin/wkhtmltopdf.sh

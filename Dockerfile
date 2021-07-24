@@ -6,9 +6,17 @@ HEALTHCHECK NONE
 COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt 
 
+# Required for pytesseract
 RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y update
 RUN yum -y install tesseract
+
+# Required for pdfkit
+RUN yum -y install wkhtmltopdf
+RUN yum -y install xorg-x11-server-Xvfb
+RUN printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
+RUN chmod a+x /usr/bin/wkhtmltopdf.sh
+RUN ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
 
 COPY ./app/app.py   ./
  
