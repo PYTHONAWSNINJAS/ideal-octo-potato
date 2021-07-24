@@ -83,7 +83,7 @@ def lambda_handler(event, context):
                         pdf.cell(200, 10, txt="".join(open(file_path)))
                         pdf.output(os.path.join(lambda_write_path, pdf_file_name))
                         Converted=True
-                    if file_path.lower().endswith(('png', 'jpg', 'gif', 'tif')):
+                    if file_path.lower().endswith(('png', 'jpg', 'gif', 'tif', 'tiff')):
                         Converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
                     if file_path.endswith(('pcd', 'bmp')):                       
                         Image.open(file_path).save(temp_file:=file_path.replace(file_path.split('.')[1], 'png'))
