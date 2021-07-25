@@ -6,6 +6,7 @@ from PIL import Image
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import pdfkit
+from shutil import copyfile
 
 def download_dir(prefix, local, bucket, client):
     """
@@ -93,12 +94,23 @@ def lambda_handler(event, context):
                         drawing = svg2rlg(file_path,resolve_entities=True)
                         renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[1], 'png'), fmt='PNG') 
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-                    if file_path.endswith(('html','htm', 'xml')):
-                        pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'))
+                    if file_path.endswith(('html','htm', 'xml', 'mht', 'mhtml')):
+                        print(file_path)
+                        if file_path.endswith('mht'):
+                            copyfile(file_path, temp_file:=file_path.replace('mht', 'html'))
+                            pdfkit.from_file(temp_file, temp_file.replace('html', 'pdf'), options = {'enable-local-file-access': ''})
+                        else:
+                            pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})    
                         Converted=True
                 
                 except Exception as e:
-                    print(e)
+                    if 'Done' in str(e):
+                        if file_path.endswith('mht'):
+                            print(f"removing temp_file - {temp_file}")
+                            os.remove(temp_file)
+                        Converted = True
+                    else:
+                        raise e
 
                 if Converted:
                     print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
