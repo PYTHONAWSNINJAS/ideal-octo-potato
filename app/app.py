@@ -7,7 +7,9 @@ from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import pdfkit
 from shutil import copyfile
-
+new_files = []
+pdf_files = []
+not_converted = []
 def download_dir(prefix, local, bucket, client):
     """
     params:
@@ -80,6 +82,7 @@ def lambda_handler(event, context):
                 pdf_file_name = file_path.replace(file_path.split('.')[1], 'pdf')
                 s3_folder = 'case_number' + '/' + 'exhibits' + '/' + item + '/' + folder
                 s3_object = pdf_file_name.split(os.sep)[-1]
+                new_files.append(file_path)
                 try:
                     if file_path.endswith('txt'):
                         pdf.cell(200, 10, txt="".join(open(file_path)))
@@ -117,7 +120,9 @@ def lambda_handler(event, context):
                     # with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
                     #     s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
                     print(f"Uploaded to - {s3_folder + '/' + s3_object}")
+                    pdf_files.append(os.path.join(lambda_write_path, pdf_file_name))
                 else:
+                    not_converted.append(file_path)
                     print(f"Not Created - {os.path.join(lambda_write_path, pdf_file_name)}")
 
 if __name__ == "__main__":
@@ -127,3 +132,4 @@ if __name__ == "__main__":
         pytesseract.pytesseract.tesseract_cmd = r'tesseract/4.1.1/bin/tesseract'
     
     lambda_handler(None, None)
+    print(f"new files - {len(new_files)}\npdf files - {len(pdf_files)}\nnot converted - {len(not_converted)}")
