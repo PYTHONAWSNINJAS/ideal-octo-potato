@@ -7,6 +7,8 @@ from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import pdfkit
 from shutil import copyfile
+import pandas as pd
+
 new_files = []
 pdf_files = []
 not_converted = []
@@ -97,11 +99,15 @@ def lambda_handler(event, context):
                         drawing = svg2rlg(file_path,resolve_entities=True)
                         renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[1], 'png'), fmt='PNG') 
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-                    if file_path.endswith(('html','htm', 'xml', 'mht', 'mhtml')):
-                        print(file_path)
+                    if file_path.endswith(('html','htm', 'xml', 'mht', 'mhtml', 'csv')):
                         if file_path.endswith('mht'):
-                            copyfile(file_path, temp_file:=file_path.replace('mht', 'html'))
+                            copyfile(file_path, temp_file:=file_path.replace(file_path.split('.')[1], 'html'))
                             pdfkit.from_file(temp_file, temp_file.replace('html', 'pdf'), options = {'enable-local-file-access': ''})
+                        elif file_path.endswith('csv'):
+                            df = pd.read_csv(file_path)
+                            df.to_html(temp_file:=file_path.replace(file_path.split('.')[1], 'html'))
+                            pdfkit.from_file(temp_file, temp_file.replace(temp_file.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})
+                            os.remove(temp_file)
                         else:
                             pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})    
                         Converted=True

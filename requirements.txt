@@ -6,3 +6,4 @@ boto3
 svglib
 reportlab
 pdfkit
+pandas
