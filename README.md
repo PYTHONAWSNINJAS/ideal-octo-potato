@@ -61,10 +61,11 @@ Note: clear the credentials and set these.
 - [x] Deploy to Elastic Container Registry
 - [x] Deploy to lambda
 - [x] Test ECR image with lambda function
-- [ ] Add code to remove converted files later.
+- [x] Add code to remove converted files later.
 - [ ] Use concurrent processing to reduce time
 - [ ] Process for single folder in S3
 - [ ] Solve the limit of 512 in /tmp in aws lambda
+- [ ] Apply Black Code for optimisation - https://github.com/psf/black
 
 ## Fix for failed to solve with frontend dockerfile.v0
 

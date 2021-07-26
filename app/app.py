@@ -73,7 +73,8 @@ def lambda_handler(event, context):
     bucket_name='filestorageexchange'
     s3_folder='case_number/exhibits'
     lambda_write_path = '/tmp/'
-    # download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
+    pdf_file_suffix = '_dv'
+    download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, 'case_number','exhibits'))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
@@ -82,6 +83,7 @@ def lambda_handler(event, context):
                 file_path = os.path.join(sub_folder_path, file)
                 print(f'\nProcessing file...{file_path}')
                 pdf_file_name = file_path.replace(file_path.split('.')[1], 'pdf')
+                pdf_file_name = pdf_file_name.split('.')[0]+pdf_file_suffix+'.pdf'
                 s3_folder = 'case_number' + '/' + 'exhibits' + '/' + item + '/' + folder
                 s3_object = pdf_file_name.split(os.sep)[-1]
                 new_files.append(file_path)
@@ -109,7 +111,7 @@ def lambda_handler(event, context):
                             pdfkit.from_file(temp_file, temp_file.replace(temp_file.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})
                             os.remove(temp_file)
                         else:
-                            pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})    
+                            pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'))    
                         Converted=True
                 
                 except Exception as e:
