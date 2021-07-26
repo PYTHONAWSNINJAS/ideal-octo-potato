@@ -65,7 +65,7 @@ Note: clear the credentials and set these.
 - [ ] Use concurrent processing to reduce time
 - [ ] Process for single folder in S3
 - [ ] Solve the limit of 512 in /tmp in aws lambda
-- [ ] Apply Black Code for optimisation - https://github.com/psf/black
+- [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
@@ -100,8 +100,7 @@ https://github.com/JazzCore/python-pdfkit/wiki/Using-wkhtmltopdf-without-X-serve
 
 Fix:
 
-```
-yum install xorg-x11-server-Xvfb
+```yum install xorg-x11-server-Xvfb
 printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
 chmod a+x /usr/bin/wkhtmltopdf.sh
 ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
