@@ -1,17 +1,20 @@
-from fpdf import FPDF
 import os
-import pytesseract
-import boto3
-from PIL import Image
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
-import pdfkit
 from shutil import copyfile
+
+import boto3
 import pandas as pd
+import pdfkit
+import pytesseract
+from fpdf import FPDF
+from PIL import Image
+from PyPDF2 import PdfFileMerger
+from reportlab.graphics import renderPM
+from svglib.svglib import svg2rlg
 
 new_files = []
 pdf_files = []
 not_converted = []
+
 def download_dir(prefix, local, bucket, client):
     """
     params:
@@ -63,6 +66,18 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
         print(e)
         return False
 
+def merge_pdf(pdfs, filename):
+    merger = PdfFileMerger()
+    
+    for pdf in pdfs:
+        merger.append(pdf)
+
+    merger.write(filename)
+    merger.close()
+    
+    for pdf in pdfs:
+        os.remove(pdf)
+
 def lambda_handler(event, context):
     pdf = FPDF()
     pdf.add_page()
@@ -101,17 +116,28 @@ def lambda_handler(event, context):
                         drawing = svg2rlg(file_path,resolve_entities=True)
                         renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[1], 'png'), fmt='PNG') 
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-                    if file_path.endswith(('html','htm', 'xml', 'mht', 'mhtml', 'csv')):
+                    if file_path.endswith(('html','htm', 'xml', 'mht', 'mhtml', 'csv', 'xlsx', 'xls')):
                         if file_path.endswith('mht'):
                             copyfile(file_path, temp_file:=file_path.replace(file_path.split('.')[1], 'html'))
-                            pdfkit.from_file(temp_file, temp_file.replace('html', 'pdf'), options = {'enable-local-file-access': ''})
-                        elif file_path.endswith('csv'):
+                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})
+                        elif file_path.endswith(('csv')):
                             df = pd.read_csv(file_path)
                             df.to_html(temp_file:=file_path.replace(file_path.split('.')[1], 'html'))
-                            pdfkit.from_file(temp_file, temp_file.replace(temp_file.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})
+                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})
                             os.remove(temp_file)
+                        elif file_path.endswith(('xlsx', 'xls')):
+                            temp_pdfs = []
+                            xls = pd.ExcelFile(file_path)
+                            for item in xls.sheet_names:
+                                df = pd.read_excel(file_path, sheet_name=item)
+                                temp_file_name = file_path.split('.')[0]+'_'+str(item)+'.'+file_path.split('.')[1]
+                                df.to_html(temp_file:=temp_file_name.replace(temp_file_name.split('.')[1], 'html'))
+                                pdfkit.from_file(temp_file, temp_pdf:=temp_file.replace(temp_file.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})
+                                temp_pdfs.append(temp_pdf)
+                                os.remove(temp_file)
+                            merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
                         else:
-                            pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'))    
+                            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})    
                         Converted=True
                 
                 except Exception as e:

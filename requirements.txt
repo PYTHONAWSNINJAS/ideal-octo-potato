@@ -7,3 +7,5 @@ svglib
 reportlab
 pdfkit
 pandas
+openpyxl
+pypdf2
