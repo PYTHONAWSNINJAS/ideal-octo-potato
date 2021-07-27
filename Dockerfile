@@ -1,7 +1,5 @@
 # FROM public.ecr.aws/lambda/python:3.8
 FROM amazon/aws-lambda-python:3.8
-
-HEALTHCHECK NONE
  
 COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt 
@@ -12,6 +10,7 @@ RUN yum -y update
 RUN yum -y install tesseract
 
 # Required for pdfkit
+RUN yum -y install openssl build-essential xorg libssl-dev
 RUN yum -y install wkhtmltopdf
 RUN yum -y install xorg-x11-server-Xvfb
 RUN printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
