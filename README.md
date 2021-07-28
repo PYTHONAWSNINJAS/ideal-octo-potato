@@ -66,6 +66,7 @@ Note: clear the credentials and set these.
 - [ ] Process for single folder in S3
 - [ ] Solve the limit of 512 in /tmp in aws lambda
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
+- [ ] Test with xlrd instead of openpyxl
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
@@ -110,3 +111,15 @@ If you cannot acquire the root shell (e.g. on an Azure/AWS Devops Agent) change 
 
 ```printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' | sudo tee /usr/bin/wkhtmltopdf.sh
 ```
+
+## Fix for wkhtmltopdf: patched qt for multiple page html
+
+```[ERROR] OSError: wkhtmltopdf reported an error:
+Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document.
+Exit with code 1, due to unknown error.
+    raise IOError('wkhtmltopdf reported an error:\n' + stderr)", line 156, in to_pdfons = {'enable-local-file-access': ''})  
+```
+
+Fix:
+
+Not fixed yet.
