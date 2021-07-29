@@ -2,6 +2,7 @@ from fpdf import FPDF
 import os
 import pytesseract
 import boto3
+from botocore.client import Config
 from PIL import Image
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
@@ -9,6 +10,7 @@ import pdfkit
 from shutil import copyfile
 import pandas as pd
 
+#config = Config(connect_timeout=60000, read_timeout=60000, retries={'max_attempts': 0})
 new_files = []
 pdf_files = []
 not_converted = []
@@ -69,22 +71,24 @@ def lambda_handler(event, context):
     pdf.set_font('Arial', size=20)
 
     session = boto3.Session()
-    s3_client = session.client('s3')
-    bucket_name='filestorageexchange'
-    s3_folder='case_number/exhibits'
+    s3_client = session.client('s3', 'us-east-1')#, config=config)
+    bucket_name='smatta-trialmanager'
+    s3_folder='case_10001/exhibits'
     lambda_write_path = '/tmp/'
     pdf_file_suffix = '_dv'
     download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
-    for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, 'case_number','exhibits'))):
+    for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, 'case_10001','exhibits'))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
             for file in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
                 Converted = False
                 file_path = os.path.join(sub_folder_path, file)
                 print(f'\nProcessing file...{file_path}')
-                pdf_file_name = file_path.replace(file_path.split('.')[1], 'pdf')
+                if len(file_path.split('.'))==1:
+                    continue
+                pdf_file_name = file_path.replace(file_path.split('.')[-1], 'pdf')
                 pdf_file_name = pdf_file_name.split('.')[0]+pdf_file_suffix+'.pdf'
-                s3_folder = 'case_number' + '/' + 'exhibits' + '/' + item + '/' + folder
+                s3_folder = 'case_10001' + '/' + 'exhibits' + '/' + item + '/' + folder
                 s3_object = pdf_file_name.split(os.sep)[-1]
                 new_files.append(file_path)
                 try:
@@ -92,26 +96,26 @@ def lambda_handler(event, context):
                         pdf.cell(200, 10, txt="".join(open(file_path)))
                         pdf.output(os.path.join(lambda_write_path, pdf_file_name))
                         Converted=True
-                    if file_path.lower().endswith(('png', 'jpg', 'gif', 'tif', 'tiff')):
+                    if file_path.lower().endswith(('.png', '.jpg', '.gif', '.tif', '.tiff')):
                         Converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
-                    if file_path.endswith(('pcd', 'bmp')):                       
-                        Image.open(file_path).save(temp_file:=file_path.replace(file_path.split('.')[1], 'png'))
+                    if file_path.endswith(('.pcd', '.bmp')):                       
+                        Image.open(file_path).save(temp_file:=file_path.replace(file_path.split('.')[-1], 'png'))
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-                    if file_path.endswith('svg'):
+                    if file_path.endswith('.svg'):
                         drawing = svg2rlg(file_path,resolve_entities=True)
-                        renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[1], 'png'), fmt='PNG') 
+                        renderPM.drawToFile(drawing, temp_file:=file_path.replace(file_path.split('.')[-1], 'png'), fmt='PNG') 
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-                    if file_path.endswith(('html','htm', 'xml', 'mht', 'mhtml', 'csv')):
+                    if file_path.endswith(('.html','.htm', '.xml', '.mht', '.mhtml', '.csv')):
                         if file_path.endswith('mht'):
-                            copyfile(file_path, temp_file:=file_path.replace(file_path.split('.')[1], 'html'))
+                            copyfile(file_path, temp_file:=file_path.replace(file_path.split('.')[-1], 'html'))
                             pdfkit.from_file(temp_file, temp_file.replace('html', 'pdf'), options = {'enable-local-file-access': ''})
-                        elif file_path.endswith('csv'):
+                        elif file_path.endswith('.csv'):
                             df = pd.read_csv(file_path)
-                            df.to_html(temp_file:=file_path.replace(file_path.split('.')[1], 'html'))
-                            pdfkit.from_file(temp_file, temp_file.replace(temp_file.split('.')[1], 'pdf'), options = {'enable-local-file-access': ''})
+                            df.to_html(temp_file:=file_path.replace(file_path.split('.')[-1], 'html'))
+                            pdfkit.from_file(temp_file, temp_file.replace(temp_file.split('.')[-1], 'pdf'), options = {'enable-local-file-access': ''})
                             os.remove(temp_file)
                         else:
-                            pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[1], 'pdf'))    
+                            pdfkit.from_file(file_path, file_path.replace(file_path.split('.')[-1], 'pdf'))    
                         Converted=True
                 
                 except Exception as e:
@@ -137,7 +141,7 @@ if __name__ == "__main__":
     if os.name == 'nt':
         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     else:
-        pytesseract.pytesseract.tesseract_cmd = r'tesseract/4.1.1/bin/tesseract'
+        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/4.1.1/bin/tesseract'#r'tesseract/4.1.1/bin/tesseract'
     
     lambda_handler(None, None)
     print(f"new files - {len(new_files)}\npdf files - {len(pdf_files)}\nnot converted - {len(not_converted)}")
