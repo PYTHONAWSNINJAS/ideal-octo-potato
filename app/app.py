@@ -85,13 +85,14 @@ def lambda_handler(event, context):
 
     session = boto3.Session()
     s3_client = session.client('s3')
-    bucket_name='filestorageexchange'
-    s3_folder='case_number/exhibits'
+    bucket_name='pythonninjas'
+    s3_folder='case_number'
+    s3_sub_folder ='exhibits'
     lambda_write_path = '/tmp/'
     pdf_file_suffix = '_dv'
     download_dir(prefix=s3_folder, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
-    for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, 'case_number','exhibits'))):
+    for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
             for file in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
                 Converted = False
@@ -99,7 +100,7 @@ def lambda_handler(event, context):
                 print(f'\nProcessing file...{file_path}')
                 pdf_file_name = file_path.replace(file_path.split('.')[1], 'pdf')
                 pdf_file_name = pdf_file_name.split('.')[0]+pdf_file_suffix+'.pdf'
-                s3_folder = 'case_number' + '/' + 'exhibits' + '/' + item + '/' + folder
+                s3_folder = s3_folder + '/' + s3_sub_folder + '/' + item + '/' + folder
                 s3_object = pdf_file_name.split(os.sep)[-1]
                 new_files.append(file_path)
                 try:
@@ -151,8 +152,8 @@ def lambda_handler(event, context):
 
                 if Converted:
                     print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
-                    # with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
-                    #     s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
+                    with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
+                        s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
                     print(f"Uploaded to - {s3_folder + '/' + s3_object}")
                     pdf_files.append(os.path.join(lambda_write_path, pdf_file_name))
                 else:
