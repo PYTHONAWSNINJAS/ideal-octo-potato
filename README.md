@@ -11,6 +11,13 @@
 5. create Dockerfile in main directory
 6. place requirements.txt in main directory
 
+## AWS IAM Permissions needed
+
+```S3:ListBucket
+S3:GetObjects
+S3:PutObjects
+```
+
 ## Docker Commands
 
 ### Build

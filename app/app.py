@@ -131,7 +131,7 @@ def lambda_handler(event, context):
                             df.to_html(temp_file:=filename+'.html')
                             pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})
                             os.remove(temp_file)
-                        elif file_path.endswith(('xlsx', 'xls')):
+                        elif file_path.endswith(('.xlsx', '.xls')):
                             temp_pdfs = []
                             xls = pd.ExcelFile(file_path)
                             for item in xls.sheet_names:
