@@ -11,6 +11,7 @@ from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 
+#config = Config(connect_timeout=60000, read_timeout=60000, retries={'max_attempts': 0})
 new_files = []
 pdf_files = []
 not_converted = []
