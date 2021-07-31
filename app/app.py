@@ -10,6 +10,10 @@ from PIL import Image
 from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
+import timeit
+
+start = timeit.default_timer()
+
 
 #config = Config(connect_timeout=60000, read_timeout=60000, retries={'max_attempts': 0})
 new_files = []
@@ -91,7 +95,7 @@ def lambda_handler(event, context):
     s3_sub_folder ='exhibits'
     lambda_write_path = '/tmp/'
     pdf_file_suffix = '_dv'
-    # download_dir(prefix=os.path.join(s3_folder,s3_sub_folder), local=lambda_write_path, bucket=bucket_name, client=s3_client)
+    download_dir(prefix=os.path.join(s3_folder,s3_sub_folder), local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
@@ -172,4 +176,11 @@ if __name__ == "__main__":
         #r'tesseract/4.1.1/bin/tesseract' #linux
     
     lambda_handler(None, None)
-    print(f"new files - {len(new_files)}\npdf files - {len(pdf_files)}\nnot converted - {len(not_converted)}")
+
+    print('─' * int(os.get_terminal_size().columns))
+    print(f"\nNew files: {len(new_files)}\nPdf files - {len(pdf_files)}\nNot converted - {len(not_converted)}")
+    print(f"Extension Not implemented: {set([os.path.splitext(path)[1] for path in not_converted])}")
+    print('─' * int(os.get_terminal_size().columns))
+    
+    stop = timeit.default_timer()
+    print(f"Time Elapsed: {(stop - start)/60} min")  
