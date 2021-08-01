@@ -10,12 +10,7 @@ from PIL import Image
 from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
-import timeit
 
-start = timeit.default_timer()
-
-
-#config = Config(connect_timeout=60000, read_timeout=60000, retries={'max_attempts': 0})
 new_files = []
 pdf_files = []
 not_converted = []
@@ -95,6 +90,7 @@ def lambda_handler(event, context):
     s3_sub_folder ='exhibits'
     lambda_write_path = '/tmp/'
     pdf_file_suffix = '_dv'
+    
     download_dir(prefix=os.path.join(s3_folder,s3_sub_folder), local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
@@ -169,6 +165,10 @@ def lambda_handler(event, context):
                     print(f"Not Created - {os.path.join(lambda_write_path, pdf_file_name)}")
 
 if __name__ == "__main__":
+    import timeit
+
+    start = timeit.default_timer()
+
     if os.name == 'nt':
         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     else:
