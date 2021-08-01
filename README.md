@@ -70,7 +70,7 @@ Note: clear the credentials and set these.
 - [x] Test ECR image with lambda function
 - [x] Add code to remove converted files later.
 - [ ] Use concurrent processing to reduce time
-- [ ] Process for single folder in S3
+- [x] Process for single folder in S3
 - [ ] Use env variables for bucketname, sub folder and document name and credentials
 - [ ] Solve the limit of 512 in /tmp in aws lambda
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
