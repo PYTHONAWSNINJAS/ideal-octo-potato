@@ -88,10 +88,11 @@ def lambda_handler(event, context):
     bucket_name='pythonninjas'
     s3_folder='case_number'
     s3_sub_folder ='exhibits'
+    s3_document_directory='folder1'
     lambda_write_path = '/tmp/'
     pdf_file_suffix = '_dv'
-    
-    download_dir(prefix=os.path.join(s3_folder,s3_sub_folder), local=lambda_write_path, bucket=bucket_name, client=s3_client)
+
+    download_dir(prefix=s3_folder+'/'+s3_sub_folder+'/'+s3_document_directory, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
