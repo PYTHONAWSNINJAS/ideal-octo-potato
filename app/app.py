@@ -78,19 +78,26 @@ def merge_pdf(pdfs, filename):
     for pdf in pdfs:
         os.remove(pdf)
 
-def lambda_handler(event, context):
+def init():
+    bucket_name = os.environ['bucket_name']
+    s3_folder = os.environ['s3_folder']
+    s3_sub_folder = os.environ['s3_sub_folder']
+    s3_document_directory = os.environ['s3_document_directory']
+    lambda_write_path = '/tmp/'
+    pdf_file_suffix = os.environ['pdf_file_suffix']
+
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font('Arial', size=20)
 
     session = boto3.Session()
-    s3_client = session.client('s3', 'us-east-1')
-    bucket_name='pythonninjas'
-    s3_folder='case_number'
-    s3_sub_folder ='exhibits'
-    s3_document_directory='folder1'
-    lambda_write_path = '/tmp/'
-    pdf_file_suffix = '_dv'
+    s3_client = session.client('s3')
+
+    return pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix
+
+def lambda_handler(event, context):
+    
+    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix =  init()
 
     download_dir(prefix=s3_folder+'/'+s3_sub_folder+'/'+s3_document_directory, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
