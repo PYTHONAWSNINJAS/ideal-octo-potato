@@ -127,7 +127,7 @@ def init():
         s3_document_directory = os.environ['s3_document_directory']
         lambda_write_path = '/tmp/'
         pdf_file_suffix = os.environ['pdf_file_suffix']
-        s3_output_folder = os.environ['s3_outut_folder']
+        s3_output_folder = os.environ['s3_output_folder']
 
     except Exception:
         print(traceback.format_exc())
@@ -141,7 +141,8 @@ def init():
     s3_client = session.client(service_name='s3', endpoint_url="https://s3.amazonaws.com", region_name='us-east-1',
                                aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
-    return pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder
+    return [pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
+            pdf_file_suffix, s3_output_folder]
 
 
 def lambda_handler(event, context):
