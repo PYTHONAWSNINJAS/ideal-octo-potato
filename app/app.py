@@ -10,6 +10,7 @@ from PIL import Image
 from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
+import traceback
 
 new_files = []
 pdf_files = []
@@ -79,25 +80,33 @@ def merge_pdf(pdfs, filename):
         os.remove(pdf)
 
 def init():
-    bucket_name = os.environ['bucket_name']
-    s3_folder = os.environ['s3_folder']
-    s3_sub_folder = os.environ['s3_sub_folder']
-    s3_document_directory = os.environ['s3_document_directory']
-    lambda_write_path = '/tmp/'
-    pdf_file_suffix = os.environ['pdf_file_suffix']
+    try:
+        access_key = os.environ['ACCESS_KEY']
+        secret_key = os.environ['SECRET_KEY']
+        bucket_name = os.environ['bucket_name']
+        s3_folder = os.environ['s3_folder']
+        s3_sub_folder = os.environ['s3_sub_folder']
+        s3_document_directory = os.environ['s3_document_directory']
+        lambda_write_path = '/tmp/'
+        pdf_file_suffix = os.environ['pdf_file_suffix']
+        s3_output_folder = os.environ['s3_outut_folder']
+
+    except Exception:
+        print(traceback.format_exc())
+        exit()
 
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font('Arial', size=20)
 
     session = boto3.Session()
-    s3_client = session.client('s3')
+    s3_client = session.client(service_name='s3', endpoint_url="https://s3.amazonaws.com", region_name='us-east-1', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
-    return pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix
+    return pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder
 
 def lambda_handler(event, context):
     
-    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix =  init()
+    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder =  init()
 
     download_dir(prefix=s3_folder+'/'+s3_sub_folder+'/'+s3_document_directory, local=lambda_write_path, bucket=bucket_name, client=s3_client)
 
@@ -160,13 +169,13 @@ def lambda_handler(event, context):
                             os.remove(temp_file)
                         Converted = True
                     else:
-                        raise e
+                        print(traceback.format_exc())
 
                 if Converted:
                     print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
-                    # with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
-                    #     s3_client.upload_fileobj(data, bucket_name, s3_folder + '/' + s3_object)
-                    print(f"Uploaded to - {os.path.join(s3_location,s3_object)}")
+                    with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
+                        s3_client.upload_fileobj(data, bucket_name, s3_location.replace(s3_folder, s3_output_folder) + '/' + s3_object)
+                    print(f"Uploaded to - {os.path.join(s3_location.replace(s3_folder, s3_output_folder),s3_object)}")
                     pdf_files.append(os.path.join(lambda_write_path, pdf_file_name))
                 else:
                     not_converted.append(file_path)
