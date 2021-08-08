@@ -81,7 +81,7 @@ Note: clear the credentials and set these.
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
 - [x] Dump into another folder in exhibits level (use env variable) doc_pdf only the pdf files
-- [x] For a pdf <name>.pdf, rename to <name>_dv.pdf
+- [x] For a pdf name.pdf, rename to name_dv.pdf
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
