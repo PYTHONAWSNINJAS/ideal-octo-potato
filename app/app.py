@@ -16,20 +16,26 @@ new_files = []
 pdf_files = []
 not_converted = []
 
+
 def download_dir(prefix, local, bucket, client):
     """
-    params:
-    - prefix: pattern to match in s3
-    - local: local path to folder in which to place files
-    - bucket: s3 bucket with target contents
-    - client: initialized s3 client object
+
+    Parameters
+    ----------
+    prefix: pattern to match in s3
+    local: local path to folder in which to place files
+    bucket: s3 bucket with target contents
+    client: initialized s3 client object
+    -------
+
     """
+
     keys = []
     dirs = []
     next_token = ''
     base_kwargs = {
-        'Bucket':bucket,
-        'Prefix':prefix,
+        'Bucket': bucket,
+        'Prefix': prefix,
     }
     while next_token is not None:
         kwargs = base_kwargs.copy()
@@ -54,7 +60,22 @@ def download_dir(prefix, local, bucket, client):
             os.makedirs(os.path.dirname(dest_pathname))
         client.download_file(bucket, k, dest_pathname)
 
+
 def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
+    """
+
+    Parameters
+    ----------
+    file_path: file path of the image
+    lambda_write_path: output path of the pdf file
+    pdf_file_name: name of the output pdf file
+    temp_file: temp file if True, file_path will be deleted
+
+    Returns True if the pdf file is created
+    -------
+
+    """
+
     try:
         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path, extension='pdf')
         with open(os.path.join(lambda_write_path, pdf_file_name), 'w+b') as f:
@@ -62,24 +83,41 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
         if temp_file:
             print(f"removing temp file {file_path}")
             os.remove(file_path)
-        return True    
+        return True
     except Exception as e:
         print(e)
         return False
 
+
 def merge_pdf(pdfs, filename):
+    """
+
+    Parameters
+    ----------
+    pdfs: pdf files to be merged
+    filename: filename of the consolidated file
+    """
+
     merger = PdfFileMerger()
-    
+
     for pdf in pdfs:
         merger.append(pdf)
 
     merger.write(filename)
     merger.close()
-    
+
     for pdf in pdfs:
         os.remove(pdf)
 
+
 def init():
+    """
+
+    Initialises variables required for the program to operate
+    Returns: all the initialised variables
+    -------
+
+    """
     try:
         access_key = os.environ['ACCESS_KEY']
         secret_key = os.environ['SECRET_KEY']
@@ -100,15 +138,24 @@ def init():
     pdf.set_font('Arial', size=20)
 
     session = boto3.Session()
-    s3_client = session.client(service_name='s3', endpoint_url="https://s3.amazonaws.com", region_name='us-east-1', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    s3_client = session.client(service_name='s3', endpoint_url="https://s3.amazonaws.com", region_name='us-east-1',
+                               aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
     return pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder
 
-def lambda_handler(event, context):
-    
-    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder =  init()
 
-    download_dir(prefix=s3_folder+'/'+s3_sub_folder+'/'+s3_document_directory, local=lambda_write_path, bucket=bucket_name, client=s3_client)
+def lambda_handler(event, context):
+    """
+
+    Parameters
+    ----------
+    event: lambda event
+    context: lambda context
+    """
+    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder = init()
+
+    download_dir(prefix=s3_folder + '/' + s3_sub_folder + '/' + s3_document_directory, local=lambda_write_path,
+                 bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
@@ -116,55 +163,59 @@ def lambda_handler(event, context):
                 Converted = False
                 file_path = os.path.join(sub_folder_path, file)
                 print(f'\nProcessing file...{file_path}')
-                
-                if len(file_path.split('.'))==1:
+
+                if len(file_path.split('.')) == 1:
                     continue
 
                 filename, file_extension = os.path.splitext(file_path)
-                pdf_file_name = filename+pdf_file_suffix+'.pdf'
-                s3_location = os.path.join(s3_folder,s3_sub_folder,item,folder)
+                pdf_file_name = filename + pdf_file_suffix + '.pdf'
+                s3_location = os.path.join(s3_folder, s3_sub_folder, item, folder)
                 s3_object = pdf_file_name.split(os.sep)[-1]
                 new_files.append(file_path)
                 try:
                     if file_path.endswith('pdf'):
                         copyfile(file_path, pdf_file_name)
-                        Converted=True
+                        Converted = True
                     if file_path.endswith('txt'):
                         pdf.cell(200, 10, txt="".join(open(file_path)))
                         pdf.output(os.path.join(lambda_write_path, pdf_file_name))
-                        Converted=True
+                        Converted = True
                     if file_path.lower().endswith(('.png', '.jpg', '.gif', '.tif', '.tiff')):
                         Converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
-                    if file_path.endswith(('.pcd', '.bmp')):                      
-                        Image.open(file_path).save(temp_file:=filename+'.png')
+                    if file_path.endswith(('.pcd', '.bmp')):
+                        Image.open(file_path).save(temp_file := filename + '.png')
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
                     if file_path.endswith('.svg'):
-                        drawing = svg2rlg(file_path,resolve_entities=True)
-                        renderPM.drawToFile(drawing, temp_file:=filename+'.png', fmt='PNG') 
+                        drawing = svg2rlg(file_path, resolve_entities=True)
+                        renderPM.drawToFile(drawing, temp_file := filename + '.png', fmt='PNG')
                         Converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-                    if file_path.endswith(('.html','.htm', '.xml', '.mht', '.mhtml', '.csv')):
+                    if file_path.endswith(('.html', '.htm', '.xml', '.mht', '.mhtml', '.csv')):
                         if file_path.endswith('mht'):
-                            copyfile(file_path, temp_file:=filename+'.html')
-                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})
+                            copyfile(file_path, temp_file := filename + '.html')
+                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
+                                             options={'enable-local-file-access': ''})
                         elif file_path.endswith('.csv'):
                             df = pd.read_csv(file_path)
-                            df.to_html(temp_file:=filename+'.html')
-                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})
+                            df.to_html(temp_file := filename + '.html')
+                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
+                                             options={'enable-local-file-access': ''})
                             os.remove(temp_file)
                         elif file_path.endswith(('.xlsx', '.xls')):
                             temp_pdfs = []
                             xls = pd.ExcelFile(file_path)
                             for item in xls.sheet_names:
                                 df = pd.read_excel(file_path, sheet_name=item)
-                                df.to_html(temp_file:=filename+'_'+str(item)+'.html')
-                                pdfkit.from_file(temp_file, temp_pdf:=filename+'_'+str(item)+'.pdf', options = {'enable-local-file-access': ''})
+                                df.to_html(temp_file := filename + '_' + str(item) + '.html')
+                                pdfkit.from_file(temp_file, temp_pdf := filename + '_' + str(item) + '.pdf',
+                                                 options={'enable-local-file-access': ''})
                                 temp_pdfs.append(temp_pdf)
                                 os.remove(temp_file)
                             merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
                         else:
-                            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name), options = {'enable-local-file-access': ''})
-                        Converted=True
-                
+                            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
+                                             options={'enable-local-file-access': ''})
+                        Converted = True
+
                 except Exception as e:
                     if 'Done' in str(e):
                         if file_path.endswith('mht'):
@@ -177,12 +228,14 @@ def lambda_handler(event, context):
                 if Converted:
                     print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
                     with open(os.path.join(lambda_write_path, pdf_file_name), 'rb') as data:
-                        s3_client.upload_fileobj(data, bucket_name, s3_location.replace(s3_folder, s3_output_folder) + '/' + s3_object)
-                    print(f"Uploaded to - {os.path.join(s3_location.replace(s3_folder, s3_output_folder),s3_object)}")
+                        s3_client.upload_fileobj(data, bucket_name,
+                                                 s3_location.replace(s3_folder, s3_output_folder) + '/' + s3_object)
+                    print(f"Uploaded to - {os.path.join(s3_location.replace(s3_folder, s3_output_folder), s3_object)}")
                     pdf_files.append(os.path.join(lambda_write_path, pdf_file_name))
                 else:
                     not_converted.append(file_path)
                     print(f"Not Created - {os.path.join(lambda_write_path, pdf_file_name)}")
+
 
 if __name__ == "__main__":
     import timeit
@@ -192,15 +245,15 @@ if __name__ == "__main__":
     if os.name == 'nt':
         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     else:
-        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/4.1.1/bin/tesseract' #mac
-        #r'tesseract/4.1.1/bin/tesseract' #linux
-    
+        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/4.1.1/bin/tesseract'  # mac
+        # r'tesseract/4.1.1/bin/tesseract' #linux
+
     lambda_handler(None, None)
 
     print('─' * int(os.get_terminal_size().columns))
     print(f"\nNew files: {len(new_files)}\nPdf files - {len(pdf_files)}\nNot converted - {len(not_converted)}")
     print(f"Extension Not implemented: {set([os.path.splitext(path)[1] for path in not_converted])}")
     print('─' * int(os.get_terminal_size().columns))
-    
+
     stop = timeit.default_timer()
-    print(f"Time Elapsed: {(stop - start)/60} min")  
+    print(f"Time Elapsed: {(stop - start) / 60} min")
