@@ -203,7 +203,7 @@ def lambda_handler(event, context):
                             pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
                                              options={"enable-local-file-access": ""})
                             os.remove(temp_file)
-                        elif file_path.endswith([".xls", ".xlsx"]):
+                        elif file_path.endswith((".xls", ".xlsx")):
                             temp_pdfs = []
                             xls = pd.ExcelFile(file_path)
                             for sheet_name in xls.sheet_names:
