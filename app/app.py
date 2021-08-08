@@ -126,6 +126,9 @@ def lambda_handler(event, context):
                 s3_object = pdf_file_name.split(os.sep)[-1]
                 new_files.append(file_path)
                 try:
+                    if file_path.endswith('pdf'):
+                        copyfile(file_path, pdf_file_name)
+                        Converted=True
                     if file_path.endswith('txt'):
                         pdf.cell(200, 10, txt="".join(open(file_path)))
                         pdf.output(os.path.join(lambda_write_path, pdf_file_name))
