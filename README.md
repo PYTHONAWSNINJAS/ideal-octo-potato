@@ -71,10 +71,12 @@ Note: clear the credentials and set these.
 - [x] Add code to remove converted files later.
 - [ ] Use concurrent processing to reduce time
 - [x] Process for single folder in S3
-- [ ] Use env variables for bucketname, sub folder and document name and credentials
-- [ ] Solve the limit of 512 in /tmp in aws lambda
+- [x] Use env variables for bucketname, sub folder and document name and credentials
+- [ ] Solve the limit of 512 MB in /tmp in aws lambda
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
+- [x] Dump into another folder in exhibits level (use env variable) doc_pdf only the pdf files
+- [x] For a pdf <name>.pdf, rename to <name>_dv.pdf
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
