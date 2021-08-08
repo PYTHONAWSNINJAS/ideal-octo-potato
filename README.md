@@ -16,7 +16,12 @@
 ```S3:ListBucket
 S3:GetObjects
 S3:PutObjects
+ecr:GetAuthorizationToken
 ```
+
+## Fix for GetAuthorizationToken exception
+
+configure aws credentials
 
 ## Docker Commands
 
@@ -133,3 +138,16 @@ Exit with code 1, due to unknown error.
 Fix:
 
 Not fixed yet.
+
+## For db file
+
+import pandas as pd
+import pdfkit as pdf
+import sqlite3
+
+con=sqlite3.connect("baza.db")
+
+df=pd.read_sql_query("select * from dobit", con)
+df.to_html('/home/linux/izvestaj.html')
+nazivFajla='/home/linux/pdfPrintOut.pdf'
+pdf.from_file('/home/linux/izvestaj.html', nazivFajla)

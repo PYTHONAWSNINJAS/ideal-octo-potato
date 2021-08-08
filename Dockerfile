@@ -18,10 +18,5 @@ RUN chmod a+x /usr/bin/wkhtmltopdf.sh
 RUN ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
 
 COPY ./app/app.py   ./
- 
-RUN aws configure set aws_access_key_id "AKIASSMH2D4J2KOV25MH"
-RUN aws configure set aws_secret_access_key "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"
-RUN aws configure set region "us-east-1"
-RUN aws configure set output "text"
 
 CMD ["app.lambda_handler"]
