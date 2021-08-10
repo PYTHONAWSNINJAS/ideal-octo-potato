@@ -232,8 +232,8 @@ def lambda_handler(event, context):
                     print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
                     with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
                         s3_client.upload_fileobj(data, bucket_name,
-                                                 s3_location.replace(s3_folder, s3_output_folder) + "/" + s3_object)
-                    print(f"Uploaded to - {os.path.join(s3_location.replace(s3_folder, s3_output_folder), s3_object)}")
+                                                 s3_location.replace(s3_sub_folder, s3_output_folder) + "/" + s3_object)
+                    print(f"Uploaded to - {os.path.join(s3_location.replace(s3_sub_folder, s3_output_folder), s3_object)}")
                     pdf_files.append(os.path.join(lambda_write_path, pdf_file_name))
                 else:
                     not_converted.append(file_path)
