@@ -2,6 +2,7 @@
 app/Tesseract-OCR
 app/case_number
 .aws_credentials
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -132,4 +133,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-Dockerfile
