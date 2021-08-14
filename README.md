@@ -66,23 +66,13 @@ Note: clear the credentials and set these.
 
 ## ToDo
 
-- [x] Install tesseract for amazonlinux2
-- [x] Change to S3 code
-- [x] Test by pulling from S3 and Upload back to the same location
-- [x] Make container image
-- [x] Deploy to Elastic Container Registry
-- [x] Deploy to lambda
-- [x] Test ECR image with lambda function
-- [x] Add code to remove converted files later.
-- [x] Use concurrent processing to reduce time
-- [x] Process for single folder in S3
-- [x] Use env variables for bucketname, sub folder and document name and credentials
 - [ ] Solve the limit of 512 MB in /tmp in aws lambda
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
-- [x] Dump into another folder in exhibits level (use env variable) doc_pdf only the pdf files
-- [x] For a pdf name.pdf, rename to name_dv.pdf
 - [ ] Change to cross platform tmp directory with tempfile module
+- [ ] Add msg and eml and db
+- [ ] Fix txt file's CRLF
+- [ ] Add docx and doc
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
