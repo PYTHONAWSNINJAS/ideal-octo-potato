@@ -11,6 +11,7 @@ from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 import concurrent.futures
+import extract_msg
 
 
 def download_dir(prefix, local, bucket, client):
@@ -123,7 +124,7 @@ def init():
 
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=20)
+    pdf.set_font("Arial", size=12)
 
     session = boto3.Session()
     s3_client = session.client(service_name="s3", endpoint_url="https://s3.amazonaws.com", region_name="us-east-1",
@@ -190,6 +191,17 @@ def process_document_folders(args):
             else:
                 pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
                                     options={"enable-local-file-access": ""})
+            converted = True
+        if file_extension == '.msg':
+            msg_properties = []
+            msg = extract_msg.Message(file_path)
+            msg_properties.extend([msg.date, '', 'To:'+msg.to, '', msg.subject, msg.body.trim(), 'From:'+msg.sender])
+            
+            for i in msg_properties:
+                pdf.write(5, str(i))
+                pdf.ln()
+
+            pdf.output(pdf_file_name)
             converted = True
 
         if converted:
