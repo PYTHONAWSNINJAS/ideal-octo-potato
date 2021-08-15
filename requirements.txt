@@ -1,8 +1,6 @@
-wheel
 fpdf
 pillow
 pytesseract
-awscli
 boto3
 svglib
 reportlab
@@ -10,3 +8,4 @@ pdfkit
 pandas
 openpyxl
 pypdf2
+extract-msg
