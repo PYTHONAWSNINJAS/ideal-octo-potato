@@ -72,9 +72,10 @@ Note: clear the credentials and set these.
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
 - [ ] Change to cross platform tmp directory with tempfile module
-- [ ] Add msg and eml and db
+- [ ] Add eml and db
 - [ ] Fix txt file's CRLF
 - [ ] Add docx and doc
+- [ ] Explore docker sync
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
