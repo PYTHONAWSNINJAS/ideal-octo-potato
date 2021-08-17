@@ -238,8 +238,8 @@ def lambda_handler(event, context):
     with concurrent.futures.ThreadPoolExecutor() as executer:
         results_map = executer.map(process_document_folders, folders)
     
-    if os.path.exists(os.join(lambda_write_path,s3_folder)):
-        shutil.rmtree(os.join(lambda_write_path,s3_folder))
+    if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
+        shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
             
 
 if __name__ == "__main__":
