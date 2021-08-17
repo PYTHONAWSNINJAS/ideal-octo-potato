@@ -76,6 +76,7 @@ Note: clear the credentials and set these.
 - [ ] Fix txt file's CRLF
 - [ ] Add docx and doc
 - [ ] Explore docker sync
+- [ ] Fix issue with the last file of the folder
 
 ## Fix for failed to solve with frontend dockerfile.v0
 

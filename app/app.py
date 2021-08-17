@@ -192,7 +192,7 @@ def process_document_folders(args):
                 pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
                                     options={"enable-local-file-access": ""})
             converted = True
-        if file_extension == '.msg':
+        if file_path.endswith('msg'):
             msg_properties = []
             msg = extract_msg.Message(file_path)
             msg_properties.extend([msg.date, '', 'To:'+msg.to, '', msg.subject, msg.body, 'From:'+msg.sender])
@@ -200,7 +200,7 @@ def process_document_folders(args):
                 pdf.write(5, str(i))
                 pdf.ln()
 
-            pdf.output(pdf_file_name)
+            pdf.output(os.path.join(lambda_write_path, pdf_file_name))
             converted = True
 
         if converted:
@@ -209,7 +209,7 @@ def process_document_folders(args):
                 s3_client.upload_fileobj(data, bucket_name,
                                             s3_location.replace(s3_sub_folder, s3_output_folder) + "/" + s3_object)
         else:
-            print(f"Not Created - {current_file}")
+            print(f"PDF not created for - {current_file}")
 
 
 def lambda_handler(event, context):
@@ -238,8 +238,8 @@ def lambda_handler(event, context):
     with concurrent.futures.ThreadPoolExecutor() as executer:
         results_map = executer.map(process_document_folders, folders)
     
-    if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
-        shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
+    # if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
+    #     shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
             
 
 if __name__ == "__main__":
