@@ -93,14 +93,14 @@ def merge_pdf(pdfs, filename):
 
     merger = PdfFileMerger()
 
-    for pdf in pdfs:
-        merger.append(pdf)
+    for pdf_file in pdfs:
+        merger.append(pdf_file)
 
     merger.write(filename)
     merger.close()
 
-    for pdf in pdfs:
-        os.remove(pdf)
+    for pdf_file in pdfs:
+        os.remove(pdf_file)
 
 
 def init():
@@ -122,20 +122,24 @@ def init():
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
     session = boto3.Session()
     s3_client = session.client(service_name="s3", endpoint_url="https://s3.amazonaws.com", region_name="us-east-1",
                                aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
-    return [pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
+    return [s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
             pdf_file_suffix, s3_output_folder]
 
 
+def get_pdf_object(font_size=10):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=font_size)
+
+    return pdf
+
+
 def process_document_folders(args):
-    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
+    s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
         s3_output_folder, item, sub_path, folder = args
     
     for current_file in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
@@ -154,8 +158,9 @@ def process_document_folders(args):
             copyfile(file_path, pdf_file_name)
             converted = True
         if file_path.endswith("txt"):
-            pdf.cell(200, 10, txt="".join(open(file_path)))
-            pdf.output(os.path.join(lambda_write_path, pdf_file_name))
+            pdf_txt=get_pdf_object(10)
+            pdf_txt.cell(200, 10, txt="".join(open(file_path)))
+            pdf_txt.output(os.path.join(lambda_write_path, pdf_file_name))
             converted = True
         if file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
             converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
@@ -196,11 +201,13 @@ def process_document_folders(args):
             msg_properties = []
             msg = extract_msg.Message(file_path)
             msg_properties.extend([msg.date, '', 'To:'+msg.to, '', msg.subject, msg.body, 'From:'+msg.sender])
+            
+            pdf_email = get_pdf_object(12)
             for i in msg_properties:
-                pdf.write(5, str(i))
-                pdf.ln()
+                pdf_email.write(5, str(i))
+                pdf_email.ln()
 
-            pdf.output(os.path.join(lambda_write_path, pdf_file_name))
+            pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
             converted = True
 
         if converted:
@@ -221,7 +228,7 @@ def lambda_handler(event, context):
     context: lambda context
     """
 
-    pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
+    s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
         s3_output_folder = init()
 
     download_dir(prefix=s3_folder + "/" + s3_sub_folder + "/" + s3_document_directory, local=lambda_write_path,
@@ -231,15 +238,15 @@ def lambda_handler(event, context):
         folders = []
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
             stuffs = []
-            stuffs.extend([pdf, s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
+            stuffs.extend([s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
         s3_output_folder, item, sub_path, folder])
             folders.append(stuffs)
     
     with concurrent.futures.ThreadPoolExecutor() as executer:
         results_map = executer.map(process_document_folders, folders)
     
-    # if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
-    #     shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
+    if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
+        shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
             
 
 if __name__ == "__main__":
