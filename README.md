@@ -76,9 +76,7 @@ Note: clear the credentials and set these.
 - [ ] Fix txt file's CRLF
 - [ ] Add docx and doc
 - [ ] Explore docker sync
-- [x] Fix issue with the last file of the folder
 - [ ] Explore File System option in AWS Lambda to avoid tmp 512 MB limit if required.
-- [x] ignore all files with "_small" in filename.
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
