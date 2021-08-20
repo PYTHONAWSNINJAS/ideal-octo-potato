@@ -14,6 +14,8 @@ import concurrent.futures
 import extract_msg
 import shutil
 
+FILE_PATTERN_TO_IGNORE = '_small'
+
 def download_dir(prefix, local, bucket, client):
     """
 
@@ -154,6 +156,8 @@ def process_document_folders(args):
         s3_location = os.path.join(s3_folder, s3_sub_folder, item, folder)
         s3_object = pdf_file_name.split(os.sep)[-1]
         
+        if filename.endswith(FILE_PATTERN_TO_IGNORE):
+            continue
         if file_path.endswith("pdf"):
             copyfile(file_path, pdf_file_name)
             converted = True
