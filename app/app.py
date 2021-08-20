@@ -158,10 +158,10 @@ def process_document_folders(args):
         
         if filename.endswith(FILE_PATTERN_TO_IGNORE):
             continue
-        if file_path.endswith("pdf"):
+        if file_path.endswith(".pdf"):
             copyfile(file_path, pdf_file_name)
             converted = True
-        if file_path.endswith("txt"):
+        if file_path.endswith(".txt"):
             pdf_txt=get_pdf_object(10)
             pdf_txt.cell(200, 10, txt="".join(open(file_path)))
             pdf_txt.output(os.path.join(lambda_write_path, pdf_file_name))
@@ -175,7 +175,7 @@ def process_document_folders(args):
             drawing = svg2rlg(file_path, resolve_entities=True)
             renderPM.drawToFile(drawing, temp_file := filename + ".png", fmt="PNG")
             converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-        if file_path.endswith((".html", ".htm", ".xml", ".mht", ".mhtml", ".csv")):
+        if file_path.endswith((".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")):
             if file_path.endswith("mht"):
                 copyfile(file_path, temp_file := filename + ".html")
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
@@ -201,18 +201,21 @@ def process_document_folders(args):
                 pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
                                     options={"enable-local-file-access": ""})
             converted = True
-        if file_path.endswith('msg'):
-            msg_properties = []
-            msg = extract_msg.Message(file_path)
-            msg_properties.extend([msg.date, '', 'To:'+msg.to, '', msg.subject, msg.body, 'From:'+msg.sender])
-            
-            pdf_email = get_pdf_object(12)
-            for i in msg_properties:
-                pdf_email.write(5, str(i))
-                pdf_email.ln()
+        if file_path.endswith(".msg"):
+            try:
+                msg_properties = []
+                msg = extract_msg.Message(file_path)
+                msg_properties.extend([msg.date, '', 'To:'+msg.to, '', msg.subject, msg.body, 'From:'+msg.sender])
+                
+                pdf_email = get_pdf_object(12)
+                for i in msg_properties:
+                    pdf_email.write(5, str(i))
+                    pdf_email.ln()
 
-            pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
-            converted = True
+                pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
+                converted = True
+            except Exception as e:
+                print(e)
 
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
@@ -260,6 +263,8 @@ if __name__ == "__main__":
 
     if os.name == "nt":
         pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+        path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+        config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
     else:
         pytesseract.pytesseract.tesseract_cmd = r"/usr/local/Cellar/tesseract/4.1.1/bin/tesseract"  # mac
         # r"tesseract/4.1.1/bin/tesseract" #linux
