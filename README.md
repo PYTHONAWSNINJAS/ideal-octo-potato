@@ -68,7 +68,7 @@ Note: clear the credentials and set these.
 
 ## ToDo
 
-- [ ] Solve the limit of 512 MB in /tmp in aws lambda
+- [ ] Solve the limit of 512 MB in /tmp in aws lambda. Explore File System option in AWS Lambda to avoid tmp 512 MB limit if required.
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
 - [ ] Change to cross platform tmp directory with tempfile module
@@ -76,7 +76,6 @@ Note: clear the credentials and set these.
 - [ ] Fix txt file's CRLF
 - [ ] Add docx and doc
 - [ ] Explore docker sync
-- [ ] Explore File System option in AWS Lambda to avoid tmp 512 MB limit if required.
 
 ## Fix for failed to solve with frontend dockerfile.v0
 
