@@ -17,6 +17,7 @@ import sqlite3
 
 FILE_PATTERN_TO_IGNORE = '_small'
 
+
 def download_dir(prefix, local, bucket, client):
     """
 
@@ -144,7 +145,7 @@ def get_pdf_object(font_size=10):
 def process_document_folders(args):
     s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
         s3_output_folder, item, sub_path, folder = args
-    
+
     for current_file in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
         converted = False
         file_path = os.path.join(sub_folder_path, current_file)
@@ -156,7 +157,7 @@ def process_document_folders(args):
         pdf_file_name = filename + pdf_file_suffix + ".pdf"
         s3_location = os.path.join(s3_folder, s3_sub_folder, item, folder)
         s3_object = pdf_file_name.split(os.sep)[-1]
-        
+
         if filename.endswith(FILE_PATTERN_TO_IGNORE):
             continue
         if file_path.endswith(".pdf"):
@@ -178,12 +179,12 @@ def process_document_folders(args):
             if file_path.endswith("mht"):
                 copyfile(file_path, temp_file := filename + ".html")
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                    options={"enable-local-file-access": ""})
+                                 options={"enable-local-file-access": ""})
             elif file_path.endswith(".csv"):
                 df = pd.read_csv(file_path)
                 df.to_html(temp_file := filename + ".html")
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                    options={"enable-local-file-access": ""})
+                                 options={"enable-local-file-access": ""})
                 os.remove(temp_file)
             elif file_path.endswith((".xls", ".xlsx")):
                 temp_pdfs = []
@@ -192,20 +193,20 @@ def process_document_folders(args):
                     df = pd.read_excel(file_path, sheet_name=sheet_name)
                     df.to_html(temp_file := filename + "_" + str(sheet_name) + ".html")
                     pdfkit.from_file(temp_file, temp_pdf := filename + "_" + str(sheet_name) + ".pdf",
-                                        options={"enable-local-file-access": ""})
+                                     options={"enable-local-file-access": ""})
                     temp_pdfs.append(temp_pdf)
                     os.remove(temp_file)
                 merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
             else:
                 pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
-                                    options={"enable-local-file-access": ""})
+                                 options={"enable-local-file-access": ""})
             converted = True
         if file_path.endswith(".msg"):
             try:
                 msg_properties = []
                 msg = extract_msg.Message(file_path)
-                msg_properties.extend([msg.date, '', 'To:'+msg.to, '', msg.subject, msg.body, 'From:'+msg.sender])
-                
+                msg_properties.extend([msg.date, '', 'To:' + msg.to, '', msg.subject, msg.body, 'From:' + msg.sender])
+
                 pdf_email = get_pdf_object(12)
                 for i in msg_properties:
                     pdf_email.write(5, str(i))
@@ -217,20 +218,19 @@ def process_document_folders(args):
                 print(e)
         if file_path.endswith('.db'):
             try:
-                con=sqlite3.connect(file_path)
-                df=pd.read_sql_query("select * from <tablename>", con)
+                con = sqlite3.connect(file_path)
+                df = pd.read_sql_query("select * from <table_name>", con)
                 df.to_html(temp_file := filename + ".html")
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name))
                 os.remove(temp_file)
             except Exception as e:
                 print(e)
-                os.remove(temp_file)
 
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
             with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
                 s3_client.upload_fileobj(data, bucket_name,
-                                            s3_location.replace(s3_sub_folder, s3_output_folder) + "/" + s3_object)
+                                         s3_location.replace(s3_sub_folder, s3_output_folder) + "/" + s3_object)
         else:
             print(f"PDF not created for - {current_file}")
 
@@ -249,21 +249,21 @@ def lambda_handler(event, context):
 
     download_dir(prefix=s3_folder + "/" + s3_sub_folder + "/" + s3_document_directory, local=lambda_write_path,
                  bucket=bucket_name, client=s3_client)
-    
+
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
         folders = []
         for folder in os.listdir(sub_path := os.path.join(main_path, item)):
             stuffs = []
-            stuffs.extend([s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
-        s3_output_folder, item, sub_path, folder])
+            stuffs.extend([s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
+                           pdf_file_suffix, s3_output_folder, item, sub_path, folder])
             folders.append(stuffs)
-    
+
     with concurrent.futures.ThreadPoolExecutor() as executer:
         results_map = executer.map(process_document_folders, folders)
-    
-    if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
-        shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
-        
+
+    if os.path.exists(os.path.join(lambda_write_path, s3_folder)):
+        shutil.rmtree(os.path.join(lambda_write_path, s3_folder))
+
 
 if __name__ == "__main__":
     import time
