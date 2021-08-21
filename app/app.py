@@ -215,14 +215,16 @@ def process_document_folders(args):
                 converted = True
             except Exception as e:
                 print(e)
-        # if file_path.endswith('.db'):
-        #     try:
-        #         con=sqlite3.connect(file_path)
-        #         df=pd.read_sql_query("select * from <tablename>", con)
-        #         df.to_html(temp_file := filename + ".html")
-        #         pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name))
-        #     except Exception as e:
-        #         print(e)
+        if file_path.endswith('.db'):
+            try:
+                con=sqlite3.connect(file_path)
+                df=pd.read_sql_query("select * from <tablename>", con)
+                df.to_html(temp_file := filename + ".html")
+                pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name))
+                os.remove(temp_file)
+            except Exception as e:
+                print(e)
+                os.remove(temp_file)
 
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")

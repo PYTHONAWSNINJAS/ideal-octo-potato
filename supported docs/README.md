@@ -8,6 +8,12 @@ After you’ve built an image and before you push your image, run the docker sca
 
 <https://stackoverflow.com/questions/44108712/aws-lambda-release-tmp-storage-after-each-execution>
 
+## Links for Parallel Arch with SQS and Lambda
+
+<https://github-wiki-see.page/m/MatthewMawby/SearchIndex/wiki/Index-Behavior>
+<https://1billiontech.com/blog_Building_an_OCR_Backend_with_AWS_Textract_A_Case_Study.php>
+<https://data.solita.fi/lessons-learned-from-combining-sqs-and-lambda-in-a-data-project/>
+
 ## Fix for wkhtmltopdf: patched qt for multiple page html
 
 ```[ERROR] OSError: wkhtmltopdf reported an error:
