@@ -162,9 +162,7 @@ def process_document_folders(args):
             copyfile(file_path, pdf_file_name)
             converted = True
         if file_path.endswith(".txt"):
-            pdf_txt=get_pdf_object(10)
-            pdf_txt.cell(200, 10, txt="".join(open(file_path)))
-            pdf_txt.output(os.path.join(lambda_write_path, pdf_file_name))
+            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name))
             converted = True
         if file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
             converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
@@ -254,7 +252,7 @@ def lambda_handler(event, context):
     
     if os.path.exists(os.path.join(lambda_write_path,s3_folder)):
         shutil.rmtree(os.path.join(lambda_write_path,s3_folder))
-            
+        
 
 if __name__ == "__main__":
     import time

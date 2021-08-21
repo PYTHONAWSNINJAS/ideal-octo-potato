@@ -73,7 +73,7 @@ Note: clear the credentials and set these.
 - [ ] Test with xlrd instead of openpyxl
 - [ ] Change to cross platform tmp directory with tempfile module
 - [ ] Add db
-- [ ] Fix txt file's CRLF
+- [x] Fix txt file's CRLF
 - [ ] Add docx and doc
 - [ ] Explore docker sync
 
