@@ -71,3 +71,6 @@ Note: clear the credentials and set these.
 - [ ] Change to cross-platform tmp directory with tempfile module
 - [ ] Add docx and doc
 - [ ] Explore docker sync
+- [ ] convert_unredacted_original if present
+- [ ] replace .mif with .txt and convert
+- [ ] convert sub sub folder full marks
