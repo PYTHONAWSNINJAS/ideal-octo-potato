@@ -16,7 +16,7 @@ import shutil
 import sqlite3
 
 FILE_PATTERN_TO_IGNORE = '_small'
-
+FILE_PATTERN_TO_INCLUDE= '_unredacted_original'
 
 def download_dir(prefix, local, bucket, client):
     """
@@ -163,9 +163,16 @@ def process_document_folders(args):
         if file_path.endswith(".pdf"):
             copyfile(file_path, pdf_file_name)
             converted = True
-        if file_path.endswith(".txt"):
-            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name))
+        if file_path.endswith(".mif"):
+            copyfile(file_path, temp_file := filename + ".txt")
+            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
             converted = True
+            os.remove(temp_file)
+        if file_path.endswith(".txt"):
+            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
+            converted = True
+        if file_path.lower().endswith(".png"+FILE_PATTERN_TO_INCLUDE):
+            converted = create_pdf(file_path, lambda_write_path, filename + FILE_PATTERN_TO_INCLUDE + pdf_file_suffix + ".pdf")
         if file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
             converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
         if file_path.endswith((".pcd", ".bmp")):
@@ -179,12 +186,12 @@ def process_document_folders(args):
             if file_path.endswith("mht"):
                 copyfile(file_path, temp_file := filename + ".html")
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                 options={"enable-local-file-access": ""})
+                                 options={"enable-local-file-access": "", "quiet": ""})
             elif file_path.endswith(".csv"):
                 df = pd.read_csv(file_path)
                 df.to_html(temp_file := filename + ".html")
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                 options={"enable-local-file-access": ""})
+                                 options={"enable-local-file-access": "", "quiet": ""})
                 os.remove(temp_file)
             elif file_path.endswith((".xls", ".xlsx")):
                 temp_pdfs = []
@@ -193,13 +200,13 @@ def process_document_folders(args):
                     df = pd.read_excel(file_path, sheet_name=sheet_name)
                     df.to_html(temp_file := filename + "_" + str(sheet_name) + ".html")
                     pdfkit.from_file(temp_file, temp_pdf := filename + "_" + str(sheet_name) + ".pdf",
-                                     options={"enable-local-file-access": ""})
+                                     options={"enable-local-file-access": "", "quiet": ""})
                     temp_pdfs.append(temp_pdf)
                     os.remove(temp_file)
                 merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
             else:
                 pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
-                                 options={"enable-local-file-access": ""})
+                                 options={"enable-local-file-access": "", "quiet": ""})
             converted = True
         if file_path.endswith(".msg"):
             try:
