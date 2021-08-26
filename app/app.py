@@ -165,10 +165,13 @@ def process_document_folders(args):
                 copyfile(file_path, pdf_file_name)
                 converted = True
             elif file_path.endswith(".mif"):
-                copyfile(file_path, temp_file := ''.join([filename , ".txt"]))
-                pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
-                converted = True
-                os.remove(temp_file)
+                try:
+                    copyfile(file_path, temp_mif_file := ''.join([filename , ".txt"]))
+                    pdfkit.from_file(temp_mif_file, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
+                    converted = True
+                    os.remove(temp_mif_file)
+                except Exception as e:
+                    print(e)
             elif file_path.endswith(".txt"):
                 pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
                 converted = True
@@ -207,7 +210,14 @@ def process_document_folders(args):
                         os.remove(temp_file)
                     merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
                 else:
-                    pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name), options={"enable-local-file-access": "", "quiet": ""})
+                    try:
+                        pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name), options={"enable-local-file-access": "", "quiet": ""})
+                    except Exception as e:
+                        print(e)
+                        print("\nTrying again\n")
+                        copyfile(file_path, temp_file := ''.join([filename , ".txt"]))
+                        pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options={"quiet": ""}) 
+                        os.remove(temp_file) 
                 converted = True
             elif file_path.endswith(".msg"):
                 msg_properties = []
