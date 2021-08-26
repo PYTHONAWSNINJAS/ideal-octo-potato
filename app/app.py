@@ -154,65 +154,65 @@ def process_document_folders(args):
             continue
 
         filename, file_extension = os.path.splitext(file_path)
-        pdf_file_name = filename + pdf_file_suffix + ".pdf"
+        pdf_file_name = ''.join([filename, pdf_file_suffix, ".pdf"])
         s3_location = os.path.join(s3_folder, s3_sub_folder, item, folder)
         s3_object = pdf_file_name.split(os.sep)[-1]
-
-        if filename.endswith(FILE_PATTERN_TO_IGNORE):
-            continue
-        if file_path.endswith(".pdf"):
-            copyfile(file_path, pdf_file_name)
-            converted = True
-        if file_path.endswith(".mif"):
-            copyfile(file_path, temp_file := filename + ".txt")
-            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
-            converted = True
-            os.remove(temp_file)
-        if file_path.endswith(".txt"):
-            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
-            converted = True
-        if file_path.lower().endswith(".png"+FILE_PATTERN_TO_INCLUDE):
-            converted = create_pdf(file_path, lambda_write_path, filename + FILE_PATTERN_TO_INCLUDE + pdf_file_suffix + ".pdf")
-        if file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
-            converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
-        if file_path.endswith((".pcd", ".bmp")):
-            Image.open(file_path).save(temp_file := filename + ".png")
-            converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-        if file_path.endswith(".svg"):
-            drawing = svg2rlg(file_path, resolve_entities=True)
-            renderPM.drawToFile(drawing, temp_file := filename + ".png", fmt="PNG")
-            converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
-        if file_path.endswith((".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")):
-            if file_path.endswith("mht"):
-                copyfile(file_path, temp_file := filename + ".html")
-                pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                 options={"enable-local-file-access": "", "quiet": ""})
-            elif file_path.endswith(".csv"):
-                df = pd.read_csv(file_path)
-                df.to_html(temp_file := filename + ".html")
-                pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                 options={"enable-local-file-access": "", "quiet": ""})
+        
+        try:
+            if filename.endswith(FILE_PATTERN_TO_IGNORE):
+                continue
+            elif file_path.endswith(".pdf"):
+                copyfile(file_path, pdf_file_name)
+                converted = True
+            elif file_path.endswith(".mif"):
+                copyfile(file_path, temp_file := ''.join([filename , ".txt"]))
+                pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
+                converted = True
                 os.remove(temp_file)
-            elif file_path.endswith((".xls", ".xlsx")):
-                temp_pdfs = []
-                xls = pd.ExcelFile(file_path)
-                for sheet_name in xls.sheet_names:
-                    df = pd.read_excel(file_path, sheet_name=sheet_name)
-                    df.to_html(temp_file := filename + "_" + str(sheet_name) + ".html")
-                    pdfkit.from_file(temp_file, temp_pdf := filename + "_" + str(sheet_name) + ".pdf",
-                                     options={"enable-local-file-access": "", "quiet": ""})
-                    temp_pdfs.append(temp_pdf)
+            elif file_path.endswith(".txt"):
+                pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
+                converted = True
+            elif file_path.lower().endswith(''.join([".png" , FILE_PATTERN_TO_INCLUDE])):
+                converted = create_pdf(file_path, lambda_write_path, ''.join([filename , FILE_PATTERN_TO_INCLUDE ,
+                                                        pdf_file_suffix , ".pdf"]))
+            elif file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
+                converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
+            elif file_path.endswith((".pcd", ".bmp")):
+                Image.open(file_path).save(temp_file := ''.join([filename , ".png"]))
+                converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
+            elif file_path.endswith(".svg"):
+                drawing = svg2rlg(file_path, resolve_entities=True)
+                renderPM.drawToFile(drawing, temp_file := ''.join([filename , ".png"]), fmt="PNG")
+                converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
+            elif file_path.endswith((".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")):
+                if file_path.endswith("mht"):
+                    copyfile(file_path, temp_file := ''.join([filename , ".html"]))
+                    pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
+                                    options={"enable-local-file-access": "", "quiet": ""})
+                elif file_path.endswith(".csv"):
+                    df = pd.read_csv(file_path)
+                    df.to_html(temp_file := ''.join([filename , ".html"]))
+                    pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
+                                    options={"enable-local-file-access": "", "quiet": ""})
                     os.remove(temp_file)
-                merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
-            else:
-                pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
-                                 options={"enable-local-file-access": "", "quiet": ""})
-            converted = True
-        if file_path.endswith(".msg"):
-            try:
+                elif file_path.endswith((".xls", ".xlsx")):
+                    temp_pdfs = []
+                    xls = pd.ExcelFile(file_path)
+                    for sheet_name in xls.sheet_names:
+                        df = pd.read_excel(file_path, sheet_name=sheet_name)
+                        df.to_html(temp_file := ''.join([filename , "_" , str(sheet_name) , ".html"]))
+                        pdfkit.from_file(temp_file, temp_pdf := ''.join([filename , "_" , str(sheet_name) , ".pdf"]),
+                                        options={"enable-local-file-access": "", "quiet": ""})
+                        temp_pdfs.append(temp_pdf)
+                        os.remove(temp_file)
+                    merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
+                else:
+                    pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name), options={"enable-local-file-access": "", "quiet": ""})
+                converted = True
+            elif file_path.endswith(".msg"):
                 msg_properties = []
                 msg = extract_msg.Message(file_path)
-                msg_properties.extend([msg.date, '', 'To:' + msg.to, '', msg.subject, msg.body, 'From:' + msg.sender])
+                msg_properties.extend([msg.date, '', ''.join(['To:',msg.to]), '', msg.subject, msg.body, ''.join(['From:',msg.sender])])
 
                 pdf_email = get_pdf_object(12)
                 for i in msg_properties:
@@ -221,23 +221,20 @@ def process_document_folders(args):
 
                 pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
                 converted = True
-            except Exception as e:
-                print(e)
-        if file_path.endswith('.db'):
-            try:
+            elif file_path.endswith('.db'):
                 con = sqlite3.connect(file_path)
                 df = pd.read_sql_query("select * from <table_name>", con)
-                df.to_html(temp_file := filename + ".html")
+                df.to_html(temp_file := ''.join([filename,".html"]))
                 pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name))
                 os.remove(temp_file)
-            except Exception as e:
-                print(e)
+        
+        except Exception as e:
+            print(e)
 
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
             with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-                s3_client.upload_fileobj(data, bucket_name,
-                                         s3_location.replace(s3_sub_folder, s3_output_folder) + "/" + s3_object)
+                s3_client.upload_fileobj(data, bucket_name, ''.join([s3_location.replace(s3_sub_folder, s3_output_folder), "/",s3_object]))
         else:
             print(f"PDF not created for - {current_file}")
 
@@ -254,7 +251,7 @@ def lambda_handler(event, context):
     s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
         s3_output_folder = init()
 
-    download_dir(prefix=s3_folder + "/" + s3_sub_folder + "/" + s3_document_directory, local=lambda_write_path,
+    download_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_directory]), local=lambda_write_path,
                  bucket=bucket_name, client=s3_client)
 
     for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):

@@ -71,8 +71,7 @@ Note: clear the credentials and set these.
 - [ ] Change to cross-platform tmp directory with tempfile module
 - [ ] Add docx and doc
 - [ ] Explore docker sync
-- [x] convert_unredacted_original if present
-- [x] replace .mif with .txt and convert
 - [ ] Check if temp file removal is needed for each convertion process and can be replaced with main removal in end to reduce time.
 - [ ] pdf kit options to have common set defined in static way.
 - [ ] convert sub sub folder full marks
+- [ ] check eml files
