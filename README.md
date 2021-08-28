@@ -72,6 +72,5 @@ Note: clear the credentials and set these.
 - [ ] Add docx and doc
 - [ ] Explore docker sync
 - [ ] Check if temp file removal is needed for each convertion process and can be replaced with main removal in end to reduce time.
-- [ ] pdf kit options to have common set defined in static way.
-- [ ] convert sub sub folder full marks
-- [ ] check eml files
+- [x] convert sub sub folder full marks
+- [x] check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document. Exit with code 1, due to unknown error.
