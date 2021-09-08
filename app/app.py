@@ -121,10 +121,6 @@ def init():
 
     access_key = os.environ["ACCESS_KEY"]
     secret_key = os.environ["SECRET_KEY"]
-    bucket_name = os.environ["bucket_name"]
-    s3_folder = os.environ["s3_folder"]
-    s3_sub_folder = os.environ["s3_sub_folder"]
-    s3_document_directory = os.environ["s3_document_directory"]
     lambda_write_path = "/tmp/"
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
@@ -133,8 +129,7 @@ def init():
     s3_client = session.client(service_name="s3", endpoint_url="https://s3.amazonaws.com", region_name="us-east-1",
                                aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
-    return [s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
-            pdf_file_suffix, s3_output_folder]
+    return [s3_client, lambda_write_path, pdf_file_suffix, s3_output_folder]
 
 
 def get_pdf_object(font_size=10):
@@ -280,8 +275,19 @@ def lambda_handler(event, context):
     context: lambda context
     """
 
-    s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
-        s3_output_folder = init()
+    bucket_name = event['Records'][0]['s3']['bucket']['name']
+    folder_path = event['Records'][0]['s3']['object']['key']
+    s3_folder = folder_path.split('/')[0]
+    s3_sub_folder = folder_path.split('/')[1]
+    s3_document_directory = folder_path.split('/')[2]
+    trigger_folder = folder_path.split('/')[3]
+    print(bucket_name)
+    print(folder_path)
+    print(s3_folder)
+    print(s3_sub_folder)
+    print(s3_document_directory)
+    print(trigger_folder)
+    s3_client, lambda_write_path, pdf_file_suffix, s3_output_folder = init()
 
     download_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_directory]), local=lambda_write_path,
                  bucket=bucket_name, client=s3_client)
@@ -303,7 +309,6 @@ def lambda_handler(event, context):
 
 if __name__ == "__main__":
     import time
-
     start = time.perf_counter()
 
     if os.name == "nt":
@@ -314,7 +319,31 @@ if __name__ == "__main__":
         pytesseract.pytesseract.tesseract_cmd = r"/usr/local/Cellar/tesseract/4.1.1/bin/tesseract"  # mac
         # r"tesseract/4.1.1/bin/tesseract" #linux
 
-    lambda_handler(None, None)
+    sample_event = {
+        "Records": [
+            {
+                "s3": {
+                    "s3SchemaVersion": "1.0",
+                    "configurationId": "b31de378-237a-4e21-9a79-57578ca35c4d",
+                    "bucket": {
+                        "name": "pythonninjas",
+                        "ownerIdentity": {
+                            "principalId": "A3CLWISLM7234I"
+                        },
+                        "arn": "arn:aws:s3:::pythonninjas"
+                    },
+                    "object": {
+                        "key": "case_number/exhibits/folder1/2",
+                        "size": 2828,
+                        "eTag": "932b5dfc10358c0d5b7ebf00b9d9af00",
+                        "sequencer": "006138E3C46E08F773"
+                    }
+                }
+            }
+        ]
+    }
+
+    lambda_handler(event=sample_event, context=None)
 
     stop = time.perf_counter()
     print(f"Time Elapsed: {(stop - start)}")
