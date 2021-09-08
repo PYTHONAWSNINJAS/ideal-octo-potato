@@ -73,7 +73,5 @@ Note: clear the credentials and set these.
 - [ ] Explore docker sync
 - [ ] Check if temp file removal is needed for each convertion process and can be replaced with main removal in end to reduce time.
 - [ ] check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document. Exit with code 1, due to unknown error.
-- [x] Preprocessing to get number of objects in folder1
-- [ ] divide batches and call main lambda by passing batch range ex [0:10]
-- [ ] the main lambda uses the range and downlods only those subfolders.
-- [ ] check step functions to call dynamic lambda
+- [ ] Modify code so that it processes folder names passed as events from s3 trigger.
+- [ ] Add module to delete trigger files after processing.

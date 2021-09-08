@@ -69,3 +69,44 @@ If you cannot acquire the root shell (e.g. on an Azure/AWS Devops Agent) change 
 Fix:
 
 Not fixed yet.
+
+## Sample S3 Trigger Event
+
+{
+	"Records": [
+		{
+			"eventVersion": "2.1",
+			"eventSource": "aws:s3",
+			"awsRegion": "us-east-1",
+			"eventTime": "2021-09-08T16:24:33.654Z",
+			"eventName": "ObjectCreated:Put",
+			"userIdentity": {
+				"principalId": "AWS:AIDASSMH2D4JW5AZFC7YR"
+			},
+			"requestParameters": {
+				"sourceIPAddress": "103.249.38.2"
+			},
+			"responseElements": {
+				"x-amz-request-id": "PBGWP67G02V78TP3",
+				"x-amz-id-2": "7ZSICvfD6ReETzgiUBJQyM7kEePPx7iXC9s7o1a2nhAgu+8f82UZKJp328ZbGFpvC0czb7/VYMytJqKVguw3Py/15yBS/nAU"
+			},
+			"s3": {
+				"s3SchemaVersion": "1.0",
+				"configurationId": "b31de378-237a-4e21-9a79-57578ca35c4d",
+				"bucket": {
+					"name": "pythonninjas",
+					"ownerIdentity": {
+						"principalId": "A3CLWISLM7234I"
+					},
+					"arn": "arn:aws:s3:::pythonninjas"
+				},
+				"object": {
+					"key": "case_number/exhibits/folder1/2/index.html",
+					"size": 2828,
+					"eTag": "932b5dfc10358c0d5b7ebf00b9d9af00",
+					"sequencer": "006138E3C46E08F773"
+				}
+			}
+		}
+	]
+}
