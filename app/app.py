@@ -122,6 +122,7 @@ def init():
     access_key = os.environ["ACCESS_KEY"]
     secret_key = os.environ["SECRET_KEY"]
     lambda_write_path = "/tmp/"
+    bucket_name = os.environ["bucket_name"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 
@@ -129,7 +130,7 @@ def init():
     s3_client = session.client(service_name="s3", endpoint_url="https://s3.amazonaws.com", region_name="us-east-1",
                                aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
-    return [s3_client, lambda_write_path, pdf_file_suffix, s3_output_folder]
+    return [s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder]
 
 
 def get_pdf_object(font_size=10):
@@ -140,19 +141,18 @@ def get_pdf_object(font_size=10):
     return pdf
 
 
-def process_document_folders(args):
-    s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, \
-        s3_output_folder, item, sub_path, folder = args
-
-    for current_item in os.listdir(sub_folder_path := os.path.join(sub_path, folder)):
+def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder, trigger_folder):
+    print(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder, trigger_folder)
+    
+    for current_item in os.listdir(downloaded_folder_path:=os.path.join(lambda_write_path, s3_folder, s3_sub_folder, s3_document_directory, trigger_folder)):
         try:            
-            if os.path.isdir(file_path := os.path.join(sub_folder_path, current_item)) and file_path.endswith('full_marks'):
-                for item_in_full_marks in os.listdir(full_marks_folder := os.path.join(sub_folder_path, current_item)):
+            if os.path.isdir(file_path := os.path.join(downloaded_folder_path, current_item)) and file_path.endswith('full_marks'):
+                for item_in_full_marks in os.listdir(file_path):
                     converted=False
-                    file_path = os.path.join(full_marks_folder, item_in_full_marks)
+                    file_path = os.path.join(file_path, item_in_full_marks)
                     filename, file_extension = os.path.splitext(file_path)
                     pdf_file_name = ''.join([filename, pdf_file_suffix, ".pdf"])
-                    s3_location = os.path.join(s3_folder, s3_sub_folder, item, folder, current_item)
+                    s3_location = os.path.join(s3_folder, s3_sub_folder, s3_document_directory, trigger_folder, current_item)
                     s3_object = pdf_file_name.split(os.sep)[-1]
                     
                     if filename.endswith(FILE_PATTERN_TO_IGNORE):
@@ -169,7 +169,7 @@ def process_document_folders(args):
                 converted=False
                 filename, file_extension = os.path.splitext(file_path)
                 pdf_file_name = ''.join([filename, pdf_file_suffix, ".pdf"])
-                s3_location = os.path.join(s3_folder, s3_sub_folder, item, folder)
+                s3_location = os.path.join(s3_folder, s3_sub_folder, s3_document_directory, trigger_folder)
                 s3_object = pdf_file_name.split(os.sep)[-1]
         
                 print(f"\nProcessing {file_path}")
@@ -275,37 +275,21 @@ def lambda_handler(event, context):
     context: lambda context
     """
 
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
+    trigger_bucket_name = event['Records'][0]['s3']['bucket']['name']
     folder_path = event['Records'][0]['s3']['object']['key']
     s3_folder = folder_path.split('/')[0]
     s3_sub_folder = folder_path.split('/')[1]
     s3_document_directory = folder_path.split('/')[2]
     trigger_folder = folder_path.split('/')[3]
-    print(bucket_name)
-    print(folder_path)
-    print(s3_folder)
-    print(s3_sub_folder)
-    print(s3_document_directory)
-    print(trigger_folder)
-    s3_client, lambda_write_path, pdf_file_suffix, s3_output_folder = init()
+    
+    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder = init()
 
-    download_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_directory]), local=lambda_write_path,
+    download_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_directory,"/",trigger_folder]),
+                 local=lambda_write_path,
                  bucket=bucket_name, client=s3_client)
-
-    for item in os.listdir(main_path := os.path.abspath(os.path.join(lambda_write_path, s3_folder, s3_sub_folder))):
-        folders = []
-        for folder in os.listdir(sub_path := os.path.join(main_path, item)):
-            stuffs = []
-            stuffs.extend([s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
-                           pdf_file_suffix, s3_output_folder, item, sub_path, folder])
-            folders.append(stuffs)
-
-    with concurrent.futures.ThreadPoolExecutor() as executer:
-        results_map = executer.map(process_document_folders, folders)
-
-    if os.path.exists(os.path.join(lambda_write_path, s3_folder)):
-        shutil.rmtree(os.path.join(lambda_write_path, s3_folder))
-
+    
+    process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,pdf_file_suffix, s3_output_folder, trigger_folder)
+    s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
 
 if __name__ == "__main__":
     import time
@@ -326,14 +310,14 @@ if __name__ == "__main__":
                     "s3SchemaVersion": "1.0",
                     "configurationId": "b31de378-237a-4e21-9a79-57578ca35c4d",
                     "bucket": {
-                        "name": "pythonninjas",
+                        "name": "trigger-bucket-11",
                         "ownerIdentity": {
                             "principalId": "A3CLWISLM7234I"
                         },
-                        "arn": "arn:aws:s3:::pythonninjas"
+                        "arn": "arn:aws:s3:::trigger-bucket-11"
                     },
                     "object": {
-                        "key": "case_number/exhibits/folder1/2",
+                        "key": "case_number/exhibits/folder1/1",
                         "size": 2828,
                         "eTag": "932b5dfc10358c0d5b7ebf00b9d9af00",
                         "sequencer": "006138E3C46E08F773"
