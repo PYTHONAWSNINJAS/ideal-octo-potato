@@ -10,7 +10,6 @@ from PIL import Image
 from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
-import concurrent.futures
 import extract_msg
 import shutil
 import sqlite3
