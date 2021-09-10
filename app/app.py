@@ -141,8 +141,6 @@ def get_pdf_object(font_size=10):
 
 
 def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder, trigger_folder):
-    print(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder, trigger_folder)
-    
     for current_item in os.listdir(downloaded_folder_path:=os.path.join(lambda_write_path, s3_folder, s3_sub_folder, s3_document_directory, trigger_folder)):
         try:            
             if os.path.isdir(file_path := os.path.join(downloaded_folder_path, current_item)) and file_path.endswith('full_marks'):
@@ -187,7 +185,12 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                     except Exception as e:
                         print(e)
                 elif file_path.endswith(".txt"):
-                    pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
+                    pdf_txt = get_pdf_object(10)                    
+                    with open(file_path, "r") as f:
+                        lines = f.readlines()                        
+                    for line in lines:
+                        pdf_txt.write(5, str(line))
+                    pdf_txt.output(os.path.join(lambda_write_path, pdf_file_name)) 
                     converted = True
                 elif file_path.lower().endswith(''.join([".png" , FILE_PATTERN_TO_INCLUDE])):
                     copyfile(file_path, temp_unredacted_file := ''.join([filename , FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".png"]))
@@ -316,7 +319,7 @@ if __name__ == "__main__":
                         "arn": "arn:aws:s3:::trigger-bucket-11"
                     },
                     "object": {
-                        "key": "case_number/exhibits/folder1/1",
+                        "key": "case_number/exhibits/folder1/3",
                         "size": 2828,
                         "eTag": "932b5dfc10358c0d5b7ebf00b9d9af00",
                         "sequencer": "006138E3C46E08F773"
