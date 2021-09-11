@@ -11,7 +11,6 @@ from PyPDF2 import PdfFileMerger
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 import extract_msg
-import shutil
 import sqlite3
 
 FILE_PATTERN_TO_IGNORE = '_small'
@@ -141,6 +140,20 @@ def get_pdf_object(font_size=10):
 
 
 def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path, pdf_file_suffix, s3_output_folder, trigger_folder):
+    """
+    This will process all files in the Trigger folder in a loop and put into Main S3.
+
+    Args:
+        s3_client boto3 object: S3 Session Client Object
+        bucket_name str: main s3 bucket name
+        s3_folder str: s3 folder i.e case_number
+        s3_sub_folder str: s3 subfolder i.e exhibits
+        s3_document_directory str: s3 document directory i.e document folder
+        lambda_write_path str: lambda_write_path i.e /tmp
+        pdf_file_suffix str: pdf file suffix value i.e _dv
+        s3_output_folder str: S3 output folder i.e doc_pdf
+        trigger_folder str: the trigger folder in main S3 for which the process will be executed.
+    """    
     for current_item in os.listdir(downloaded_folder_path:=os.path.join(lambda_write_path, s3_folder, s3_sub_folder, s3_document_directory, trigger_folder)):
         try:            
             if os.path.isdir(file_path := os.path.join(downloaded_folder_path, current_item)) and file_path.endswith('full_marks'):
@@ -310,19 +323,19 @@ if __name__ == "__main__":
             {
                 "s3": {
                     "s3SchemaVersion": "1.0",
-                    "configurationId": "b31de378-237a-4e21-9a79-57578ca35c4d",
+                    "configurationId": "",
                     "bucket": {
                         "name": "trigger-bucket-11",
                         "ownerIdentity": {
-                            "principalId": "A3CLWISLM7234I"
+                            "principalId": ""
                         },
                         "arn": "arn:aws:s3:::trigger-bucket-11"
                     },
                     "object": {
                         "key": "case_number/exhibits/folder1/3",
-                        "size": 2828,
-                        "eTag": "932b5dfc10358c0d5b7ebf00b9d9af00",
-                        "sequencer": "006138E3C46E08F773"
+                        "size": 1,
+                        "eTag": "",
+                        "sequencer": ""
                     }
                 }
             }
