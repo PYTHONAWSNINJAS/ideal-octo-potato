@@ -118,7 +118,7 @@ def init():
     """
 
     lambda_write_path = "/tmp/"
-    main_s3_bucket = os.environ["bucket_name"]
+    main_s3_bucket = os.environ["main_s3_bucket"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 

@@ -34,10 +34,10 @@ def place_trigger_files(bucket, files):
     
 def lambda_handler(event, context):
     s3_folder="case_number"
-    s3_sub_folder="exhibits"
+    s3_sub_folder=os.environ["s3_sub_folder"]
     s3_document_folder="folder1"
-    main_s3_bucket="pythonninjas"
-    trigger_s3_bucket="trigger-bucket-11"
+    main_s3_bucket=os.environ["main_s3_bucket"]
+    trigger_s3_bucket=os.environ["trigger_s3_bucket"]
     
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
