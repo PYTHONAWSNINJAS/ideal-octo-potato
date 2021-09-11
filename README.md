@@ -73,3 +73,4 @@ Note: clear the credentials and set these.
 - [ ] Check if temp file removal is needed for each convertion process and can be replaced with main removal in end to reduce time.
 - [ ] check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document. Exit with code 1, due to unknown error.
 - [ ] Check and optimise the flow, names and deletion activities.
+- [ ] Modify the preprocessing lambda for case level so that it can generate trigger files in the same fashion. (No change in main lambda.) The main lambda will still trigger for each folder.
