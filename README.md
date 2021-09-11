@@ -65,7 +65,6 @@ Note: clear the credentials and set these.
 
 ## ToDo
 
-- [ ] Solve the limit of 512 MB in /tmp in aws lambda. Explore File System option in AWS Lambda to avoid tmp 512 MB limit if required.
 - [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
 - [ ] Change to cross-platform tmp directory with tempfile module
@@ -74,4 +73,3 @@ Note: clear the credentials and set these.
 - [ ] Check if temp file removal is needed for each convertion process and can be replaced with main removal in end to reduce time.
 - [ ] check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document. Exit with code 1, due to unknown error.
 - [ ] Check and optimise the flow, names and deletion activities.
-- [ ] Find a package for txt to pdf for large files.
