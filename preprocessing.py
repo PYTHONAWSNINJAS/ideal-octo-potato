@@ -35,16 +35,15 @@ def place_trigger_files(bucket, files):
 def lambda_handler(event, context):
     s3_folder="case_number"
     s3_sub_folder="exhibits"
-    s3_document_directory="folder1"
-    main_bucket_name="pythonninjas"
-    trigger_bucket_name="trigger-bucket-11"
+    s3_document_folder="folder1"
+    main_s3_bucket="pythonninjas"
+    trigger_s3_bucket="trigger-bucket-11"
     
     session = boto3.Session()
-    s3_client = session.client(service_name="s3", endpoint_url="https://s3.amazonaws.com", region_name="us-east-1",
-                               aws_access_key_id="", aws_secret_access_key="")
+    s3_client = session.client(service_name="s3")
     
-    files = list_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_directory]), local="/tmp", bucket=main_bucket_name, client=s3_client)
-    place_trigger_files(bucket=trigger_bucket_name, files=files)
+    files = list_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_folder]), local="/tmp", bucket=main_s3_bucket, client=s3_client)
+    place_trigger_files(bucket=trigger_s3_bucket, files=files)
     
     return {
         'statusCode': 200,

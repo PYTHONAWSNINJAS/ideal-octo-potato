@@ -117,18 +117,15 @@ def init():
 
     """
 
-    access_key = os.environ["ACCESS_KEY"]
-    secret_key = os.environ["SECRET_KEY"]
     lambda_write_path = "/tmp/"
-    bucket_name = os.environ["bucket_name"]
+    main_s3_bucket = os.environ["bucket_name"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 
     session = boto3.Session()
-    s3_client = session.client(service_name="s3", endpoint_url="https://s3.amazonaws.com", region_name="us-east-1",
-                               aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    s3_client = session.client(service_name="s3")
 
-    return [s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder]
+    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder]
 
 
 def get_pdf_object(font_size=10):
