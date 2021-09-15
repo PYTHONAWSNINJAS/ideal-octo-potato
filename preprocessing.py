@@ -33,19 +33,31 @@ def place_trigger_files(bucket, files):
         client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
     
 def lambda_handler(event, context):
-    s3_folder=json.loads(event['body'])['s3_folder']
-    s3_sub_folder=os.environ["s3_sub_folder"]
-    s3_document_folder=json.loads(event['body'])['s3_document_folder']
-    main_s3_bucket=os.environ["main_s3_bucket"]
-    trigger_s3_bucket=os.environ["trigger_s3_bucket"]
-    
-    session = boto3.Session()
-    s3_client = session.client(service_name="s3")
-    
-    files = list_dir(prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_folder]), local="/tmp", bucket=main_s3_bucket, client=s3_client)
-    place_trigger_files(bucket=trigger_s3_bucket, files=files)
-    
-    return {
-        'statusCode': 200,
-        'body': "Done"
-    }
+    try:
+        s3_sub_folder=os.environ["s3_sub_folder"]
+        main_s3_bucket=os.environ["main_s3_bucket"]
+        trigger_s3_bucket=os.environ["trigger_s3_bucket"]
+        processing_type=json.loads(event['body'])['processing_type']
+        session = boto3.Session()
+        s3_client = session.client(service_name="s3")
+        
+        if processing_type == 'case_level':
+            s3_folder=json.loads(event['body'])['s3_folder']
+            prefix=''.join([s3_folder,"/",s3_sub_folder])
+        elif processing_type == 'doc_level':      
+            s3_folder=json.loads(event['body'])['s3_folder']        
+            s3_document_folder=json.loads(event['body'])['s3_document_folder']
+            prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_folder])
+        
+        
+        files = list_dir(prefix=prefix, local="/tmp", bucket=main_s3_bucket, client=s3_client)
+        place_trigger_files(bucket=trigger_s3_bucket, files=files)
+        return {
+            'statusCode': 200,
+            'body': "Triggered"
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': str(e)
+        }
