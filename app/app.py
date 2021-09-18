@@ -1,5 +1,5 @@
 import os
-from shutil import copyfile
+from shutil import copyfile,rmtree
 
 import boto3
 import pandas as pd
@@ -60,7 +60,7 @@ def download_dir(prefix, local, bucket, client):
         client.download_file(bucket, k, destination_pathname)
 
 
-def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
+def create_pdf(file_path, lambda_write_path, pdf_file_name):
     """
 
     Parameters
@@ -68,7 +68,6 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
     file_path: file path of the image
     lambda_write_path: output path of the pdf file
     pdf_file_name: name of the output pdf file
-    temp_file: temp file if True, file_path will be deleted
 
     Returns True if the pdf file is created
     -------
@@ -78,9 +77,6 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name, temp_file=False):
         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path, extension="pdf")
         with open(os.path.join(lambda_write_path, pdf_file_name), "w+b") as f:
             f.write(pdf_png)
-        if temp_file:
-            print(f"removing temp file {file_path}")
-            os.remove(file_path)
         return True
     except Exception as e:
         print(e)
@@ -103,9 +99,6 @@ def merge_pdf(pdfs, filename):
 
     merger.write(filename)
     merger.close()
-
-    for pdf_file in pdfs:
-        os.remove(pdf_file)
 
 
 def init():
@@ -191,7 +184,6 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                         copyfile(file_path, temp_mif_file := ''.join([filename , ".txt"]))
                         pdfkit.from_file(temp_mif_file, os.path.join(lambda_write_path, pdf_file_name),options = {'quiet': ''})
                         converted = True
-                        os.remove(temp_mif_file)
                     except Exception as e:
                         print(e)
                 elif file_path.endswith(".txt"):
@@ -226,7 +218,6 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                         df.to_html(temp_file := ''.join([filename , ".html"]))
                         pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
                                         options={"enable-local-file-access": "", "quiet": ""})
-                        os.remove(temp_file)
                     elif file_path.endswith((".xls", ".xlsx")):
                         temp_pdfs = []
                         xls = pd.ExcelFile(file_path)
@@ -236,7 +227,6 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                             pdfkit.from_file(temp_file, temp_pdf := ''.join([filename , "_" , str(sheet_name) , ".pdf"]),
                                             options={"enable-local-file-access": "", "quiet": ""})
                             temp_pdfs.append(temp_pdf)
-                            os.remove(temp_file)
                         merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
                     else:
                         try:
@@ -246,7 +236,6 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                             print("\nTrying again\n")
                             copyfile(file_path, temp_file := ''.join([filename , ".txt"]))
                             pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name), options={"quiet": ""}) 
-                            os.remove(temp_file) 
                     converted = True
                 elif file_path.endswith(".msg"):
                     msg_properties = []
@@ -265,7 +254,6 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                     df = pd.read_sql_query("select * from <table_name>", con)
                     df.to_html(temp_file := ''.join([filename,".html"]))
                     pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name))
-                    os.remove(temp_file)
         
         except Exception as e:
             print(e)
@@ -301,46 +289,6 @@ def lambda_handler(event, context):
                  bucket=bucket_name, client=s3_client)
     
     process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,pdf_file_suffix, s3_output_folder, trigger_folder)
+    rmtree(lambda_write_path+s3_folder)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
-
-if __name__ == "__main__":
-    import time
-    start = time.perf_counter()
-
-    if os.name == "nt":
-        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-        path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-        config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-    else:
-        pytesseract.pytesseract.tesseract_cmd = r"/usr/local/Cellar/tesseract/4.1.1/bin/tesseract"  # mac
-        # r"tesseract/4.1.1/bin/tesseract" #linux
-
-    sample_event = {
-        "Records": [
-            {
-                "s3": {
-                    "s3SchemaVersion": "1.0",
-                    "configurationId": "",
-                    "bucket": {
-                        "name": "trigger-bucket-11",
-                        "ownerIdentity": {
-                            "principalId": ""
-                        },
-                        "arn": "arn:aws:s3:::trigger-bucket-11"
-                    },
-                    "object": {
-                        "key": "case_number/exhibits/folder1/3",
-                        "size": 1,
-                        "eTag": "",
-                        "sequencer": ""
-                    }
-                }
-            }
-        ]
-    }
-
-    lambda_handler(event=sample_event, context=None)
-
-    stop = time.perf_counter()
-    print(f"Time Elapsed: {(stop - start)}")
-    print("─" * int(os.get_terminal_size().columns))
+    
