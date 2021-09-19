@@ -1,0 +1,15 @@
+{
+    "case":"case_number",
+    "exhibit_id":"3",
+    "files":[
+        {
+            "source":"case_number/doc_pdf/folder1/3/file-sample_150kB_dv.pdf"
+        },
+        {
+            "source":"case_number/doc_pdf/folder1/3/file_dv.pdf"
+        },
+        {
+            "source":"case_number/doc_pdf/folder1/3/Microsoft_Outlook_Test_Message_dv.pdf"
+        }
+    ]
+}
