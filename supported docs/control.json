@@ -1,6 +1,6 @@
 {
     "case":"case_number",
-    "exhibit_id":"3",
+    "exhibit_id":"folder1",
     "files":[
         {
             "source":"case_number/doc_pdf/folder1/3/file-sample_150kB_dv.pdf"
@@ -10,6 +10,18 @@
         },
         {
             "source":"case_number/doc_pdf/folder1/3/Microsoft_Outlook_Test_Message_dv.pdf"
+        },
+        {
+            "source":"case_number/doc_pdf/folder1/4/1_dv.pdf"
+        },
+        {
+            "source":"case_number/doc_pdf/folder1/4/Capture_dv.pdf"
+        },
+        {
+            "source":"case_number/doc_pdf/folder1/4/requirements_dv.pdf"
+        },
+        {
+            "source":"case_number/doc_pdf/folder1/4/Test_Message_dv.pdf"
         }
     ]
 }
