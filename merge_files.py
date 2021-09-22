@@ -38,6 +38,22 @@ def merge_pdf(pdfs, filename):
     merger.write(filename)
     merger.close()
 
+def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_path, pdf_file_suffix):
+    pdf_file_name = file_type+pdf_file_suffix+'.pdf'
+    pdfs = []
+    for item in data['files']:
+        file = item[file_type].split('/')[-1]
+        filename, file_extension = os.path.splitext(file)
+        print(f"downloading {file}")
+        s3_client.download_file(bucket_name, item[file_type], lambda_write_path+file)
+        pdfs.append(lambda_write_path+file)
+
+    merge_pdf(pdfs, lambda_write_path+pdf_file_name)
+
+    print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
+    with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
+        s3_client.upload_fileobj(data, bucket_name, 'case_number/doc_pdf/'+exhibit_id+'/'+pdf_file_name)
+
 def lambda_handler(event, context):
     """
 
@@ -52,20 +68,9 @@ def lambda_handler(event, context):
         s3_clientobj = s3_client.get_object(Bucket=bucket_name, Key='case_number/doc_pdf/control.json')
         data = json.loads(s3_clientobj['Body'].read().decode('utf-8'))
         exhibit_id = data['exhibit_id']
-        pdf_file_name = exhibit_id+'.pdf'
-        pdfs = []
-        for item in data['files']:
-            file = item['source'].split('/')[-1]
-            filename, file_extension = os.path.splitext(file)
-            print(f"downloading {file}")
-            s3_client.download_file(bucket_name, item['source'], lambda_write_path+file)
-            pdfs.append(lambda_write_path+file)
-
-        merge_pdf(pdfs, lambda_write_path+pdf_file_name)
-
-        print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
-        with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-            s3_client.upload_fileobj(data, bucket_name, 'case_number/doc_pdf/'+exhibit_id+'/'+pdf_file_name)
+        
+        for file_type in ['source','current']:
+            process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_path, pdf_file_suffix)
         return {
                 'statusCode': 200,
                 'body': "Merged"
