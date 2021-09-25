@@ -77,36 +77,3 @@ Note: clear the credentials and set these.
 Use tempfile and create a log and put all info in the file.
 Transfer the file to S3 in 2021/09/16/TriggerFolderName.log 
 ```
-- [ ] Stitching all pdf files based on control file -  format
-
-```
-TBD
-{
-    "1011":{
-        "1600094973-2055.47140682846840":[
-            {
-                "page1":"file_1"
-            },
-            {
-                "page2":"file_2"
-            }
-        
-        ],
-        "1600094973-2055.47140682846841":[
-            {
-                "page1":"file_3"
-            },
-            {
-                "page2":"file_4"
-            }
-        
-        ]
-    },
-    "10452":[
-
-    ],
-    "115":[
-
-    ]
-}
-```
