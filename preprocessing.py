@@ -3,7 +3,7 @@ import boto3
 import os
 import traceback
 
-def list_dir(prefix, local, bucket, client):
+def list_dir(prefix, bucket, client):
     keys = []
     next_token = ""
     base_kwargs = {
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
             s3_document_folder=json.loads(event['body'])['s3_document_folder']
             prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_folder])
         
-        files = list_dir(prefix=prefix, local="/tmp", bucket=main_s3_bucket, client=s3_client)
+        files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
         
         doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(files))
         place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
