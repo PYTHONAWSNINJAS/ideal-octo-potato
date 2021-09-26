@@ -113,13 +113,14 @@ def init():
 
     lambda_write_path = "/tmp/"
     main_s3_bucket = os.environ["main_s3_bucket"]
+    metadata_s3_bucket=os.environ["metadata_s3_bucket"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
 
-    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder]
+    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket]
 
 
 def get_pdf_object(font_size=10):
@@ -279,6 +280,35 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
             print(f"PDF not created for - {current_item}")
 
 
+def list_dir(prefix, bucket, client):
+    keys = []
+    next_token = ""
+    base_kwargs = {
+        "Bucket": bucket,
+        "Prefix": prefix,
+    }
+    while next_token is not None:
+        kwargs = base_kwargs.copy()
+        if next_token != "":
+            kwargs.update({"ContinuationToken": next_token})
+        results = client.list_objects_v2(**kwargs)
+        contents = results.get("Contents")
+        for i in contents:
+            k = i.get("Key")
+            if k[-1] != "/":
+                keys.append(k)
+        next_token = results.get("NextContinuationToken")
+    return keys
+
+
+def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
+    objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
+    meta_data_object = objects[0]
+    total_no_of_trigger_files = int(meta_data_object.split('/')[-1].split('_')[1])
+    print("meta_data_object -", meta_data_object)
+    print("total_no_of_trigger_files -",total_no_of_trigger_files)
+    return total_no_of_trigger_files
+
 def lambda_handler(event, context):
     """
 
@@ -295,7 +325,7 @@ def lambda_handler(event, context):
     s3_document_folder = folder_path.split('/')[2]
     trigger_folder = folder_path.split('/')[3]
 
-    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder = init()
+    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket = init()
 
     download_dir(prefix=''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/", trigger_folder]),
                  local=lambda_write_path,
@@ -305,3 +335,55 @@ def lambda_handler(event, context):
                              pdf_file_suffix, s3_output_folder, trigger_folder)
     rmtree(lambda_write_path + s3_folder)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
+    
+    meta_data_object_folder = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+    ## to be deleted ##
+    metadata_s3_bucket="metadata-bucket-11"
+    print("meta_data_object_folder -", meta_data_object_folder)
+    session = boto3.Session()
+    s3_client = session.client(service_name="s3")
+    ## to be deleted ##
+    total_no_of_trigger_files = fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket)
+
+if __name__ == "__main__":
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    event = {
+        "Records":[
+        {
+            "eventVersion":"2.1",
+            "eventSource":"aws:s3",
+            "awsRegion":"us-east-1",
+            "eventTime":"2021-09-26T20:10:59.214Z",
+            "eventName":"ObjectCreated:Put",
+            "userIdentity":{
+                "principalId":"AWS:AROASSMH2D4J46RZETIQY:Preprocessing"
+            },
+            "requestParameters":{
+                "sourceIPAddress":"54.205.27.107"
+            },
+            "responseElements":{
+                "x-amz-request-id":"52YZ4KT96ZXQVHFP",
+                "x-amz-id-2":"Z/zFYWp5Cs5GhSuaVGoT6stx1VaDATXPaubDXwVZ95Vaa6uXw3HM71TGcTPwRwTU5+PxfWFVN9TQIsUAQkWtlRr89RVGH2ES"
+            },
+            "s3":{
+                "s3SchemaVersion":"1.0",
+                "configurationId":"dd241d3d-da50-40b8-8587-b3ab8bb2b1da",
+                "bucket":{
+                    "name":"trigger-bucket-11",
+                    "ownerIdentity":{
+                    "principalId":"A3CLWISLM7234I"
+                    },
+                    "arn":"arn:aws:s3:::trigger-bucket-11"
+                },
+                "object":{
+                    "key":"case_number/exhibits/folder1/3",
+                    "size":0,
+                    "eTag":"d41d8cd98f00b204e9800998ecf8427e",
+                    "sequencer":"006150D3DAC97C058B"
+                }
+            }
+        }
+        ]
+    }
+    lambda_handler(event, None)
+    
