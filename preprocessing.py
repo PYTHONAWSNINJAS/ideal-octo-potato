@@ -27,9 +27,8 @@ def extract_folder_paths(files):
     folders = list(set([folder.rpartition('/')[0] if folder.endswith('full_marks') else folder for folder in (file.rpartition('/')[0] for file in files)]))
     return folders
 
-def place_trigger_files(bucket, files):
+def place_trigger_files(bucket, folders):
     client = boto3.client('s3')
-    folders = extract_folder_paths(files)
     for trigger_folder in folders:
         client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
 
@@ -56,10 +55,10 @@ def lambda_handler(event, context):
             prefix=''.join([s3_folder,"/",s3_sub_folder,"/",s3_document_folder])
         
         files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-        
-        doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(files))
+        trigger_folders = extract_folder_paths(files)
+        doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
         place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
-        place_trigger_files(bucket=trigger_s3_bucket, files=files)
+        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
         
         return {
             'statusCode': 200,
