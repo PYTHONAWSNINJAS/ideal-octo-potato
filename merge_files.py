@@ -38,7 +38,7 @@ def merge_pdf(pdfs, filename):
     merger.write(filename)
     merger.close()
 
-def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_path, pdf_file_suffix):
+def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_folder):
     pdf_file_name = file_type+pdf_file_suffix+'.pdf'
     pdfs = []
     for item in data['files']:
@@ -52,7 +52,7 @@ def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_pa
 
     print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
     with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-        s3_client.upload_fileobj(data, bucket_name, 'case_number/doc_pdf/'+exhibit_id+'/'+pdf_file_name)
+        s3_client.upload_fileobj(data, bucket_name, s3_folder+'/doc_pdf/'+exhibit_id+'/'+pdf_file_name)
 
 def lambda_handler(event, context):
     """
@@ -64,6 +64,7 @@ def lambda_handler(event, context):
     """ 
     trigger_bucket_name = event['Records'][0]['s3']['bucket']['name']
     control_file = event['Records'][0]['s3']['object']['key']
+    s3_folder = control_file.split('/')[0]
     try:
         s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix = init()
         
@@ -72,7 +73,7 @@ def lambda_handler(event, context):
         exhibit_id = data['exhibit_id']
         
         for file_type in ['source','current']:
-            process(file_type, exhibit_id, data, s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix)
+            process(file_type, exhibit_id, data, s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_folder)
         
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
         return {
