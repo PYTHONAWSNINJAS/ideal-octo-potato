@@ -62,15 +62,19 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """ 
+    trigger_bucket_name = event['Records'][0]['s3']['bucket']['name']
+    control_file = event['Records'][0]['s3']['object']['key']
     try:
-        s3_client, bucket_name, lambda_write_path, pdf_file_suffix = init()
+        s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix = init()
         
-        s3_clientobj = s3_client.get_object(Bucket=bucket_name, Key='case_number/doc_pdf/control.json')
+        s3_clientobj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_clientobj['Body'].read().decode('utf-8'))
         exhibit_id = data['exhibit_id']
         
         for file_type in ['source','current']:
-            process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_path, pdf_file_suffix)
+            process(file_type, exhibit_id, data, s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix)
+        
+        s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
         return {
                 'statusCode': 200,
                 'body': "Merged"
