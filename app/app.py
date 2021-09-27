@@ -114,13 +114,14 @@ def init():
     lambda_write_path = "/tmp/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     metadata_s3_bucket=os.environ["metadata_s3_bucket"]
+    merge_trigger_bucket=os.environ["merge_trigger_bucket"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
 
-    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket]
+    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket, merge_trigger_bucket]
 
 
 def get_pdf_object(font_size=10):
@@ -302,13 +303,33 @@ def list_dir(prefix, bucket, client):
 
 
 def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
+    pattern_to_look = meta_data_object_folder.split('/')[-2]
     objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
-    meta_data_object = objects[0]
+    meta_data_object = [item for item in objects if item.split('/')[-1].startswith(pattern_to_look)][0]
     total_no_of_trigger_files = int(meta_data_object.split('/')[-1].split('_')[1])
     print("meta_data_object -", meta_data_object)
     print("total_no_of_trigger_files -",total_no_of_trigger_files)
     return total_no_of_trigger_files
 
+def create_success_file(s3_client, bucket, file):
+    print("Creating Success Files")
+    s3_client.put_object(Body="", Bucket=bucket, Key=file)
+
+def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
+    objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
+    success_objects = [item for item in objects if item.split('/')[-1].startswith('Success')]
+    return len(success_objects)
+
+def create_merge_trigger_file(s3_client, bucket, file):
+    print("Creating Merge Trigger File")
+    s3_client.put_object(Body="", Bucket=bucket, Key=file)
+
+def remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder):
+    objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
+    print("Removing Objects")
+    for item in objects:
+        s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)
+    
 def lambda_handler(event, context):
     """
 
@@ -325,7 +346,7 @@ def lambda_handler(event, context):
     s3_document_folder = folder_path.split('/')[2]
     trigger_folder = folder_path.split('/')[3]
 
-    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket = init()
+    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket, merge_trigger_bucket = init()
 
     download_dir(prefix=''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/", trigger_folder]),
                  local=lambda_write_path,
@@ -337,13 +358,17 @@ def lambda_handler(event, context):
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
     
     meta_data_object_folder = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
-    ## to be deleted ##
-    metadata_s3_bucket="metadata-bucket-11"
     print("meta_data_object_folder -", meta_data_object_folder)
-    session = boto3.Session()
-    s3_client = session.client(service_name="s3")
-    ## to be deleted ##
     total_no_of_trigger_files = fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket)
+    create_success_file(s3_client, metadata_s3_bucket, meta_data_object_folder+"Success_"+trigger_folder)
+    no_of_success_files = count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder)
+    if no_of_success_files == total_no_of_trigger_files:
+        merge_trigger_file = ''.join([s3_folder, "/", s3_output_folder, "/", "control_files", "/", s3_document_folder, ".json"])
+        print("merge_trigger_file -", merge_trigger_file)
+        create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
+        remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder)
+        
+            
 
 if __name__ == "__main__":
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
