@@ -65,6 +65,8 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
+    prefix = ""
+    s3_document_folder = ""
     try:
         s3_sub_folder = os.environ["s3_sub_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
