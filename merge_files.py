@@ -1,3 +1,9 @@
+"""
+This module will merge files based on control files placed in S3 folder under doc_pdf.
+This will generate two pdf documents based on current and source keys in control file.
+The control file has paths to the converted pdfs that needs to be merged.
+"""
+
 import json
 import os
 
@@ -43,6 +49,19 @@ def merge_pdf(pdfs, filename):
 
 
 def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_folder):
+    """
+
+    Parameters
+    ----------
+    file_type: source / current file type
+    exhibit_id: name of the folder
+    data: control file content
+    s3_client: s3 object
+    bucket_name: bucket name
+    lambda_write_path: lambda path /tmp
+    pdf_file_suffix: _dv
+    s3_folder: the upload location of the merged file
+    """
     pdf_file_name = file_type + pdf_file_suffix + '.pdf'
     pdfs = []
     for item in data['files']:
@@ -73,8 +92,8 @@ def lambda_handler(event, context):
     try:
         s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix = init()
 
-        s3_clientobj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
-        data = json.loads(s3_clientobj['Body'].read().decode('utf-8'))
+        s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
+        data = json.loads(s3_client_obj['Body'].read().decode('utf-8'))
         exhibit_id = data['exhibit_id']
 
         for file_type in ['source', 'current']:
