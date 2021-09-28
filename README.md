@@ -65,15 +65,11 @@ Note: clear the credentials and set these.
 
 ## ToDo
 
-- [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
 - [ ] Change to cross-platform tmp directory with tempfile module
 - [ ] Add docx and doc
 - [ ] Explore docker sync
-- [ ] check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document. Exit with code 1, due to unknown error.
+- [ ] Check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more than one input document. Exit with code 1, due to unknown error.
 - [ ] Check and optimise the flow, names and deletion activities.
-- [ ] Add log creation to S3 based on trigger folder 
-```
-Use tempfile and create a log and put all info in the file.
-Transfer the file to S3 in 2021/09/16/TriggerFolderName.log 
-```
+- [ ] Add log creation to S3 based on trigger folder. Use tempfile and create a log and put all info in the file. Transfer the file to S3 in 2021/09/16/TriggerFolderName.log
+- [ ] UI to trigger separate lambda in case of Case level, This lambda is supposed to list all the s3_document_folders inside the Case Level and hit the preprocessing in a loop.
