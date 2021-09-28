@@ -10,12 +10,14 @@ print("done.")
 
 print("logging in aws ecr...")
 os.system(
-    "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin " + aws_account_id + ".dkr.ecr.us-east-1.amazonaws.com")
+    "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin " + aws_account_id +
+    ".dkr.ecr.us-east-1.amazonaws.com")
 print("done.")
 
 print("tagging...")
 os.system(
-    "docker tag " + docker_image_name + ":latest " + aws_account_id + ".dkr.ecr.us-east-1.amazonaws.com/" + ecr_repository_name)
+    "docker tag " + docker_image_name + ":latest " + aws_account_id + ".dkr.ecr.us-east-1.amazonaws.com/" +
+    ecr_repository_name)
 print("done.")
 
 print("pushing to ecr...")
