@@ -1,3 +1,10 @@
+"""
+This module is triggered based on files placed in trigger S3 bucket. The trigger files corresponds to each folder in
+main s3 where the documents are placed.
+The files in the folder are converted in a loop and stored in doc_pdf.
+A Success file is created in Merge Trigger Once the process is done.
+"""
+
 import os
 import sqlite3
 from shutil import copyfile, rmtree
@@ -152,7 +159,7 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
         s3_client boto3 object: S3 Session Client Object
         bucket_name str: main s3 bucket name
         s3_folder str: s3 folder i.e case_number
-        s3_sub_folder str: s3 subfolder i.e exhibits
+        s3_sub_folder str: s3 sub folder i.e exhibits
         s3_document_directory str: s3 document directory i.e document folder
         lambda_write_path str: lambda_write_path i.e /tmp
         pdf_file_suffix str: pdf file suffix value i.e _dv
@@ -162,6 +169,10 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
     for current_item in os.listdir(
             downloaded_folder_path := os.path.join(lambda_write_path, s3_folder, s3_sub_folder, s3_document_directory,
                                                    trigger_folder)):
+        converted = ""
+        pdf_file_name = ""
+        s3_location = ""
+        s3_object = ""
         try:
             if os.path.isdir(file_path := os.path.join(downloaded_folder_path, current_item)) and file_path.endswith(
                     'full_marks'):
@@ -350,22 +361,59 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
 
 
 def create_success_file(s3_client, bucket, file):
+    """
+
+    Parameters
+    ----------
+    s3_client: S3 Object
+    bucket: Bucket Name
+    file: File Name
+    """
     print("Creating Success Files")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
+    """
+
+    Parameters
+    ----------
+    s3_client S3 Object
+    metadata_s3_bucket metadata bucket name
+    meta_data_object_folder metadata folder path
+
+    Returns
+    -------
+    size of success objects for each run as parallel lambdas are running.
+
+    """
     objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
     success_objects = [item for item in objects if item.split('/')[-1].startswith('Success')]
     return len(success_objects)
 
 
 def create_merge_trigger_file(s3_client, bucket, file):
+    """
+
+    Parameters
+    ----------
+    s3_client
+    bucket
+    file
+    """
     print("Creating Merge Trigger File")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
 
 def remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder):
+    """
+
+    Parameters
+    ----------
+    s3_client
+    metadata_s3_bucket
+    meta_data_object_folder
+    """
     objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
     print("Removing Objects")
     for item in objects:
@@ -412,47 +460,3 @@ def lambda_handler(event, context):
         print("merge_trigger_file -", merge_trigger_file)
         create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
         remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder)
-
-
-if __name__ == "__main__":
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-    event = {
-        "Records": [
-            {
-                "eventVersion": "2.1",
-                "eventSource": "aws:s3",
-                "awsRegion": "us-east-1",
-                "eventTime": "2021-09-26T20:10:59.214Z",
-                "eventName": "ObjectCreated:Put",
-                "userIdentity": {
-                    "principalId": "AWS:AROASSMH2D4J46RZETIQY:Preprocessing"
-                },
-                "requestParameters": {
-                    "sourceIPAddress": "54.205.27.107"
-                },
-                "responseElements": {
-                    "x-amz-request-id": "52YZ4KT96ZXQVHFP",
-                    "x-amz-id-2": "Z/zFYWp5Cs5GhSuaVGoT6stx1VaDATXPaubDXwVZ95Vaa6uXw3HM71TGcTPwRwTU5 "
-                                  "+PxfWFVN9TQIsUAQkWtlRr89RVGH2ES "
-                },
-                "s3": {
-                    "s3SchemaVersion": "1.0",
-                    "configurationId": "dd241d3d-da50-40b8-8587-b3ab8bb2b1da",
-                    "bucket": {
-                        "name": "trigger-bucket-11",
-                        "ownerIdentity": {
-                            "principalId": "A3CLWISLM7234I"
-                        },
-                        "arn": "arn:aws:s3:::trigger-bucket-11"
-                    },
-                    "object": {
-                        "key": "case_number/exhibits/folder1/3",
-                        "size": 0,
-                        "eTag": "d41d8cd98f00b204e9800998ecf8427e",
-                        "sequencer": "006150D3DAC97C058B"
-                    }
-                }
-            }
-        ]
-    }
-    lambda_handler(event, None)
