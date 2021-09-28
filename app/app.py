@@ -75,7 +75,7 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
 
     """
     try:
-        pdf_png = pytesseract.image_to_pdf_or_hocr(file_path, extension="pdf")
+        pdf_png = pytesseract.image_to_pdf_or_hocr(file_path)
         with open(os.path.join(lambda_write_path, pdf_file_name), "w+b") as f:
             f.write(pdf_png)
         return True
@@ -208,7 +208,7 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                     except Exception as e:
                         print(e)
                 elif file_path.endswith(".txt"):
-                    pdf_txt = get_pdf_object(10)
+                    pdf_txt = get_pdf_object(11)
                     with open(file_path, "r") as f:
                         lines = f.readlines()
                     for line in lines:
@@ -283,7 +283,6 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
         except Exception as e:
             print(e)
 
-        # noinspection PyUnboundLocalVariable
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
             with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
@@ -328,6 +327,19 @@ def list_dir(prefix, bucket, client):
 
 
 def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
+    """
+
+    Parameters
+    ----------
+    s3_client: Client Object to Access S3
+    meta_data_object_folder: Location of the metadata object
+    metadata_s3_bucket: metadata bucket name
+
+    Returns
+    -------
+    total_no_of_trigger_files: no of trigger files
+
+    """
     pattern_to_look = meta_data_object_folder.split('/')[-2]
     objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
     meta_data_object = [item for item in objects if item.split('/')[-1].startswith(pattern_to_look)][0]
