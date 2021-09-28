@@ -1,17 +1,17 @@
 import os
+import sqlite3
 from shutil import copyfile, rmtree
 
 import boto3
+import extract_msg
 import pandas as pd
 import pdfkit
 import pytesseract
-from fpdf import FPDF
 from PIL import Image
 from PyPDF2 import PdfFileMerger
+from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
-import extract_msg
-import sqlite3
 
 FILE_PATTERN_TO_IGNORE = '_small'
 FILE_PATTERN_TO_INCLUDE = '_unredacted_original'
@@ -113,18 +113,29 @@ def init():
 
     lambda_write_path = "/tmp/"
     main_s3_bucket = os.environ["main_s3_bucket"]
-    metadata_s3_bucket=os.environ["metadata_s3_bucket"]
-    merge_trigger_bucket=os.environ["merge_trigger_bucket"]
+    metadata_s3_bucket = os.environ["metadata_s3_bucket"]
+    merge_trigger_bucket = os.environ["merge_trigger_bucket"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
 
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
 
-    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket, merge_trigger_bucket]
+    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket,
+            merge_trigger_bucket]
 
 
 def get_pdf_object(font_size=10):
+    """
+
+    Parameters
+    ----------
+    font_size: Specify the font size of the texts in the pdf
+
+    Returns
+    -------
+
+    """
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=font_size)
@@ -209,16 +220,16 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                         [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".png"]))
                     pdf_file_name = ''.join([filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".pdf"])
                     s3_object = pdf_file_name.split(os.sep)[-1]
-                    converted = create_pdf(temp_unredacted_file, lambda_write_path, pdf_file_name, temp_file=True)
+                    converted = create_pdf(temp_unredacted_file, lambda_write_path, pdf_file_name)
                 elif file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
                     converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
                 elif file_path.endswith((".pcd", ".bmp")):
                     Image.open(file_path).save(temp_file := ''.join([filename, ".png"]))
-                    converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
+                    converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
                 elif file_path.endswith(".svg"):
                     drawing = svg2rlg(file_path, resolve_entities=True)
                     renderPM.drawToFile(drawing, temp_file := ''.join([filename, ".png"]), fmt="PNG")
-                    converted = create_pdf(temp_file, lambda_write_path, pdf_file_name, temp_file=True)
+                    converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
                 elif file_path.endswith((".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")):
                     if file_path.endswith("mht"):
                         copyfile(file_path, temp_file := ''.join([filename, ".html"]))
@@ -272,6 +283,7 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
         except Exception as e:
             print(e)
 
+        # noinspection PyUnboundLocalVariable
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
             with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
@@ -282,6 +294,19 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
 
 
 def list_dir(prefix, bucket, client):
+    """
+
+    Parameters
+    ----------
+    prefix: Prefix to list from in S3
+    bucket: Bucket Name
+    client: S3 Client object
+
+    Returns
+    -------
+    Keys: list of files
+
+    """
     keys = []
     next_token = ""
     base_kwargs = {
@@ -308,28 +333,34 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     meta_data_object = [item for item in objects if item.split('/')[-1].startswith(pattern_to_look)][0]
     total_no_of_trigger_files = int(meta_data_object.split('/')[-1].split('_')[1])
     print("meta_data_object -", meta_data_object)
-    print("total_no_of_trigger_files -",total_no_of_trigger_files)
+    print("total_no_of_trigger_files -", total_no_of_trigger_files)
     return total_no_of_trigger_files
+
 
 def create_success_file(s3_client, bucket, file):
     print("Creating Success Files")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
+
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
     success_objects = [item for item in objects if item.split('/')[-1].startswith('Success')]
     return len(success_objects)
 
+
 def create_merge_trigger_file(s3_client, bucket, file):
     print("Creating Merge Trigger File")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
+
 
 def remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder):
     objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
     print("Removing Objects")
     for item in objects:
         s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)
-    
+
+
+# noinspection PyShadowingNames,PyUnusedLocal
 def lambda_handler(event, context):
     """
 
@@ -346,7 +377,8 @@ def lambda_handler(event, context):
     s3_document_folder = folder_path.split('/')[2]
     trigger_folder = folder_path.split('/')[3]
 
-    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket, merge_trigger_bucket = init()
+    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket, \
+        merge_trigger_bucket = init()
 
     download_dir(prefix=''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/", trigger_folder]),
                  local=lambda_write_path,
@@ -356,59 +388,59 @@ def lambda_handler(event, context):
                              pdf_file_suffix, s3_output_folder, trigger_folder)
     rmtree(lambda_write_path + s3_folder)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
-    
+
     meta_data_object_folder = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
     print("meta_data_object_folder -", meta_data_object_folder)
     total_no_of_trigger_files = fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket)
-    create_success_file(s3_client, metadata_s3_bucket, meta_data_object_folder+"Success_"+trigger_folder)
+    create_success_file(s3_client, metadata_s3_bucket, meta_data_object_folder + "Success_" + trigger_folder)
     no_of_success_files = count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder)
     if no_of_success_files == total_no_of_trigger_files:
-        merge_trigger_file = ''.join([s3_folder, "/", s3_output_folder, "/", "control_files", "/", s3_document_folder, ".json"])
+        merge_trigger_file = ''.join(
+            [s3_folder, "/", s3_output_folder, "/", "control_files", "/", s3_document_folder, ".json"])
         print("merge_trigger_file -", merge_trigger_file)
         create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
         remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder)
-        
-            
+
 
 if __name__ == "__main__":
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     event = {
-        "Records":[
-        {
-            "eventVersion":"2.1",
-            "eventSource":"aws:s3",
-            "awsRegion":"us-east-1",
-            "eventTime":"2021-09-26T20:10:59.214Z",
-            "eventName":"ObjectCreated:Put",
-            "userIdentity":{
-                "principalId":"AWS:AROASSMH2D4J46RZETIQY:Preprocessing"
-            },
-            "requestParameters":{
-                "sourceIPAddress":"54.205.27.107"
-            },
-            "responseElements":{
-                "x-amz-request-id":"52YZ4KT96ZXQVHFP",
-                "x-amz-id-2":"Z/zFYWp5Cs5GhSuaVGoT6stx1VaDATXPaubDXwVZ95Vaa6uXw3HM71TGcTPwRwTU5+PxfWFVN9TQIsUAQkWtlRr89RVGH2ES"
-            },
-            "s3":{
-                "s3SchemaVersion":"1.0",
-                "configurationId":"dd241d3d-da50-40b8-8587-b3ab8bb2b1da",
-                "bucket":{
-                    "name":"trigger-bucket-11",
-                    "ownerIdentity":{
-                    "principalId":"A3CLWISLM7234I"
-                    },
-                    "arn":"arn:aws:s3:::trigger-bucket-11"
+        "Records": [
+            {
+                "eventVersion": "2.1",
+                "eventSource": "aws:s3",
+                "awsRegion": "us-east-1",
+                "eventTime": "2021-09-26T20:10:59.214Z",
+                "eventName": "ObjectCreated:Put",
+                "userIdentity": {
+                    "principalId": "AWS:AROASSMH2D4J46RZETIQY:Preprocessing"
                 },
-                "object":{
-                    "key":"case_number/exhibits/folder1/3",
-                    "size":0,
-                    "eTag":"d41d8cd98f00b204e9800998ecf8427e",
-                    "sequencer":"006150D3DAC97C058B"
+                "requestParameters": {
+                    "sourceIPAddress": "54.205.27.107"
+                },
+                "responseElements": {
+                    "x-amz-request-id": "52YZ4KT96ZXQVHFP",
+                    "x-amz-id-2": "Z/zFYWp5Cs5GhSuaVGoT6stx1VaDATXPaubDXwVZ95Vaa6uXw3HM71TGcTPwRwTU5 "
+                                  "+PxfWFVN9TQIsUAQkWtlRr89RVGH2ES "
+                },
+                "s3": {
+                    "s3SchemaVersion": "1.0",
+                    "configurationId": "dd241d3d-da50-40b8-8587-b3ab8bb2b1da",
+                    "bucket": {
+                        "name": "trigger-bucket-11",
+                        "ownerIdentity": {
+                            "principalId": "A3CLWISLM7234I"
+                        },
+                        "arn": "arn:aws:s3:::trigger-bucket-11"
+                    },
+                    "object": {
+                        "key": "case_number/exhibits/folder1/3",
+                        "size": 0,
+                        "eTag": "d41d8cd98f00b204e9800998ecf8427e",
+                        "sequencer": "006150D3DAC97C058B"
+                    }
                 }
             }
-        }
         ]
     }
     lambda_handler(event, None)
-    
