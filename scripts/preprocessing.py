@@ -96,7 +96,7 @@ def lambda_handler(event, context):
     """
     prefix = ""
     s3_document_folder = ""
-    
+
     # noinspection PyBroadException
     try:
         s3_sub_folder = os.environ["s3_sub_folder"]
