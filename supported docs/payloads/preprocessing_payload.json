@@ -1,39 +1,39 @@
 {
-    "version": "2.0",
+  "version": "2.0",
+  "routeKey": "ANY /Preprocessing",
+  "rawPath": "/default/Preprocessing",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate, br",
+    "cache-control": "no-cache",
+    "content-length": "110",
+    "content-type": "application/json",
+    "host": "axh6ih3d62.execute-api.us-east-1.amazonaws.com",
+    "postman-token": "7b0d2a67-2685-420a-abc4-d2087a2fa5a9",
+    "user-agent": "PostmanRuntime/7.28.4",
+    "x-amzn-trace-id": "Root=1-614f4e49-558a2135282b4c902e020f85",
+    "x-forwarded-for": "103.51.149.27",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "requestContext": {
+    "accountId": "176915357459",
+    "apiId": "axh6ih3d62",
+    "domainName": "axh6ih3d62.execute-api.us-east-1.amazonaws.com",
+    "domainPrefix": "axh6ih3d62",
+    "http": {
+      "method": "GET",
+      "path": "/default/Preprocessing",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "103.51.149.27",
+      "userAgent": "PostmanRuntime/7.28.4"
+    },
+    "requestId": "GOkrjiF4IAMEVRg=",
     "routeKey": "ANY /Preprocessing",
-    "rawPath": "/default/Preprocessing",
-    "rawQueryString": "",
-    "headers": {
-      "accept": "*/*",
-      "accept-encoding": "gzip, deflate, br",
-      "cache-control": "no-cache",
-      "content-length": "110",
-      "content-type": "application/json",
-      "host": "axh6ih3d62.execute-api.us-east-1.amazonaws.com",
-      "postman-token": "7b0d2a67-2685-420a-abc4-d2087a2fa5a9",
-      "user-agent": "PostmanRuntime/7.28.4",
-      "x-amzn-trace-id": "Root=1-614f4e49-558a2135282b4c902e020f85",
-      "x-forwarded-for": "103.51.149.27",
-      "x-forwarded-port": "443",
-      "x-forwarded-proto": "https"
-    },
-    "requestContext": {
-      "accountId": "176915357459",
-      "apiId": "axh6ih3d62",
-      "domainName": "axh6ih3d62.execute-api.us-east-1.amazonaws.com",
-      "domainPrefix": "axh6ih3d62",
-      "http": {
-        "method": "GET",
-        "path": "/default/Preprocessing",
-        "protocol": "HTTP/1.1",
-        "sourceIp": "103.51.149.27",
-        "userAgent": "PostmanRuntime/7.28.4"
-      },
-      "requestId": "GOkrjiF4IAMEVRg=",
-      "routeKey": "ANY /Preprocessing",
-      "stage": "default",
-      "time": "25/Sep/2021:16:28:57 +0000",
-      "timeEpoch": 1632587337725
-    },
-    "body": "{\"processing_type\":\"doc_level\",\"s3_folder\":\"case_number\",\"s3_document_folder\":\"folder1\"}"
-  }
+    "stage": "default",
+    "time": "25/Sep/2021:16:28:57 +0000",
+    "timeEpoch": 1632587337725
+  },
+  "body": "{\"processing_type\":\"doc_level\",\"s3_folder\":\"case_number\",\"s3_document_folder\":\"folder1\"}"
+}

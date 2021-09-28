@@ -1,38 +1,38 @@
 {
-    "Records":[
-       {
-          "eventVersion":"2.1",
-          "eventSource":"aws:s3",
-          "awsRegion":"us-east-1",
-          "eventTime":"2021-09-27T17:25:29.826Z",
-          "eventName":"ObjectCreated:Put",
-          "userIdentity":{
-             "principalId":"AWS:AROASSMH2D4J6HGZ23DYQ:idealoctopotato"
+  "Records": [
+    {
+      "eventVersion": "2.1",
+      "eventSource": "aws:s3",
+      "awsRegion": "us-east-1",
+      "eventTime": "2021-09-27T17:25:29.826Z",
+      "eventName": "ObjectCreated:Put",
+      "userIdentity": {
+        "principalId": "AWS:AROASSMH2D4J6HGZ23DYQ:idealoctopotato"
+      },
+      "requestParameters": {
+        "sourceIPAddress": "3.220.230.203"
+      },
+      "responseElements": {
+        "x-amz-request-id": "KVZTTHA2FAQWQAWW",
+        "x-amz-id-2": "9GMBeAT29Ldh8NFWENKZKT9Ji3o5vSGp9q721msFvZN5BELGmcVyFIt69EU21vLVQsq0GErxGec9/tWbijcnbPnX1clcYPUN"
+      },
+      "s3": {
+        "s3SchemaVersion": "1.0",
+        "configurationId": "5d5fdc5a-05c6-4396-9177-3a5ce5c39585",
+        "bucket": {
+          "name": "trigger-bucket-12",
+          "ownerIdentity": {
+            "principalId": "A3CLWISLM7234I"
           },
-          "requestParameters":{
-             "sourceIPAddress":"3.220.230.203"
-          },
-          "responseElements":{
-             "x-amz-request-id":"KVZTTHA2FAQWQAWW",
-             "x-amz-id-2":"9GMBeAT29Ldh8NFWENKZKT9Ji3o5vSGp9q721msFvZN5BELGmcVyFIt69EU21vLVQsq0GErxGec9/tWbijcnbPnX1clcYPUN"
-          },
-          "s3":{
-             "s3SchemaVersion":"1.0",
-             "configurationId":"5d5fdc5a-05c6-4396-9177-3a5ce5c39585",
-             "bucket":{
-                "name":"trigger-bucket-12",
-                "ownerIdentity":{
-                   "principalId":"A3CLWISLM7234I"
-                },
-                "arn":"arn:aws:s3:::trigger-bucket-12"
-             },
-             "object":{
-                "key":"case_number/doc_pdf/control_files/folder1.json",
-                "size":0,
-                "eTag":"d41d8cd98f00b204e9800998ecf8427e",
-                "sequencer":"006151FE90A4D99BBA"
-             }
-          }
-       }
-    ]
- }
+          "arn": "arn:aws:s3:::trigger-bucket-12"
+        },
+        "object": {
+          "key": "case_number/doc_pdf/control_files/folder1.json",
+          "size": 0,
+          "eTag": "d41d8cd98f00b204e9800998ecf8427e",
+          "sequencer": "006151FE90A4D99BBA"
+        }
+      }
+    }
+  ]
+}
