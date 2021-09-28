@@ -40,18 +40,42 @@ def list_dir(prefix, bucket, client):
 
 
 def extract_folder_paths(files):
+    """
+
+    Parameters
+    ----------
+    files: List of File Paths
+
+    Returns
+    -------
+    folders: returns set of folder
+    """
     folders = list(set([folder.rpartition('/')[0] if folder.endswith('full_marks') else folder for folder in
                         (file.rpartition('/')[0] for file in files)]))
     return folders
 
 
 def place_trigger_files(bucket, folders):
+    """
+
+    Parameters
+    ----------
+    bucket: bucket name
+    folders: trigger folder paths
+    """
     client = boto3.client('s3')
     for trigger_folder in folders:
         client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
 
 
 def place_metadata_file(bucket, file):
+    """
+
+    Parameters
+    ----------
+    bucket
+    file
+    """
     client = boto3.client('s3')
     client.put_object(Body="", Bucket=bucket, Key=file)
 
