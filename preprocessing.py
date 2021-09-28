@@ -1,3 +1,8 @@
+"""
+This module is trigger based on API event and accepts the payload to start placing the trigger files for
+the main lambda to work. This also places the meta trigger objects for merge trigger conditions.
+"""
+
 import json
 import os
 import traceback
@@ -91,6 +96,8 @@ def lambda_handler(event, context):
     """
     prefix = ""
     s3_document_folder = ""
+    
+    # noinspection PyBroadException
     try:
         s3_sub_folder = os.environ["s3_sub_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
