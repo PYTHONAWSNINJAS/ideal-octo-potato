@@ -1,0 +1,38 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.1",
+      "eventSource": "aws:s3",
+      "awsRegion": "us-east-1",
+      "eventTime": "2021-09-26T20:10:59.214Z",
+      "eventName": "ObjectCreated:Put",
+      "userIdentity": {
+        "principalId": "AWS:AROASSMH2D4J46RZETIQY:Preprocessing"
+      },
+      "requestParameters": {
+        "sourceIPAddress": "54.205.27.107"
+      },
+      "responseElements": {
+        "x-amz-request-id": "52YZ4KT96ZXQVHFP",
+        "x-amz-id-2": "Z/zFYWp5Cs5GhSuaVGoT6stx1VaDATXPaubDXwVZ95Vaa6uXw3HM71TGcTPwRwTU5+PxfWFVN9TQIsUAQkWtlRr89RVGH2ES"
+      },
+      "s3": {
+        "s3SchemaVersion": "1.0",
+        "configurationId": "dd241d3d-da50-40b8-8587-b3ab8bb2b1da",
+        "bucket": {
+          "name": "trigger-bucket-11",
+          "ownerIdentity": {
+            "principalId": "A3CLWISLM7234I"
+          },
+          "arn": "arn:aws:s3:::trigger-bucket-11"
+        },
+        "object": {
+          "key": "case_number/exhibits/folder1/3",
+          "size": 0,
+          "eTag": "d41d8cd98f00b204e9800998ecf8427e",
+          "sequencer": "006150D3DAC97C058B"
+        }
+      }
+    }
+  ]
+}

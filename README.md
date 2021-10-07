@@ -65,48 +65,11 @@ Note: clear the credentials and set these.
 
 ## ToDo
 
-- [ ] Apply Black Code for optimisation - <https://github.com/psf/black>
 - [ ] Test with xlrd instead of openpyxl
 - [ ] Change to cross-platform tmp directory with tempfile module
 - [ ] Add docx and doc
 - [ ] Explore docker sync
-- [ ] check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more then one input document. Exit with code 1, due to unknown error.
+- [ ] Check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more than one input document. Exit with code 1, due to unknown error. https://bradley-schoeneweis.medium.com/converting-html-to-a-pdf-using-python-aws-lambda-and-wkhtmltopdf-8dbadf58b879
 - [ ] Check and optimise the flow, names and deletion activities.
-- [ ] Add log creation to S3 based on trigger folder 
-```
-Use tempfile and create a log and put all info in the file.
-Transfer the file to S3 in 2021/09/16/TriggerFolderName.log 
-```
-- [ ] Stitching all pdf files based on control file -  format
-
-```
-TBD
-{
-    "1011":{
-        "1600094973-2055.47140682846840":[
-            {
-                "page1":"file_1"
-            },
-            {
-                "page2":"file_2"
-            }
-        
-        ],
-        "1600094973-2055.47140682846841":[
-            {
-                "page1":"file_3"
-            },
-            {
-                "page2":"file_4"
-            }
-        
-        ]
-    },
-    "10452":[
-
-    ],
-    "115":[
-
-    ]
-}
-```
+- [ ] Add log creation to S3 based on trigger folder. Use tempfile and create a log and put all info in the file. Transfer the file to S3 in 2021/09/16/TriggerFolderName.log
+- [ ] Explore ECS for case level using Fargate
