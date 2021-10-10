@@ -40,6 +40,6 @@ def build(account_id, image_name, repository_name):
 
 if __name__ == "__main__":
     aws_account_id = "176915357459"
-    docker_image_name = "idealoctopotato"
-    ecr_repository_name = "idealoctopotato"
+    docker_image_name = "preprocessing"
+    ecr_repository_name = "preprocessing"
     build(aws_account_id, docker_image_name, ecr_repository_name)
