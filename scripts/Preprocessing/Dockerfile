@@ -8,6 +8,7 @@ WORKDIR /usr/app
 ADD . '/usr/app'
 
 RUN pip install flask
+RUN pip install boto3
 
 EXPOSE 5000
 
