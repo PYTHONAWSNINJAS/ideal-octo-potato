@@ -19,6 +19,6 @@ RUN printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr
 RUN chmod a+x /usr/bin/wkhtmltopdf.sh
 RUN ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
 
-COPY ./app/app.py   ./
+COPY ./app/main.py   ./
 
-CMD ["app.lambda_handler"]
+CMD ["main.lambda_handler"]

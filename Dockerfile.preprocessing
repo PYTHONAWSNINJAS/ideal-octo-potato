@@ -5,11 +5,11 @@ USER root
 
 WORKDIR /usr/app
 
-ADD './scripts/app.py' '/usr/app'
+ADD './app/preprocessing.py' '/usr/app'
 
 RUN pip install flask
 RUN pip install boto3
 
 EXPOSE 5000
 
-CMD ["app.index"]
+CMD ["preprocessing.index"]
