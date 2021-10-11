@@ -73,6 +73,6 @@ Note: clear the credentials and set these.
 - [ ] Check and optimise the flow, names and deletion activities.
 - [ ] Add log creation to S3 based on trigger folder. Use tempfile and create a log and put all info in the file. Transfer the file to S3 in 2021/09/16/TriggerFolderName.log
 - [x] Explore ECS for case level using Fargate
-- [ ] make a single build and push script for both docker file using params
+- [x] make a single build and push script for both docker file using params
 - [ ] cname for url - R&D on url
 - [ ] fix preprcessing to create metadata for document level only
