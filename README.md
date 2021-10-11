@@ -75,4 +75,4 @@ Note: clear the credentials and set these.
 - [x] Explore ECS for case level using Fargate
 - [x] make a single build and push script for both docker file using params
 - [ ] cname for url - R&D on url
-- [ ] fix preprcessing to create metadata for document level only
+- [x] fix preprcessing to create metadata for document level only

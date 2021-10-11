@@ -91,7 +91,7 @@ def place_metadata_file(bucket, file):
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
-@app.route('/', methods=['GET','POST'])
+@app.route('/', methods=['POST'])
 def index():
     """
 
@@ -117,15 +117,24 @@ def index():
 
         if processing_type == 'case_level':
             prefix = ''.join([s3_folder, "/", s3_sub_folder])
+            files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+            trigger_folders = extract_folder_paths(files)
+            s3_document_folders = list(set([item.split('/')[2] for item in trigger_folders]))
+            for s3_document_folder in s3_document_folders:
+                prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder])
+                files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+                trigger_folders = extract_folder_paths(files)
+                doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
+                place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
+                place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
         elif processing_type == 'doc_level':
             s3_document_folder = body['s3_document_folder']
             prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder])
-
-        files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-        trigger_folders = extract_folder_paths(files)
-        doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
-        place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
-        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+            files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+            trigger_folders = extract_folder_paths(files)
+            doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
+            place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
+            place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
 
         return {
             'statusCode': 200,
