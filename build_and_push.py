@@ -7,7 +7,7 @@ Next, it will Login to AWS and Push the Image to ECR Repository.
 import os
 
 
-def build(account_id, image_name, repository_name):
+def build(account_id, image_name, repository_name, docker_file):
     """
 
     Parameters
@@ -18,7 +18,7 @@ def build(account_id, image_name, repository_name):
     """
 
     print("starting docker build...")
-    os.system("docker build --pull --rm -f \"Dockerfile\" -t " + image_name + ":latest \".\"")
+    os.system("docker build --pull --rm -f \""+docker_file+"\" -t " + image_name + ":latest \".\"")
     print("done.")
 
     print("logging in aws ecr...")
@@ -39,7 +39,8 @@ def build(account_id, image_name, repository_name):
 
 
 if __name__ == "__main__":
+    docker_file = "Dockerfile.preprocessing"
     aws_account_id = "176915357459"
     docker_image_name = "preprocessing"
     ecr_repository_name = "preprocessing"
-    build(aws_account_id, docker_image_name, ecr_repository_name)
+    build(aws_account_id, docker_image_name, ecr_repository_name, docker_file)
