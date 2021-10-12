@@ -187,7 +187,7 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
 
                     if filename.endswith(FILE_PATTERN_TO_IGNORE):
                         continue
-                    elif file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
+                    if file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
                         converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
                     if converted:
                         print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
@@ -207,7 +207,7 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
 
                 if filename.endswith(FILE_PATTERN_TO_IGNORE):
                     continue
-                elif file_path.endswith(".pdf"):
+                if file_path.endswith(".pdf"):
                     copyfile(file_path, pdf_file_name)
                     converted = True
                 elif file_path.endswith(".mif"):
