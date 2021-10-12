@@ -10,6 +10,7 @@ import os
 import boto3
 from PyPDF2 import PdfFileMerger
 
+import traceback
 
 def init():
     """
@@ -74,9 +75,9 @@ def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_pa
     merge_pdf(pdfs, lambda_write_path + pdf_file_name)
 
     print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
+    print("Uploading to - ", bucket_name + '/' + s3_folder + '/doc_pdf/' + exhibit_id + '/' + pdf_file_name)
     with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-        s3_client.upload_fileobj(data, bucket_name, s3_folder + '/doc_pdf/' + exhibit_id + '/' + pdf_file_name)
-
+        s3_client.upload_fileobj(data, bucket_name, s3_folder + '/doc_pdf/' + exhibit_id + '/' + pdf_file_name)        
 
 # noinspection PyShadowingNames,PyUnusedLocal
 def lambda_handler(event, context):
@@ -98,6 +99,7 @@ def lambda_handler(event, context):
         exhibit_id = data['exhibit']
 
         if not data['files']:
+            print("Empty Control File.")
             return {
                 'statusCode': 204,
                 'body': "Empty Control File."
@@ -114,7 +116,8 @@ def lambda_handler(event, context):
             'body': "Merged"
         }
     except Exception as e:
+        print(traceback.format_exc())
         return {
             'statusCode': 500,
-            'body': str(e)
+            'body': str(traceback.format_exc())
         }
