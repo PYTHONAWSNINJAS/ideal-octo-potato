@@ -18,23 +18,41 @@ def build(account_id, image_name, repository_name, docker_file):
     """
 
     print("starting docker build...")
-    os.system("docker build --pull --rm -f \""+docker_file+"\" -t " + image_name + ":latest \".\"")
+    os.system(
+        'docker build --pull --rm -f "'
+        + docker_file
+        + '" -t '
+        + image_name
+        + ':latest "."'
+    )
     print("done.")
 
     print("logging in aws ecr...")
     os.system(
-        "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin " + account_id +
-        ".dkr.ecr.us-east-1.amazonaws.com")
+        "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "
+        + account_id
+        + ".dkr.ecr.us-east-1.amazonaws.com"
+    )
     print("done.")
 
     print("tagging...")
     os.system(
-        "docker tag " + image_name + ":latest " + account_id + ".dkr.ecr.us-east-1.amazonaws.com/" +
-        repository_name)
+        "docker tag "
+        + image_name
+        + ":latest "
+        + account_id
+        + ".dkr.ecr.us-east-1.amazonaws.com/"
+        + repository_name
+    )
     print("done.")
 
     print("pushing to ecr...")
-    os.system("docker push " + account_id + ".dkr.ecr.us-east-1.amazonaws.com/" + repository_name)
+    os.system(
+        "docker push "
+        + account_id
+        + ".dkr.ecr.us-east-1.amazonaws.com/"
+        + repository_name
+    )
     print("done.")
 
 
