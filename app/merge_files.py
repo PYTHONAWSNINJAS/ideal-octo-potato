@@ -10,6 +10,7 @@ import os
 import boto3
 from PyPDF2 import PdfFileMerger
 
+import traceback
 
 def init():
     """
@@ -64,18 +65,19 @@ def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_pa
     """
     pdf_file_name = file_type + pdf_file_suffix + '.pdf'
     pdfs = []
+    
     for item in data['files']:
-        file = item[file_type].split('/')[-1]
-        print(f"downloading {file}")
-        s3_client.download_file(bucket_name, item[file_type], lambda_write_path + file)
-        pdfs.append(lambda_write_path + file)
+        file_name = item[file_type].split('/')[-1]
+        print(f"downloading {file_name}")
+        s3_client.download_file(bucket_name, item[file_type], lambda_write_path + file_name)
+        pdfs.append(lambda_write_path + file_name)
 
     merge_pdf(pdfs, lambda_write_path + pdf_file_name)
 
     print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
+    print("Uploading to - ", bucket_name + '/' + s3_folder + '/doc_pdf/' + exhibit_id + '/' + pdf_file_name)
     with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-        s3_client.upload_fileobj(data, bucket_name, s3_folder + '/doc_pdf/' + exhibit_id + '/' + pdf_file_name)
-
+        s3_client.upload_fileobj(data, bucket_name, s3_folder + '/doc_pdf/' + exhibit_id + '/' + pdf_file_name)        
 
 # noinspection PyShadowingNames,PyUnusedLocal
 def lambda_handler(event, context):
@@ -94,8 +96,16 @@ def lambda_handler(event, context):
 
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj['Body'].read().decode('utf-8'))
-        exhibit_id = data['exhibit_id']
+        exhibit_id = data['exhibit']
 
+        if not data['files']:
+            print("Empty Control File.")
+            return {
+                'statusCode': 204,
+                'body': "Empty Control File."
+            }
+        
+        # loop two times in the data for source and current
         for file_type in ['source', 'current']:
             process(file_type, exhibit_id, data, s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix,
                     s3_folder)
@@ -106,7 +116,8 @@ def lambda_handler(event, context):
             'body': "Merged"
         }
     except Exception as e:
+        print(traceback.format_exc())
         return {
             'statusCode': 500,
-            'body': str(e)
+            'body': str(traceback.format_exc())
         }

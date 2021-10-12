@@ -9,6 +9,11 @@ import traceback
 
 import boto3
 
+from flask import Flask, request
+
+# template_folder points to current directory. Flask will look for '/static/'
+app = Flask(__name__, template_folder='.')
+# The rest of your file here
 
 def list_dir(prefix, bucket, client):
     """
@@ -86,7 +91,8 @@ def place_metadata_file(bucket, file):
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
-def lambda_handler(event, context):
+@app.route('/', methods=['POST'])
+def index():
     """
 
     Parameters
@@ -99,31 +105,42 @@ def lambda_handler(event, context):
 
     # noinspection PyBroadException
     try:
+        body = request.json
         s3_sub_folder = os.environ["s3_sub_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
         metadata_s3_bucket = os.environ["metadata_s3_bucket"]
         trigger_s3_bucket = os.environ["trigger_s3_bucket"]
-        processing_type = json.loads(event['body'])['processing_type']
+        processing_type = body['processing_type']
+        s3_folder = body['s3_folder']
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
 
         if processing_type == 'case_level':
-            s3_folder = json.loads(event['body'])['s3_folder']
-            prefix = ''.join([s3_folder, "/", s3_sub_folder])
+            case_prefix = ''.join([s3_folder, "/", s3_sub_folder])
+            case_files = list_dir(prefix=case_prefix, bucket=main_s3_bucket, client=s3_client)
+            case_trigger_folders = extract_folder_paths(case_files)
+            s3_document_folders = list(set([item.split('/')[2] for item in case_trigger_folders]))
+            for s3_document_folder in s3_document_folders:
+                prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+                files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+                trigger_folders = extract_folder_paths(files)
+                print("\n\ntrigger_folders - ", trigger_folders)
+                doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
+                print("doc_metadata_file_path - ", doc_metadata_file_path)
+                place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
+                place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
         elif processing_type == 'doc_level':
-            s3_folder = json.loads(event['body'])['s3_folder']
-            s3_document_folder = json.loads(event['body'])['s3_document_folder']
-            prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder])
-
-        files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-        trigger_folders = extract_folder_paths(files)
-        doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
-        place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
-        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+            s3_document_folder = body['s3_document_folder']
+            prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+            files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+            trigger_folders = extract_folder_paths(files)
+            doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
+            place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
+            place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
 
         return {
             'statusCode': 200,
-            'body': "Triggered"
+            'body': "Triggered with " + str(body)
         }
     except Exception as e:
         print(traceback.format_exc())
@@ -131,3 +148,6 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': str(traceback.format_exc())
         }
+
+if __name__ == '__main__':
+  app.run(host='0.0.0.0', debug=True, port=5000)
