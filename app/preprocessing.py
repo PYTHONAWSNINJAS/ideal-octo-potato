@@ -60,8 +60,8 @@ def extract_folder_paths(files):
     -------
     folders: returns set of folder
     """
-    folders = list(set([folder.rpartition('/')[0] if folder.endswith('full_marks') else folder for folder in
-                        (file.rpartition('/')[0] for file in files)]))
+    folders = list({folder.rpartition('/')[0] if folder.endswith('full_marks') else folder for folder in
+                        (file.rpartition('/')[0] for file in files)})
     return folders
 
 
@@ -119,7 +119,7 @@ def index():
             case_prefix = ''.join([s3_folder, "/", s3_sub_folder])
             case_files = list_dir(prefix=case_prefix, bucket=main_s3_bucket, client=s3_client)
             case_trigger_folders = extract_folder_paths(case_files)
-            s3_document_folders = list(set([item.split('/')[2] for item in case_trigger_folders]))
+            s3_document_folders = list({item.split('/')[2] for item in case_trigger_folders})
             for s3_document_folder in s3_document_folders:
                 prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
                 files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
