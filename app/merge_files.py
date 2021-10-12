@@ -20,7 +20,6 @@ def init():
     -------
 
     """
-
     lambda_write_path = "/tmp/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     pdf_file_suffix = "_dv"
@@ -39,7 +38,6 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-
     merger = PdfFileMerger()
 
     for pdf_file in pdfs:

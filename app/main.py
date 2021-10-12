@@ -36,7 +36,6 @@ def download_dir(prefix, local, bucket, client):
     -------
 
     """
-
     keys = []
     dirs = []
     next_token = ""
@@ -99,7 +98,6 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-
     merger = PdfFileMerger()
 
     for pdf_file in pdfs:
@@ -117,7 +115,6 @@ def init():
     -------
 
     """
-
     lambda_write_path = "/tmp/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     metadata_s3_bucket = os.environ["metadata_s3_bucket"]

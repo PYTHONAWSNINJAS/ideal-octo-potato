@@ -16,7 +16,6 @@ def build(account_id, image_name, repository_name, docker_file):
     image_name: Docker image to be built and assigned a name
     repository_name: AWS ECR repository name
     """
-
     print("starting docker build...")
     os.system("docker build --pull --rm -f \""+docker_file+"\" -t " + image_name + ":latest \".\"")
     print("done.")
