@@ -64,7 +64,7 @@ def extract_folder_paths(files):
     folders = list(
         {
             folder.rpartition("/")[0] if folder.endswith("full_marks") else folder
-                for folder in (file.rpartition("/")[0] for file in files)
+            for folder in (file.rpartition("/")[0] for file in files)
         }
     )
     return folders
