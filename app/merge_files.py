@@ -64,11 +64,12 @@ def process(file_type, exhibit_id, data, s3_client, bucket_name, lambda_write_pa
     """
     pdf_file_name = file_type + pdf_file_suffix + '.pdf'
     pdfs = []
+    
     for item in data['files']:
-        file = item[file_type].split('/')[-1]
-        print(f"downloading {file}")
-        s3_client.download_file(bucket_name, item[file_type], lambda_write_path + file)
-        pdfs.append(lambda_write_path + file)
+        file_name = item[file_type].split('/')[-1]
+        print(f"downloading {file_name}")
+        s3_client.download_file(bucket_name, item[file_type], lambda_write_path + file_name)
+        pdfs.append(lambda_write_path + file_name)
 
     merge_pdf(pdfs, lambda_write_path + pdf_file_name)
 
@@ -96,6 +97,13 @@ def lambda_handler(event, context):
         data = json.loads(s3_client_obj['Body'].read().decode('utf-8'))
         exhibit_id = data['exhibit']
 
+        if not data['files']:
+            return {
+                'statusCode': 204,
+                'body': "Empty Control File."
+            }
+        
+        # loop two times in the data for source and current
         for file_type in ['source', 'current']:
             process(file_type, exhibit_id, data, s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix,
                     s3_folder)
