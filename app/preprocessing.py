@@ -116,15 +116,17 @@ def index():
         s3_client = session.client(service_name="s3")
 
         if processing_type == 'case_level':
-            prefix = ''.join([s3_folder, "/", s3_sub_folder])
-            files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-            trigger_folders = extract_folder_paths(files)
-            s3_document_folders = list(set([item.split('/')[2] for item in trigger_folders]))
+            case_prefix = ''.join([s3_folder, "/", s3_sub_folder])
+            case_files = list_dir(prefix=case_prefix, bucket=main_s3_bucket, client=s3_client)
+            case_trigger_folders = extract_folder_paths(case_files)
+            s3_document_folders = list(set([item.split('/')[2] for item in case_trigger_folders]))
             for s3_document_folder in s3_document_folders:
                 prefix = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder])
                 files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
                 trigger_folders = extract_folder_paths(files)
+                print("\n\ntrigger_folders - ", trigger_folders)
                 doc_metadata_file_path = prefix + '/' + s3_document_folder + "_" + str(len(trigger_folders))
+                print("doc_metadata_file_path - ", doc_metadata_file_path)
                 place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
                 place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
         elif processing_type == 'doc_level':
