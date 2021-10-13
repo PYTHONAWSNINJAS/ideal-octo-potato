@@ -98,6 +98,7 @@ def lambda_handler(event, context):
 
         if not data['files']:
             print("Empty Control File.")
+            s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
             return {
                 'statusCode': 204,
                 'body': "Empty Control File."
