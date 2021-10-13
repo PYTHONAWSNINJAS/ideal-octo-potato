@@ -94,9 +94,21 @@ def place_metadata_file(bucket, file):
     client = boto3.client("s3")
     client.put_object(Body="", Bucket=bucket, Key=file)
 
+
 def filter_trigger_folders(trigger_folders):
-    filtered_folders =  {"/".join([item.split('/')[0], item.split('/')[1], item.split('/')[2], item.split('/')[3]]) for item in trigger_folders}
+    filtered_folders = {
+        "/".join(
+            [
+                item.split("/")[0],
+                item.split("/")[1],
+                item.split("/")[2],
+                item.split("/")[3],
+            ]
+        )
+        for item in trigger_folders
+    }
     return filtered_folders
+
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @app.route("/", methods=["POST"])
@@ -114,10 +126,14 @@ def index():
     # noinspection PyBroadException
     try:
         body = request.json
-        s3_sub_folder = "exhibits"#os.environ["s3_sub_folder"]
-        main_s3_bucket = "smatta-trialmanager-source"#os.environ["main_s3_bucket"]
-        metadata_s3_bucket = "smatta-trialmanager-metadata"#os.environ["metadata_s3_bucket"]
-        trigger_s3_bucket = "smatta-trialmanager-trigger"#os.environ["trigger_s3_bucket"]
+        s3_sub_folder = "exhibits"  # os.environ["s3_sub_folder"]
+        main_s3_bucket = "smatta-trialmanager-source"  # os.environ["main_s3_bucket"]
+        metadata_s3_bucket = (
+            "smatta-trialmanager-metadata"  # os.environ["metadata_s3_bucket"]
+        )
+        trigger_s3_bucket = (
+            "smatta-trialmanager-trigger"  # os.environ["trigger_s3_bucket"]
+        )
         processing_type = body["processing_type"]
         s3_folder = body["s3_folder"]
         session = boto3.Session()
@@ -141,7 +157,10 @@ def index():
                 filtered_trigger_folders = filter_trigger_folders(trigger_folders)
                 print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
                 doc_metadata_file_path = (
-                    prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
+                    prefix
+                    + s3_document_folder
+                    + "_"
+                    + str(len(filtered_trigger_folders))
                 )
                 print("doc_metadata_file_path - ", doc_metadata_file_path)
                 place_metadata_file(
@@ -157,7 +176,7 @@ def index():
             trigger_folders = extract_folder_paths(files)
             filtered_trigger_folders = filter_trigger_folders(trigger_folders)
             print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
-            print("s3_document_folder",s3_document_folder)
+            print("s3_document_folder", s3_document_folder)
             doc_metadata_file_path = (
                 prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
             )
