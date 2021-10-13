@@ -20,8 +20,8 @@ from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 
-FILE_PATTERN_TO_IGNORE = '_small'
-FILE_PATTERN_TO_INCLUDE = '_unredacted_original'
+FILE_PATTERN_TO_IGNORE = "_small"
+FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
 
 
 def download_dir(prefix, local, bucket, client):
@@ -125,8 +125,15 @@ def init():
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
 
-    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket,
-            merge_trigger_bucket]
+    return [
+        s3_client,
+        main_s3_bucket,
+        lambda_write_path,
+        pdf_file_suffix,
+        s3_output_folder,
+        metadata_s3_bucket,
+        merge_trigger_bucket,
+    ]
 
 
 def get_pdf_object(font_size=10):
@@ -147,8 +154,17 @@ def get_pdf_object(font_size=10):
     return pdf
 
 
-def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_directory, lambda_write_path,
-                             pdf_file_suffix, s3_output_folder, trigger_folder):
+def process_document_folders(
+    s3_client,
+    bucket_name,
+    s3_folder,
+    s3_sub_folder,
+    s3_document_directory,
+    lambda_write_path,
+    pdf_file_suffix,
+    s3_output_folder,
+    trigger_folder,
+):
     """
     This will process all files in the Trigger folder in a loop and put into Main S3.
 
@@ -164,54 +180,92 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
         trigger_folder str: the trigger folder in main S3 for which the process will be executed.
     """
     for current_item in os.listdir(
-            downloaded_folder_path := os.path.join(lambda_write_path, s3_folder, s3_sub_folder, s3_document_directory,
-                                                   trigger_folder)):
+        downloaded_folder_path := os.path.join(
+            lambda_write_path,
+            s3_folder,
+            s3_sub_folder,
+            s3_document_directory,
+            trigger_folder,
+        )
+    ):
         converted = ""
         pdf_file_name = ""
         s3_location = ""
         s3_object = ""
         try:
-            if os.path.isdir(file_path := os.path.join(downloaded_folder_path, current_item)) and file_path.endswith(
-                    'full_marks'):
+            if os.path.isdir(
+                file_path := os.path.join(downloaded_folder_path, current_item)
+            ) and file_path.endswith("full_marks"):
                 for item_in_full_marks in os.listdir(file_path):
                     converted = False
                     file_path = os.path.join(file_path, item_in_full_marks)
                     filename, file_extension = os.path.splitext(file_path)
-                    pdf_file_name = ''.join([filename, pdf_file_suffix, ".pdf"])
-                    s3_location = os.path.join(s3_folder, s3_sub_folder, s3_document_directory, trigger_folder,
-                                               current_item)
+                    pdf_file_name = "".join([filename, pdf_file_suffix, ".pdf"])
+                    s3_location = os.path.join(
+                        s3_folder,
+                        s3_sub_folder,
+                        s3_document_directory,
+                        trigger_folder,
+                        current_item,
+                    )
                     s3_object = pdf_file_name.split(os.sep)[-1]
 
                     if filename.endswith(FILE_PATTERN_TO_IGNORE):
                         continue
-                    elif file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
-                        converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
+                    if file_path.lower().endswith(
+                        (".png", ".jpg", ".gif", ".tif", ".tiff")
+                    ):
+                        converted = create_pdf(
+                            file_path, lambda_write_path, pdf_file_name
+                        )
                     if converted:
-                        print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
-                        with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-                            s3_client.upload_fileobj(data, bucket_name, ''.join(
-                                [s3_location.replace(s3_sub_folder, s3_output_folder), "/", s3_object]))
+                        print(
+                            f"Created - {os.path.join(lambda_write_path, pdf_file_name)}"
+                        )
+                        with open(
+                            os.path.join(lambda_write_path, pdf_file_name), "rb"
+                        ) as data:
+                            s3_client.upload_fileobj(
+                                data,
+                                bucket_name,
+                                "".join(
+                                    [
+                                        s3_location.replace(
+                                            s3_sub_folder, s3_output_folder
+                                        ),
+                                        "/",
+                                        s3_object,
+                                    ]
+                                ),
+                            )
                     else:
                         print(f"PDF not created for - {current_item}")
             else:
                 converted = False
                 filename, file_extension = os.path.splitext(file_path)
-                pdf_file_name = ''.join([filename, pdf_file_suffix, ".pdf"])
-                s3_location = os.path.join(s3_folder, s3_sub_folder, s3_document_directory, trigger_folder)
+                pdf_file_name = "".join([filename, pdf_file_suffix, ".pdf"])
+                s3_location = os.path.join(
+                    s3_folder, s3_sub_folder, s3_document_directory, trigger_folder
+                )
                 s3_object = pdf_file_name.split(os.sep)[-1]
 
                 print(f"\nProcessing {file_path}")
 
                 if filename.endswith(FILE_PATTERN_TO_IGNORE):
                     continue
-                elif file_path.endswith(".pdf"):
+                if file_path.endswith(".pdf"):
                     copyfile(file_path, pdf_file_name)
                     converted = True
                 elif file_path.endswith(".mif"):
                     try:
-                        copyfile(file_path, temp_mif_file := ''.join([filename, ".txt"]))
-                        pdfkit.from_file(temp_mif_file, os.path.join(lambda_write_path, pdf_file_name),
-                                         options={'quiet': ''})
+                        copyfile(
+                            file_path, temp_mif_file := "".join([filename, ".txt"])
+                        )
+                        pdfkit.from_file(
+                            temp_mif_file,
+                            os.path.join(lambda_write_path, pdf_file_name),
+                            options={"quiet": ""},
+                        )
                         converted = True
                     except Exception as e:
                         print(e)
@@ -223,57 +277,107 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
                         pdf_txt.write(5, str(line))
                     pdf_txt.output(os.path.join(lambda_write_path, pdf_file_name))
                     converted = True
-                elif file_path.lower().endswith(''.join([".png", FILE_PATTERN_TO_INCLUDE])):
-                    copyfile(file_path, temp_unredacted_file := ''.join(
-                        [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".png"]))
-                    pdf_file_name = ''.join([filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".pdf"])
+                elif file_path.lower().endswith(
+                    "".join([".png", FILE_PATTERN_TO_INCLUDE])
+                ):
+                    copyfile(
+                        file_path,
+                        temp_unredacted_file := "".join(
+                            [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".png"]
+                        ),
+                    )
+                    pdf_file_name = "".join(
+                        [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".pdf"]
+                    )
                     s3_object = pdf_file_name.split(os.sep)[-1]
-                    converted = create_pdf(temp_unredacted_file, lambda_write_path, pdf_file_name)
-                elif file_path.lower().endswith((".png", ".jpg", ".gif", ".tif", ".tiff")):
+                    converted = create_pdf(
+                        temp_unredacted_file, lambda_write_path, pdf_file_name
+                    )
+                elif file_path.lower().endswith(
+                    (".png", ".jpg", ".gif", ".tif", ".tiff")
+                ):
                     converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
                 elif file_path.endswith((".pcd", ".bmp")):
-                    Image.open(file_path).save(temp_file := ''.join([filename, ".png"]))
+                    Image.open(file_path).save(temp_file := "".join([filename, ".png"]))
                     converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
                 elif file_path.endswith(".svg"):
                     drawing = svg2rlg(file_path, resolve_entities=True)
-                    renderPM.drawToFile(drawing, temp_file := ''.join([filename, ".png"]), fmt="PNG")
+                    renderPM.drawToFile(
+                        drawing, temp_file := "".join([filename, ".png"]), fmt="PNG"
+                    )
                     converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
-                elif file_path.endswith((".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")):
+                elif file_path.endswith(
+                    (".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")
+                ):
                     if file_path.endswith("mht"):
-                        copyfile(file_path, temp_file := ''.join([filename, ".html"]))
-                        pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                         options={"enable-local-file-access": "", "quiet": ""})
+                        copyfile(file_path, temp_file := "".join([filename, ".html"]))
+                        pdfkit.from_file(
+                            temp_file,
+                            os.path.join(lambda_write_path, pdf_file_name),
+                            options={"enable-local-file-access": "", "quiet": ""},
+                        )
                     elif file_path.endswith(".csv"):
                         df = pd.read_csv(file_path)
-                        df.to_html(temp_file := ''.join([filename, ".html"]))
-                        pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                         options={"enable-local-file-access": "", "quiet": ""})
+                        df.to_html(temp_file := "".join([filename, ".html"]))
+                        pdfkit.from_file(
+                            temp_file,
+                            os.path.join(lambda_write_path, pdf_file_name),
+                            options={"enable-local-file-access": "", "quiet": ""},
+                        )
                     elif file_path.endswith((".xls", ".xlsx")):
                         temp_pdfs = []
                         xls = pd.ExcelFile(file_path)
                         for sheet_name in xls.sheet_names:
                             df = pd.read_excel(file_path, sheet_name=sheet_name)
-                            df.to_html(temp_file := ''.join([filename, "_", str(sheet_name), ".html"]))
-                            pdfkit.from_file(temp_file, temp_pdf := ''.join([filename, "_", str(sheet_name), ".pdf"]),
-                                             options={"enable-local-file-access": "", "quiet": ""})
+                            df.to_html(
+                                temp_file := "".join(
+                                    [filename, "_", str(sheet_name), ".html"]
+                                )
+                            )
+                            pdfkit.from_file(
+                                temp_file,
+                                temp_pdf := "".join(
+                                    [filename, "_", str(sheet_name), ".pdf"]
+                                ),
+                                options={"enable-local-file-access": "", "quiet": ""},
+                            )
                             temp_pdfs.append(temp_pdf)
-                        merge_pdf(temp_pdfs, os.path.join(lambda_write_path, pdf_file_name))
+                        merge_pdf(
+                            temp_pdfs, os.path.join(lambda_write_path, pdf_file_name)
+                        )
                     else:
                         try:
-                            pdfkit.from_file(file_path, os.path.join(lambda_write_path, pdf_file_name),
-                                             options={"enable-local-file-access": "", "quiet": ""})
+                            pdfkit.from_file(
+                                file_path,
+                                os.path.join(lambda_write_path, pdf_file_name),
+                                options={"enable-local-file-access": "", "quiet": ""},
+                            )
                         except Exception as e:
                             print(e)
                             print("\nTrying again\n")
-                            copyfile(file_path, temp_file := ''.join([filename, ".txt"]))
-                            pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name),
-                                             options={"quiet": ""})
+                            copyfile(
+                                file_path, temp_file := "".join([filename, ".txt"])
+                            )
+                            pdfkit.from_file(
+                                temp_file,
+                                os.path.join(lambda_write_path, pdf_file_name),
+                                options={"quiet": ""},
+                            )
                     converted = True
                 elif file_path.endswith(".msg"):
                     msg_properties = []
                     msg = extract_msg.Message(file_path)
-                    msg_properties.extend([msg.date, '', ''.join(['To:', msg.to]), '', msg.subject, msg.body,
-                                           ''.join(['From:', msg.sender])])
+                    msg_properties.extend(
+                        [
+                            msg.date,
+                            "",
+                            "".join(["To:", msg.to]),
+                            "",
+                            msg.subject,
+                            msg.body,
+                            "".join(["From:", msg.sender]),
+                        ]
+                    )
 
                     pdf_email = get_pdf_object(12)
                     for i in msg_properties:
@@ -282,11 +386,13 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
 
                     pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
                     converted = True
-                elif file_path.endswith('.db'):
+                elif file_path.endswith(".db"):
                     con = sqlite3.connect(file_path)
                     df = pd.read_sql_query("select * from <table_name>", con)
-                    df.to_html(temp_file := ''.join([filename, ".html"]))
-                    pdfkit.from_file(temp_file, os.path.join(lambda_write_path, pdf_file_name))
+                    df.to_html(temp_file := "".join([filename, ".html"]))
+                    pdfkit.from_file(
+                        temp_file, os.path.join(lambda_write_path, pdf_file_name)
+                    )
 
         except Exception as e:
             print(e)
@@ -294,8 +400,17 @@ def process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
             with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-                s3_client.upload_fileobj(data, bucket_name, ''.join(
-                    [s3_location.replace(s3_sub_folder, s3_output_folder), "/", s3_object]))
+                s3_client.upload_fileobj(
+                    data,
+                    bucket_name,
+                    "".join(
+                        [
+                            s3_location.replace(s3_sub_folder, s3_output_folder),
+                            "/",
+                            s3_object,
+                        ]
+                    ),
+                )
         else:
             print(f"PDF not created for - {current_item}")
 
@@ -348,10 +463,14 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     total_no_of_trigger_files: no of trigger files
 
     """
-    pattern_to_look = meta_data_object_folder.split('/')[-2]
-    objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
-    meta_data_object = [item for item in objects if item.split('/')[-1].startswith(pattern_to_look)][0]
-    total_no_of_trigger_files = int(meta_data_object.split('/')[-1].split('_')[1])
+    pattern_to_look = meta_data_object_folder.split("/")[-2]
+    objects = list_dir(
+        prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
+    )
+    meta_data_object = [
+        item for item in objects if item.split("/")[-1].startswith(pattern_to_look)
+    ][0]
+    total_no_of_trigger_files = int(meta_data_object.split("/")[-1].split("_")[1])
     print("meta_data_object -", meta_data_object)
     print("total_no_of_trigger_files -", total_no_of_trigger_files)
     return total_no_of_trigger_files
@@ -384,8 +503,12 @@ def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     size of success objects for each run as parallel lambdas are running.
 
     """
-    objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
-    success_objects = [item for item in objects if item.split('/')[-1].startswith('Success')]
+    objects = list_dir(
+        prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
+    )
+    success_objects = [
+        item for item in objects if item.split("/")[-1].startswith("Success")
+    ]
     return len(success_objects)
 
 
@@ -402,7 +525,9 @@ def create_merge_trigger_file(s3_client, bucket, file):
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
 
-def remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder):
+def remove_files_from_metadata_bucket(
+    s3_client, metadata_s3_bucket, meta_data_object_folder
+):
     """
 
     Parameters
@@ -411,7 +536,9 @@ def remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_o
     metadata_s3_bucket
     meta_data_object_folder
     """
-    objects = list_dir(prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client)
+    objects = list_dir(
+        prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
+    )
     print("Removing Objects")
     for item in objects:
         s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)
@@ -427,33 +554,84 @@ def lambda_handler(event, context):
     context: lambda context
     """
     print(event)
-    trigger_bucket_name = event['Records'][0]['s3']['bucket']['name']
-    folder_path = event['Records'][0]['s3']['object']['key']
-    s3_folder = folder_path.split('/')[0]
-    s3_sub_folder = folder_path.split('/')[1]
-    s3_document_folder = folder_path.split('/')[2]
-    trigger_folder = folder_path.split('/')[3]
+    trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+    folder_path = event["Records"][0]["s3"]["object"]["key"]
+    s3_folder = folder_path.split("/")[0]
+    s3_sub_folder = folder_path.split("/")[1]
+    s3_document_folder = folder_path.split("/")[2]
+    trigger_folder = folder_path.split("/")[3]
 
-    s3_client, bucket_name, lambda_write_path, pdf_file_suffix, s3_output_folder, metadata_s3_bucket, \
-        merge_trigger_bucket = init()
+    (
+        s3_client,
+        bucket_name,
+        lambda_write_path,
+        pdf_file_suffix,
+        s3_output_folder,
+        metadata_s3_bucket,
+        merge_trigger_bucket,
+    ) = init()
 
-    download_dir(prefix=''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/", trigger_folder]),
-                 local=lambda_write_path,
-                 bucket=bucket_name, client=s3_client)
+    download_dir(
+        prefix="".join(
+            [
+                s3_folder,
+                "/",
+                s3_sub_folder,
+                "/",
+                s3_document_folder,
+                "/",
+                trigger_folder,
+            ]
+        ),
+        local=lambda_write_path,
+        bucket=bucket_name,
+        client=s3_client,
+    )
 
-    process_document_folders(s3_client, bucket_name, s3_folder, s3_sub_folder, s3_document_folder, lambda_write_path,
-                             pdf_file_suffix, s3_output_folder, trigger_folder)
+    process_document_folders(
+        s3_client,
+        bucket_name,
+        s3_folder,
+        s3_sub_folder,
+        s3_document_folder,
+        lambda_write_path,
+        pdf_file_suffix,
+        s3_output_folder,
+        trigger_folder,
+    )
     rmtree(lambda_write_path + s3_folder)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
 
-    meta_data_object_folder = ''.join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+    meta_data_object_folder = "".join(
+        [s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"]
+    )
     print("meta_data_object_folder -", meta_data_object_folder)
-    total_no_of_trigger_files = fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket)
-    create_success_file(s3_client, metadata_s3_bucket, meta_data_object_folder + "Success_" + trigger_folder)
-    no_of_success_files = count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder)
+    total_no_of_trigger_files = fetch_metadata_file(
+        s3_client, meta_data_object_folder, metadata_s3_bucket
+    )
+    create_success_file(
+        s3_client,
+        metadata_s3_bucket,
+        meta_data_object_folder + "Success_" + trigger_folder,
+    )
+    no_of_success_files = count_success_files(
+        s3_client, metadata_s3_bucket, meta_data_object_folder
+    )
     if no_of_success_files == total_no_of_trigger_files:
-        merge_trigger_file = ''.join(
-            [s3_folder, "/", s3_output_folder, "/", "control_files", "/", s3_document_folder, ".json"])
+        merge_trigger_file = "".join(
+            [
+                s3_folder,
+                "/",
+                s3_output_folder,
+                "/",
+                "control_files",
+                "/",
+                s3_document_folder,
+                ".json",
+            ]
+        )
         print("merge_trigger_file -", merge_trigger_file)
         create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
-        remove_files_from_metadata_bucket(s3_client, metadata_s3_bucket, meta_data_object_folder)
+        remove_files_from_metadata_bucket(
+            s3_client, metadata_s3_bucket, meta_data_object_folder
+        )
