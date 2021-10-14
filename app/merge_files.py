@@ -115,6 +115,7 @@ def lambda_handler(event, context):
             'body': "Merged"
         }
     except Exception as e:
+        print(e)
         print(traceback.format_exc())
         return {
             'statusCode': 500,

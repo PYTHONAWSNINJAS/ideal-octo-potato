@@ -199,7 +199,7 @@ def process_document_folders(
                 for item_in_full_marks in os.listdir(file_path):
                     converted = False
                     file_path = os.path.join(file_path, item_in_full_marks)
-                    filename, file_extension = os.path.splitext(file_path)
+                    filename, _ = os.path.splitext(file_path)
                     pdf_file_name = "".join([filename, pdf_file_suffix, ".pdf"])
                     s3_location = os.path.join(
                         s3_folder,

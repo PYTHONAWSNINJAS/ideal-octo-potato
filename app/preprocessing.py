@@ -181,6 +181,7 @@ def index():
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as e:
+        print(e)
         print(traceback.format_exc())
         return {"statusCode": 500, "body": str(traceback.format_exc())}
 
