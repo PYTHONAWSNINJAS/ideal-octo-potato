@@ -242,7 +242,7 @@ def process_document_folders(
                         print(f"PDF not created for - {current_item}")
             else:
                 converted = False
-                filename, file_extension = os.path.splitext(file_path)
+                filename, _ = os.path.splitext(file_path)
                 pdf_file_name = "".join([filename, pdf_file_suffix, ".pdf"])
                 s3_location = os.path.join(
                     s3_folder, s3_sub_folder, s3_document_directory, trigger_folder
