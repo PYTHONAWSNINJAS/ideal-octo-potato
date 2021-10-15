@@ -1,8 +1,8 @@
 """
-This module will run locally to build a docker image 
+This module will run locally to build a docker image
 using the app.py under app folder using the Dockerfile
 and install the modules in requirements.txt.
-Next, it will Login to AWS and Push the Image to 
+Next, it will Login to AWS and Push the Image to
 ECR Repository.
 """
 
