@@ -20,6 +20,7 @@ from PyPDF2 import PdfFileMerger
 from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
+import tempfile
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
@@ -110,13 +111,11 @@ def merge_pdf(pdfs, filename):
 
 def init():
     """
-
     Initialises variables required for the program to operate
     Returns: all the initialised variables
     -------
-
     """
-    lambda_write_path = "/tmp/"
+    lambda_write_path = tempfile.gettempdir()+"/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     metadata_s3_bucket = os.environ["metadata_s3_bucket"]
     merge_trigger_bucket = os.environ["merge_trigger_bucket"]

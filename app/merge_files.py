@@ -11,17 +11,15 @@ import boto3
 from PyPDF2 import PdfFileMerger
 
 import traceback
-
+import tempfile
 
 def init():
     """
-
     Initialises variables required for the program to operate
     Returns: all the initialised variables
     -------
-
     """
-    lambda_write_path = "/tmp/"
+    lambda_write_path = tempfile.gettempdir()+"/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     pdf_file_suffix = "_dv"
 
