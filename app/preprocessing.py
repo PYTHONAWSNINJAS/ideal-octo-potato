@@ -20,7 +20,6 @@ app = Flask(__name__, template_folder=".")
 
 def list_dir(prefix, bucket, client):
     """
-
     Parameters
     ----------
     prefix: Prefix to list from in S3
@@ -54,7 +53,6 @@ def list_dir(prefix, bucket, client):
 
 def extract_folder_paths(files):
     """
-
     Parameters
     ----------
     files: List of File Paths
@@ -74,7 +72,6 @@ def extract_folder_paths(files):
 
 def place_trigger_files(bucket, folders):
     """
-
     Parameters
     ----------
     bucket: bucket name
@@ -87,7 +84,6 @@ def place_trigger_files(bucket, folders):
 
 def place_metadata_file(bucket, file):
     """
-
     Parameters
     ----------
     bucket
@@ -98,6 +94,14 @@ def place_metadata_file(bucket, file):
 
 
 def filter_trigger_folders(trigger_folders):
+    """
+    This function will filter the trigger folders to only
+    put document level path not anything in nested paths.
+    Parameters
+    ----------
+    event: lambda event
+    context: lambda context
+    """
     filtered_folders = {
         "/".join(
             [
@@ -116,7 +120,6 @@ def filter_trigger_folders(trigger_folders):
 @app.route("/", methods=["POST"])
 def index():
     """
-
     Parameters
     ----------
     event: lambda event
