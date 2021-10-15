@@ -94,7 +94,6 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
 
 def merge_pdf(pdfs, filename):
     """
-
     Parameters
     ----------
     pdfs: pdf files to be merged
@@ -138,14 +137,12 @@ def init():
 
 def get_pdf_object(font_size=10):
     """
-
     Parameters
     ----------
     font_size: Specify the font size of the texts in the pdf
 
     Returns
     -------
-
     """
     pdf = FPDF()
     pdf.add_page()
@@ -420,7 +417,6 @@ def process_document_folders(
 
 def list_dir(prefix, bucket, client):
     """
-
     Parameters
     ----------
     prefix: Prefix to list from in S3
@@ -430,7 +426,6 @@ def list_dir(prefix, bucket, client):
     Returns
     -------
     Keys: list of files
-
     """
     keys = []
     next_token = ""
@@ -454,7 +449,6 @@ def list_dir(prefix, bucket, client):
 
 def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     """
-
     Parameters
     ----------
     s3_client: Client Object to Access S3
@@ -464,8 +458,8 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     Returns
     -------
     total_no_of_trigger_files: no of trigger files
-
     """
+    
     pattern_to_look = meta_data_object_folder.split("/")[-2]
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
@@ -481,20 +475,19 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
 
 def create_success_file(s3_client, bucket, file):
     """
-
     Parameters
     ----------
     s3_client: S3 Object
     bucket: Bucket Name
     file: File Name
     """
+    
     print("Creating Success Files")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     """
-
     Parameters
     ----------
     s3_client S3 Object
@@ -504,8 +497,8 @@ def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     Returns
     -------
     size of success objects for each run as parallel lambdas are running.
-
     """
+    
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
@@ -517,13 +510,13 @@ def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
 
 def create_merge_trigger_file(s3_client, bucket, file):
     """
-
     Parameters
     ----------
     s3_client
     bucket
     file
     """
+    
     print("Creating Merge Trigger File")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
@@ -532,13 +525,13 @@ def remove_files_from_metadata_bucket(
     s3_client, metadata_s3_bucket, meta_data_object_folder
 ):
     """
-
     Parameters
     ----------
     s3_client
     metadata_s3_bucket
     meta_data_object_folder
     """
+    
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
@@ -556,6 +549,7 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
+    
     print(event)
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     folder_path = event["Records"][0]["s3"]["object"]["key"]
