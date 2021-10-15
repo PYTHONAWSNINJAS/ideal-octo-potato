@@ -9,7 +9,6 @@ import os
 
 def build(account_id, image_name, repository_name, docker_file):
     """
-
     Parameters
     ----------
     account_id: AWS account ID
