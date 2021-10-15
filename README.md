@@ -1,5 +1,6 @@
 # ideal-octo-potato
-
+[![DeepSource](https://deepsource.io/gh/PYTHONAWSNINJAS/ideal-octo-potato.svg/?label=active+issues&show_trend=true&token=whwikFGIu8kkgj8AMfh_5BLD)](https://deepsource.io/gh/PYTHONAWSNINJAS/ideal-octo-potato/?ref=repository-badge)
+[![DeepSource](https://deepsource.io/gh/PYTHONAWSNINJAS/ideal-octo-potato.svg/?label=resolved+issues&show_trend=true&token=whwikFGIu8kkgj8AMfh_5BLD)](https://deepsource.io/gh/PYTHONAWSNINJAS/ideal-octo-potato/?ref=repository-badge)
 ## A docker based solution for AWS Lambda to convert multiple extension files to PDF and put in S3
 
 ### Steps
@@ -62,14 +63,3 @@ Note: clear the credentials and set these.
 2. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
 3. docker tag <docker_image_id> ecr_uri
 4. docker push ecr_uri
-
-## ToDo
-
-- [ ] Test with xlrd instead of openpyxl
-- [ ] Change to cross-platform tmp directory with tempfile module
-- [ ] Add docx and doc
-- [ ] Explore docker sync
-- [ ] Check eml files. wkhtmltopdf reported an error: Error: This version of wkhtmltopdf is build against an unpatched version of QT, and does not support more than one input document. Exit with code 1, due to unknown error. https://bradley-schoeneweis.medium.com/converting-html-to-a-pdf-using-python-aws-lambda-and-wkhtmltopdf-8dbadf58b879
-- [ ] Check and optimise the flow, names and deletion activities.
-- [ ] Add log creation to S3 based on trigger folder. Use tempfile and create a log and put all info in the file. Transfer the file to S3 in 2021/09/16/TriggerFolderName.log
-- [ ] cname for url - R&D on url
