@@ -39,8 +39,8 @@ def build(account_id, image_name, repository_name, docker_file):
 
 
 if __name__ == "__main__":
-    docker_file = "Dockerfile.preprocessing"
+    docker_file_name = "Dockerfile.preprocessing"
     aws_account_id = "176915357459"
     docker_image_name = "preprocessing"
     ecr_repository_name = "preprocessing"
-    build(aws_account_id, docker_image_name, ecr_repository_name, docker_file)
+    build(aws_account_id, docker_image_name, ecr_repository_name, docker_file_name)
