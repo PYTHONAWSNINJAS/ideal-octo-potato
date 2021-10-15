@@ -13,6 +13,7 @@ from PyPDF2 import PdfFileMerger
 import traceback
 import tempfile
 
+
 def init():
     """
     Initialises variables required for the program to operate
