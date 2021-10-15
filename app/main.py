@@ -115,7 +115,7 @@ def init():
     Returns: all the initialised variables
     -------
     """
-    lambda_write_path = tempfile.gettempdir()+"/"
+    lambda_write_path = tempfile.gettempdir() + "/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     metadata_s3_bucket = os.environ["metadata_s3_bucket"]
     merge_trigger_bucket = os.environ["merge_trigger_bucket"]
