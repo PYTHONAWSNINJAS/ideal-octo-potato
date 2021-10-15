@@ -1,6 +1,8 @@
 """
-This module is trigger based on API event and accepts the payload to start placing the trigger files for
-the main lambda to work. This also places the meta trigger objects for merge trigger conditions.
+This module is trigger based on API event and 
+accepts the payload to start placing the trigger files for
+the main lambda to work. This also places the 
+meta trigger objects for merge trigger conditions.
 """
 
 import json

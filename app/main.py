@@ -1,5 +1,6 @@
 """
-This module is triggered based on files placed in trigger S3 bucket. The trigger files corresponds to each folder in
+This module is triggered based on files placed in trigger S3 bucket.
+The trigger files corresponds to each folder in
 main s3 where the documents are placed.
 The files in the folder are converted in a loop and stored in doc_pdf.
 A Success file is created in Merge Trigger Once the process is done.
@@ -166,18 +167,21 @@ def process_document_folders(
     trigger_folder,
 ):
     """
-    This will process all files in the Trigger folder in a loop and put into Main S3.
+    This will process all files in the Trigger folder 
+    in a loop and put into Main S3.
 
     Args:
         s3_client boto3 object: S3 Session Client Object
         bucket_name str: main s3 bucket name
         s3_folder str: s3 folder i.e case_number
         s3_sub_folder str: s3 sub folder i.e exhibits
-        s3_document_directory str: s3 document directory i.e document folder
+        s3_document_directory str: s3 document directory
+        i.e document folder
         lambda_write_path str: lambda_write_path i.e /tmp
         pdf_file_suffix str: pdf file suffix value i.e _dv
         s3_output_folder str: S3 output folder i.e doc_pdf
-        trigger_folder str: the trigger folder in main S3 for which the process will be executed.
+        trigger_folder str: the trigger folder in main S3 for 
+        which the process will be executed.
     """
     for current_item in os.listdir(
         downloaded_folder_path := os.path.join(
