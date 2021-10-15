@@ -3,27 +3,6 @@
 [![DeepSource](https://deepsource.io/gh/PYTHONAWSNINJAS/ideal-octo-potato.svg/?label=resolved+issues&show_trend=true&token=whwikFGIu8kkgj8AMfh_5BLD)](https://deepsource.io/gh/PYTHONAWSNINJAS/ideal-octo-potato/?ref=repository-badge)
 ## A docker based solution for AWS Lambda to convert multiple extension files to PDF and put in S3
 
-### Steps
-
-1. Install docker
-2. Install docker extension in vs code
-3. create app folder
-4. create app.py in app folder
-5. create Dockerfile in main directory
-6. place requirements.txt in main directory
-
-## AWS IAM Permissions needed
-
-```S3:ListBucket
-S3:GetObjects
-S3:PutObjects
-ecr:GetAuthorizationToken
-```
-
-## Fix for GetAuthorizationToken exception
-
-configure aws credentials
-
 ## Docker Commands
 
 ### Build
@@ -46,20 +25,5 @@ or right click -> build image from Dockerfile
 
 The docker terminal will display server side messages. The new terminal will display the client side messages.
 
-## AWS CLI Commands
-
-### Displays all the profile related info
-
-These two files store the info:
-
-1. credentials
-2. config
-
-Note: clear the credentials and set these.
-
-## Push to ECR
-
-1. docker images
-2. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
-3. docker tag <docker_image_id> ecr_uri
-4. docker push ecr_uri
+## Build and Push to ECR
+Run [build_and_push.py](https://github.com/PYTHONAWSNINJAS/ideal-octo-potato/blob/7bc1d4330915f6cb3cc377a68ae9d39daf60dfa6/build_and_push.py) to build the docker image and push to AWS ECR
