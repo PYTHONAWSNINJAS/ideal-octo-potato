@@ -459,7 +459,7 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     -------
     total_no_of_trigger_files: no of trigger files
     """
-    
+
     pattern_to_look = meta_data_object_folder.split("/")[-2]
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
@@ -481,7 +481,7 @@ def create_success_file(s3_client, bucket, file):
     bucket: Bucket Name
     file: File Name
     """
-    
+
     print("Creating Success Files")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
@@ -498,7 +498,7 @@ def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     -------
     size of success objects for each run as parallel lambdas are running.
     """
-    
+
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
@@ -516,7 +516,7 @@ def create_merge_trigger_file(s3_client, bucket, file):
     bucket
     file
     """
-    
+
     print("Creating Merge Trigger File")
     s3_client.put_object(Body="", Bucket=bucket, Key=file)
 
@@ -531,7 +531,7 @@ def remove_files_from_metadata_bucket(
     metadata_s3_bucket
     meta_data_object_folder
     """
-    
+
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
@@ -549,7 +549,7 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
-    
+
     print(event)
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     folder_path = event["Records"][0]["s3"]["object"]["key"]
