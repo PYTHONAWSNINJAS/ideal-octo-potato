@@ -89,9 +89,9 @@ def process(
         "Uploading to - ",
         bucket_name + "/" + s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
     )
-    with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
+    with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
         s3_client.upload_fileobj(
-            data,
+            merged_data,
             bucket_name,
             s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
         )
