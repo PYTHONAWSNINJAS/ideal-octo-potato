@@ -20,7 +20,7 @@ def init():
     Returns: all the initialised variables
     -------
     """
-    lambda_write_path = tempfile.gettempdir()+"/"
+    lambda_write_path = tempfile.gettempdir() + "/"
     main_s3_bucket = os.environ["main_s3_bucket"]
     pdf_file_suffix = "_dv"
 
