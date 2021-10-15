@@ -167,7 +167,7 @@ def process_document_folders(
     trigger_folder,
 ):
     """
-    This will process all files in the Trigger folder 
+    This will process all files in the Trigger folder
     in a loop and put into Main S3.
 
     Args:
@@ -180,7 +180,7 @@ def process_document_folders(
         lambda_write_path str: lambda_write_path i.e /tmp
         pdf_file_suffix str: pdf file suffix value i.e _dv
         s3_output_folder str: S3 output folder i.e doc_pdf
-        trigger_folder str: the trigger folder in main S3 for 
+        trigger_folder str: the trigger folder in main S3 for
         which the process will be executed.
     """
     for current_item in os.listdir(
