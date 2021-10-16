@@ -616,4 +616,3 @@ def lambda_handler(event, context):
         remove_files_from_metadata_bucket(
             s3_client, metadata_s3_bucket, meta_data_object_folder
         )
-
