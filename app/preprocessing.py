@@ -116,6 +116,7 @@ def filter_trigger_folders(trigger_folders):
     }
     return filtered_folders
 
+
 def preprocess(args):
     """
     This function will list the s3 folder
@@ -173,8 +174,18 @@ def index():
             args = []
             for s3_document_folder in s3_document_folders:
                 stuffs = []
-                stuffs.extend([s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client])
-                args.append(stuffs)               
+                stuffs.extend(
+                    [
+                        s3_folder,
+                        s3_sub_folder,
+                        s3_document_folder,
+                        main_s3_bucket,
+                        metadata_s3_bucket,
+                        trigger_s3_bucket,
+                        s3_client,
+                    ]
+                )
+                args.append(stuffs)
 
             with concurrent.futures.ThreadPoolExecutor() as executer:
                 _ = executer.map(preprocess, args)
