@@ -141,7 +141,6 @@ def index():
     event: lambda event
     context: lambda context
     """
-
     # noinspection PyBroadException
     try:
         body = request.json
