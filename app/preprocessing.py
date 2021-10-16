@@ -116,8 +116,17 @@ def filter_trigger_folders(trigger_folders):
     }
     return filtered_folders
 
+
 def preprocess(args):
-    s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client = args
+    (
+        s3_folder,
+        s3_sub_folder,
+        s3_document_folder,
+        main_s3_bucket,
+        metadata_s3_bucket,
+        trigger_s3_bucket,
+        s3_client,
+    ) = args
     prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
     files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
     trigger_folders = extract_folder_paths(files)
@@ -166,8 +175,18 @@ def index():
             args = []
             for s3_document_folder in s3_document_folders:
                 stuffs = []
-                stuffs.extend([s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client])
-                args.append(stuffs)               
+                stuffs.extend(
+                    [
+                        s3_folder,
+                        s3_sub_folder,
+                        s3_document_folder,
+                        main_s3_bucket,
+                        metadata_s3_bucket,
+                        trigger_s3_bucket,
+                        s3_client,
+                    ]
+                )
+                args.append(stuffs)
 
             with concurrent.futures.ThreadPoolExecutor() as executer:
                 results_map = executer.map(preprocess, args)
