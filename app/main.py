@@ -563,17 +563,7 @@ def lambda_handler(event, context):
     ) = init()
 
     download_dir(
-        prefix="".join(
-            [
-                s3_folder,
-                "/",
-                s3_sub_folder,
-                "/",
-                s3_document_folder,
-                "/",
-                trigger_folder,
-            ]
-        ),
+        prefix=folder_path,
         local=lambda_write_path,
         bucket=bucket_name,
         client=s3_client,
@@ -590,7 +580,7 @@ def lambda_handler(event, context):
         s3_output_folder,
         trigger_folder,
     )
-    rmtree(lambda_write_path + s3_folder)
+    rmtree(lambda_write_path + folder_path)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
 
     meta_data_object_folder = "".join(
@@ -626,3 +616,4 @@ def lambda_handler(event, context):
         remove_files_from_metadata_bucket(
             s3_client, metadata_s3_bucket, meta_data_object_folder
         )
+
