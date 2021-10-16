@@ -116,21 +116,8 @@ def filter_trigger_folders(trigger_folders):
     }
     return filtered_folders
 
-<<<<<<< HEAD
 def preprocess(args):
     s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client = args
-=======
-
-def preprocess(
-    s3_folder,
-    s3_sub_folder,
-    s3_document_folder,
-    main_s3_bucket,
-    metadata_s3_bucket,
-    trigger_s3_bucket,
-    s3_client,
-):
->>>>>>> c998a2da2f58ad7dc74aa7ea5685ca6afcf2db30
     prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
     files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
     trigger_folders = extract_folder_paths(files)
