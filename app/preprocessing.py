@@ -137,8 +137,6 @@ def index():
     event: lambda event
     context: lambda context
     """
-    prefix = ""
-    s3_document_folder = ""
 
     # noinspection PyBroadException
     try:
