@@ -88,7 +88,7 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
             f.write(pdf_png)
         return True
     except Exception as e:
-        print(e)
+        print(f"ERROR for - {file_path}, The error is {e}")
         return False
 
 
@@ -268,7 +268,7 @@ def process_document_folders(
                         )
                         converted = True
                     except Exception as e:
-                        print(e)
+                        print(f"ERROR for - {file_path}, The error is {e}")
                 elif file_path.endswith(".txt"):
                     pdf_txt = get_pdf_object(11)
                     with open(file_path, "r") as f:
@@ -395,7 +395,7 @@ def process_document_folders(
                     )
 
         except Exception as e:
-            print(e)
+            print(f"ERROR for - {file_path}, The error is {e}")
 
         if converted:
             print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")

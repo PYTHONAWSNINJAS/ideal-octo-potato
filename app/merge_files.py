@@ -136,6 +136,6 @@ def lambda_handler(event, context):
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
         return {"statusCode": 200, "body": "Merged"}
     except Exception as e:
-        print(e)
+        print(f"ERROR for - {control_file}, The error is {e}")
         print(traceback.format_exc())
         return {"statusCode": 500, "body": str(traceback.format_exc())}
