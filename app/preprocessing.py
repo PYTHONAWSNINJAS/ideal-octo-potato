@@ -115,7 +115,19 @@ def filter_trigger_folders(trigger_folders):
     }
     return filtered_folders
 
-
+def preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client):
+    prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+    files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+    trigger_folders = extract_folder_paths(files)
+    filtered_trigger_folders = filter_trigger_folders(trigger_folders)
+    print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
+    print("s3_document_folder", s3_document_folder)
+    doc_metadata_file_path = (prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders)))
+    print("doc_metadata_file_path - ", doc_metadata_file_path)
+    place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
+    place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+    
+    
 # noinspection PyShadowingNames,PyUnusedLocal
 @app.route("/", methods=["POST"])
 def index():
@@ -134,7 +146,7 @@ def index():
         s3_sub_folder = os.environ["s3_sub_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
         metadata_s3_bucket = os.environ["metadata_s3_bucket"]
-        trigger_s3_bucket = os.environ["trigger_s3_bucket"]
+        trigger_s3_bucket = "trigger-bucket-11"#os.environ["trigger_s3_bucket"]
         processing_type = body["processing_type"]
         s3_folder = body["s3_folder"]
         session = boto3.Session()
@@ -149,40 +161,13 @@ def index():
             s3_document_folders = list(
                 {item.split("/")[2] for item in case_trigger_folders}
             )
+            print(case_files)
+            print(s3_document_folders)
             for s3_document_folder in s3_document_folders:
-                prefix = "".join(
-                    [s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"]
-                )
-                files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-                trigger_folders = extract_folder_paths(files)
-                filtered_trigger_folders = filter_trigger_folders(trigger_folders)
-                print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
-                doc_metadata_file_path = (
-                    prefix
-                    + s3_document_folder
-                    + "_"
-                    + str(len(filtered_trigger_folders))
-                )
-                print("doc_metadata_file_path - ", doc_metadata_file_path)
-                place_metadata_file(
-                    bucket=metadata_s3_bucket, file=doc_metadata_file_path
-                )
-                place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+                preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client)
         elif processing_type == "doc_level":
             s3_document_folder = body["s3_document_folder"]
-            prefix = "".join(
-                [s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"]
-            )
-            files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-            trigger_folders = extract_folder_paths(files)
-            filtered_trigger_folders = filter_trigger_folders(trigger_folders)
-            print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
-            print("s3_document_folder", s3_document_folder)
-            doc_metadata_file_path = (
-                prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
-            )
-            place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
-            place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+            preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client)
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as e:
