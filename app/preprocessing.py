@@ -186,7 +186,7 @@ def index():
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as e:
-        print(f"ERROR for - {control_file}, The error is {e}")
+        print(f"ERROR for - {body}, The error is {e}")
         print(traceback.format_exc())
         return {"statusCode": 500, "body": str(traceback.format_exc())}
 
