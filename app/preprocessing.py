@@ -170,7 +170,7 @@ def index():
                 args.append(stuffs)               
 
             with concurrent.futures.ThreadPoolExecutor() as executer:
-                results_map = executer.map(preprocess, args)
+                _ = executer.map(preprocess, args)
         elif processing_type == "doc_level":
             s3_document_folder = body["s3_document_folder"]
             preprocess(
