@@ -116,20 +116,35 @@ def filter_trigger_folders(trigger_folders):
     }
     return filtered_folders
 
+<<<<<<< HEAD
 def preprocess(args):
     s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client = args
+=======
+
+def preprocess(
+    s3_folder,
+    s3_sub_folder,
+    s3_document_folder,
+    main_s3_bucket,
+    metadata_s3_bucket,
+    trigger_s3_bucket,
+    s3_client,
+):
+>>>>>>> c998a2da2f58ad7dc74aa7ea5685ca6afcf2db30
     prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
     files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
     trigger_folders = extract_folder_paths(files)
     filtered_trigger_folders = filter_trigger_folders(trigger_folders)
     print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
     print("s3_document_folder", s3_document_folder)
-    doc_metadata_file_path = (prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders)))
+    doc_metadata_file_path = (
+        prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
+    )
     print("doc_metadata_file_path - ", doc_metadata_file_path)
     place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
     place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
-    
-    
+
+
 # noinspection PyShadowingNames,PyUnusedLocal
 @app.route("/", methods=["POST"])
 def index():
@@ -146,7 +161,7 @@ def index():
         s3_sub_folder = os.environ["s3_sub_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
         metadata_s3_bucket = os.environ["metadata_s3_bucket"]
-        trigger_s3_bucket = "trigger-bucket-11"#os.environ["trigger_s3_bucket"]
+        trigger_s3_bucket = "trigger-bucket-11"  # os.environ["trigger_s3_bucket"]
         processing_type = body["processing_type"]
         s3_folder = body["s3_folder"]
         session = boto3.Session()
@@ -171,7 +186,15 @@ def index():
                 results_map = executer.map(preprocess, args)
         elif processing_type == "doc_level":
             s3_document_folder = body["s3_document_folder"]
-            preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client)
+            preprocess(
+                s3_folder,
+                s3_sub_folder,
+                s3_document_folder,
+                main_s3_bucket,
+                metadata_s3_bucket,
+                trigger_s3_bucket,
+                s3_client,
+            )
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as e:
