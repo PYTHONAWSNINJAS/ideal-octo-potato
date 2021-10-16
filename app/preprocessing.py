@@ -126,7 +126,15 @@ def preprocess(args):
         args (list): list of arguments to be
         processed in parallel
     """
-    s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client = args
+    (
+        s3_folder,
+        s3_sub_folder,
+        s3_document_folder,
+        main_s3_bucket,
+        metadata_s3_bucket,
+        trigger_s3_bucket,
+        s3_client,
+    ) = args
     prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
     files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
     trigger_folders = extract_folder_paths(files)
