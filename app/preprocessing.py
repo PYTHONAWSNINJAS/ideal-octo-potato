@@ -12,6 +12,7 @@ import traceback
 import boto3
 
 from flask import Flask, request
+import concurrent.futures
 
 # template_folder points to current directory. Flask will look for '/static/'
 app = Flask(__name__, template_folder=".")
@@ -115,7 +116,8 @@ def filter_trigger_folders(trigger_folders):
     }
     return filtered_folders
 
-def preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client):
+def preprocess(args):
+    s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client = args
     prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
     files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
     trigger_folders = extract_folder_paths(files)
@@ -159,10 +161,14 @@ def index():
             s3_document_folders = list(
                 {item.split("/")[2] for item in case_trigger_folders}
             )
-            print(case_files)
-            print(s3_document_folders)
+            args = []
             for s3_document_folder in s3_document_folders:
-                preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client)
+                stuffs = []
+                stuffs.extend([s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client])
+                args.append(stuffs)               
+
+            with concurrent.futures.ThreadPoolExecutor() as executer:
+                results_map = executer.map(preprocess, args)
         elif processing_type == "doc_level":
             s3_document_folder = body["s3_document_folder"]
             preprocess(s3_folder, s3_sub_folder, s3_document_folder, main_s3_bucket, metadata_s3_bucket, trigger_s3_bucket, s3_client)
