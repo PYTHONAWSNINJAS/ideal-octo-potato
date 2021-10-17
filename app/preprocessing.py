@@ -78,6 +78,7 @@ def place_trigger_files(bucket, folders):
     bucket: bucket name
     folders: trigger folder paths
     """
+    print("placing trigger files")
     client = boto3.client("s3")
     for trigger_folder in folders:
         client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
@@ -90,6 +91,7 @@ def place_metadata_file(bucket, file):
     bucket
     file
     """
+    print("placing metadata files")
     client = boto3.client("s3")
     client.put_object(Body="", Bucket=bucket, Key=file)
 
