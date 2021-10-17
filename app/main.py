@@ -500,9 +500,7 @@ def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
-    success_objects = [
-        item for item in objects if "SUCCESS" in item.split("/")[-1]
-    ]
+    success_objects = [item for item in objects if "SUCCESS" in item.split("/")[-1]]
     return len(success_objects)
 
 
