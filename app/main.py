@@ -21,6 +21,7 @@ from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 import tempfile
+import uuid
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
@@ -500,7 +501,7 @@ def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
     success_objects = [
-        item for item in objects if item.split("/")[-1].startswith("Success")
+        item for item in objects if "SUCCESS" in item.split("/")[-1]
     ]
     return len(success_objects)
 
@@ -593,7 +594,7 @@ def lambda_handler(event, context):
     create_success_file(
         s3_client,
         metadata_s3_bucket,
-        meta_data_object_folder + "Success_" + trigger_folder,
+        meta_data_object_folder + uuid.uuid4().hex + "_SUCCESS_" + trigger_folder,
     )
     no_of_success_files = count_success_files(
         s3_client, metadata_s3_bucket, meta_data_object_folder
