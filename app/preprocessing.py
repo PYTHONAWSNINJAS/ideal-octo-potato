@@ -128,27 +128,32 @@ def preprocess(args):
         args (list): list of arguments to be
         processed in parallel
     """
-    (
-        s3_folder,
-        s3_sub_folder,
-        s3_document_folder,
-        main_s3_bucket,
-        metadata_s3_bucket,
-        trigger_s3_bucket,
-        s3_client,
-    ) = args
-    prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
-    files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-    trigger_folders = extract_folder_paths(files)
-    filtered_trigger_folders = filter_trigger_folders(trigger_folders)
-    print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
-    print("s3_document_folder", s3_document_folder)
-    doc_metadata_file_path = (
-        prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
-    )
-    print("doc_metadata_file_path - ", doc_metadata_file_path)
-    place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
-    place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+    try:
+        (
+            s3_folder,
+            s3_sub_folder,
+            s3_document_folder,
+            main_s3_bucket,
+            metadata_s3_bucket,
+            trigger_s3_bucket,
+            s3_client,
+        ) = args
+        prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+        files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+        trigger_folders = extract_folder_paths(files)
+        filtered_trigger_folders = filter_trigger_folders(trigger_folders)
+        print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
+        print("s3_document_folder", s3_document_folder)
+        doc_metadata_file_path = (
+            prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
+        )
+        print("doc_metadata_file_path - ", doc_metadata_file_path)
+        place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
+        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+    except Exception as e:
+        print(f"Preprocess ERROR for - {s3_document_folder}, The error is {e}")
+        print(traceback.format_exc())
+        return {"statusCode": 500, "body": str(traceback.format_exc())}    
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
