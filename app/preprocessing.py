@@ -146,12 +146,16 @@ def preprocess(args):
             prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
         )
         print("doc_metadata_file_path - ", doc_metadata_file_path)
-        place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client)
-        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders, client=s3_client)
+        place_metadata_file(
+            bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
+        )
+        place_trigger_files(
+            bucket=trigger_s3_bucket, folders=trigger_folders, client=s3_client
+        )
     except Exception as e:
         print(f"Preprocess ERROR for - {s3_document_folder}, The error is {e}")
         print(traceback.format_exc())
-        return {"statusCode": 500, "body": str(traceback.format_exc())}    
+        return {"statusCode": 500, "body": str(traceback.format_exc())}
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
