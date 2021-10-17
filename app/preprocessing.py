@@ -169,7 +169,7 @@ def index():
         s3_sub_folder = os.environ["s3_sub_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
         metadata_s3_bucket = os.environ["metadata_s3_bucket"]
-        trigger_s3_bucket = "trigger-bucket-11"  # os.environ["trigger_s3_bucket"]
+        trigger_s3_bucket = os.environ["trigger_s3_bucket"]
         processing_type = body["processing_type"]
         s3_folder = body["s3_folder"]
         session = boto3.Session()
