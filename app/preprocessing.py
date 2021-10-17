@@ -153,7 +153,7 @@ def preprocess(args):
     except Exception as e:
         print(f"Preprocess ERROR for - {s3_document_folder}, The error is {e}")
         print(traceback.format_exc())
-        return {"statusCode": 500, "body": str(traceback.format_exc())}    
+        return {"statusCode": 500, "body": str(traceback.format_exc())}
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
