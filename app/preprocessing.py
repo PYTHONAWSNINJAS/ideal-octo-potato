@@ -71,7 +71,7 @@ def extract_folder_paths(files):
     return folders
 
 
-def place_trigger_files(bucket, folders):
+def place_trigger_files(bucket, folders, client):
     """
     Parameters
     ----------
@@ -79,12 +79,11 @@ def place_trigger_files(bucket, folders):
     folders: trigger folder paths
     """
     print("placing trigger files")
-    client = boto3.client("s3")
     for trigger_folder in folders:
         client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
 
 
-def place_metadata_file(bucket, file):
+def place_metadata_file(bucket, file, client):
     """
     Parameters
     ----------
@@ -92,7 +91,6 @@ def place_metadata_file(bucket, file):
     file
     """
     print("placing metadata files")
-    client = boto3.client("s3")
     client.put_object(Body="", Bucket=bucket, Key=file)
 
 
@@ -148,8 +146,8 @@ def preprocess(args):
             prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
         )
         print("doc_metadata_file_path - ", doc_metadata_file_path)
-        place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path)
-        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders)
+        place_metadata_file(bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client)
+        place_trigger_files(bucket=trigger_s3_bucket, folders=trigger_folders, client=s3_client)
     except Exception as e:
         print(f"Preprocess ERROR for - {s3_document_folder}, The error is {e}")
         print(traceback.format_exc())
