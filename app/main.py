@@ -21,6 +21,7 @@ from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 import tempfile
+import traceback
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
@@ -38,35 +39,39 @@ def download_dir(prefix, local, bucket, client):
     -------
 
     """
-    keys = []
-    dirs = []
-    next_token = ""
-    base_kwargs = {
-        "Bucket": bucket,
-        "Prefix": prefix,
-    }
-    while next_token is not None:
-        kwargs = base_kwargs.copy()
-        if next_token != "":
-            kwargs.update({"ContinuationToken": next_token})
-        results = client.list_objects_v2(**kwargs)
-        contents = results.get("Contents")
-        for i in contents:
-            k = i.get("Key")
-            if k[-1] != "/":
-                keys.append(k)
-            else:
-                dirs.append(k)
-        next_token = results.get("NextContinuationToken")
-    for d in dirs:
-        destination_pathname = os.path.join(local, d)
-        if not os.path.exists(os.path.dirname(destination_pathname)):
-            os.makedirs(os.path.dirname(destination_pathname))
-    for k in keys:
-        destination_pathname = os.path.join(local, k)
-        if not os.path.exists(os.path.dirname(destination_pathname)):
-            os.makedirs(os.path.dirname(destination_pathname))
-        client.download_file(bucket, k, destination_pathname)
+    try:
+        keys = []
+        dirs = []
+        next_token = ""
+        base_kwargs = {
+            "Bucket": bucket,
+            "Prefix": prefix,
+        }
+        while next_token is not None:
+            kwargs = base_kwargs.copy()
+            if next_token != "":
+                kwargs.update({"ContinuationToken": next_token})
+            results = client.list_objects_v2(**kwargs)
+            contents = results.get("Contents")
+            for i in contents:
+                k = i.get("Key")
+                if k[-1] != "/":
+                    keys.append(k)
+                else:
+                    dirs.append(k)
+            next_token = results.get("NextContinuationToken")
+        for d in dirs:
+            destination_pathname = os.path.join(local, d)
+            if not os.path.exists(os.path.dirname(destination_pathname)):
+                os.makedirs(os.path.dirname(destination_pathname))
+        for k in keys:
+            destination_pathname = os.path.join(local, k)
+            if not os.path.exists(os.path.dirname(destination_pathname)):
+                os.makedirs(os.path.dirname(destination_pathname))
+            client.download_file(bucket, k, destination_pathname)
+    except Exception as e:
+        print(f"Download ERROR for - {prefix}, The error is {e}")
+        print(traceback.format_exc())
 
 
 def create_pdf(file_path, lambda_write_path, pdf_file_name):
@@ -88,7 +93,8 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
             f.write(pdf_png)
         return True
     except Exception as e:
-        print(f"ERROR for - {file_path}, The error is {e}")
+        print(f"Create PDF ERROR for - {file_path}, The error is {e}")
+        print(traceback.format_exc())
         return False
 
 
@@ -99,13 +105,17 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-    merger = PdfFileMerger()
+    try:
+        merger = PdfFileMerger()
 
-    for pdf_file in pdfs:
-        merger.append(pdf_file)
+        for pdf_file in pdfs:
+            merger.append(pdf_file)
 
-    merger.write(filename)
-    merger.close()
+        merger.write(filename)
+        merger.close()
+    except Exception as e:
+        print(f"Merge PDF ERROR for - {filename}, The error is {e}")
+        print(traceback.format_exc())
 
 
 def init():
@@ -427,24 +437,37 @@ def list_dir(prefix, bucket, client):
     -------
     Keys: list of files
     """
-    keys = []
-    next_token = ""
-    base_kwargs = {
-        "Bucket": bucket,
-        "Prefix": prefix,
-    }
-    while next_token is not None:
-        kwargs = base_kwargs.copy()
-        if next_token != "":
-            kwargs.update({"ContinuationToken": next_token})
-        results = client.list_objects_v2(**kwargs)
-        contents = results.get("Contents")
-        for i in contents:
-            k = i.get("Key")
-            if k[-1] != "/":
-                keys.append(k)
-        next_token = results.get("NextContinuationToken")
-    return keys
+    delay = 1       # initial delay
+    delay_incr = 1  # additional delay in each loop
+    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
+    
+    while delay < max_delay:   
+        try:
+            keys = []
+            next_token = ""
+            base_kwargs = {
+                "Bucket": bucket,
+                "Prefix": prefix,
+            }
+            while next_token is not None:
+                kwargs = base_kwargs.copy()
+                if next_token != "":
+                    kwargs.update({"ContinuationToken": next_token})
+                results = client.list_objects_v2(**kwargs)
+                contents = results.get("Contents")
+                for i in contents:
+                    k = i.get("Key")
+                    if k[-1] != "/":
+                        keys.append(k)
+                next_token = results.get("NextContinuationToken")
+            return keys
+        except ClientError:
+            time.sleep(delay)
+            delay += delay_incr
+    else:
+        print(f"list dir PDF ERROR for - {prefix}")
+        print(traceback.format_exc())
+        raise
 
 
 def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
@@ -481,7 +504,21 @@ def create_success_file(s3_client, bucket, file):
     file: File Name
     """
     print("Creating Success Files")
-    s3_client.put_object(Body="", Bucket=bucket, Key=file)
+    
+    delay = 1       # initial delay
+    delay_incr = 1  # additional delay in each loop
+    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
+    
+    while delay < max_delay:
+        try:
+            s3_client.put_object(Body="", Bucket=bucket, Key=file)
+        except ClientError:
+            time.sleep(delay)
+            delay += delay_incr
+    else:
+        print(f"create_success_file ERROR for - {file}")
+        print(traceback.format_exc())
+        raise
 
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
@@ -514,7 +551,21 @@ def create_merge_trigger_file(s3_client, bucket, file):
     file
     """
     print("Creating Merge Trigger File")
-    s3_client.put_object(Body="", Bucket=bucket, Key=file)
+    
+    delay = 1       # initial delay
+    delay_incr = 1  # additional delay in each loop
+    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
+    
+    while delay < max_delay:
+        try:
+            s3_client.put_object(Body="", Bucket=bucket, Key=file)
+        except ClientError:
+            time.sleep(delay)
+            delay += delay_incr
+    else:
+        print(f"Creating Merge Trigger File ERROR for - {file}")
+        print(traceback.format_exc())
+        raise
 
 
 def remove_files_from_metadata_bucket(
@@ -527,12 +578,25 @@ def remove_files_from_metadata_bucket(
     metadata_s3_bucket
     meta_data_object_folder
     """
+    delay = 1       # initial delay
+    delay_incr = 1  # additional delay in each loop
+    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
+    
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
     print("Removing Objects")
     for item in objects:
-        s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)
+        while delay < max_delay:
+            try:
+                s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)
+            except ClientError:
+                time.sleep(delay)
+                delay += delay_incr
+    else:
+        print(f"remove_files_from_metadata_bucket File ERROR for - {meta_data_object_folder}")
+        print(traceback.format_exc())
+        raise
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
