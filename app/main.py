@@ -460,7 +460,7 @@ def list_dir(prefix, bucket, client):
                     if k[-1] != "/":
                         keys.append(k)
                 next_token = results.get("NextContinuationToken")
-            return keys
+            break
         except ClientError:
             time.sleep(delay)
             delay += delay_incr
@@ -468,6 +468,7 @@ def list_dir(prefix, bucket, client):
         print(f"list dir PDF ERROR for - {prefix}")
         print(traceback.format_exc())
         raise
+    return keys
 
 
 def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
@@ -512,6 +513,7 @@ def create_success_file(s3_client, bucket, file):
     while delay < max_delay:
         try:
             s3_client.put_object(Body="", Bucket=bucket, Key=file)
+            break
         except ClientError:
             time.sleep(delay)
             delay += delay_incr
@@ -559,6 +561,7 @@ def create_merge_trigger_file(s3_client, bucket, file):
     while delay < max_delay:
         try:
             s3_client.put_object(Body="", Bucket=bucket, Key=file)
+            break
         except ClientError:
             time.sleep(delay)
             delay += delay_incr
@@ -590,6 +593,7 @@ def remove_files_from_metadata_bucket(
         while delay < max_delay:
             try:
                 s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)
+                break
             except ClientError:
                 time.sleep(delay)
                 delay += delay_incr
