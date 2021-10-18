@@ -22,6 +22,7 @@ from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 import tempfile
 import traceback
+import time
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
