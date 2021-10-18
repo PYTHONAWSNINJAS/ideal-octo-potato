@@ -14,6 +14,9 @@ import boto3
 from flask import Flask, request
 import concurrent.futures
 
+import time
+from botocore.exceptions import ClientError
+
 # template_folder points to current directory. Flask will look for '/static/'
 app = Flask(__name__, template_folder=".")
 # The rest of your file here
@@ -79,8 +82,23 @@ def place_trigger_files(bucket, folders, client):
     folders: trigger folder paths
     """
     print("placing trigger files")
+    
+    delay = 1  # initial delay
+    delay_incr = 1  # additional delay in each loop
+    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
+    
     for trigger_folder in folders:
-        client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
+        while delay < max_delay:
+            try:
+                client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
+                break
+            except ClientError:
+                time.sleep(delay)
+                delay += delay_incr
+        else:
+            print(f"place_trigger_files ERROR for - {trigger_folder}")
+            print(traceback.format_exc())
+            raise
 
 
 def place_metadata_file(bucket, file, client):
@@ -91,7 +109,22 @@ def place_metadata_file(bucket, file, client):
     file
     """
     print("placing metadata files")
-    client.put_object(Body="", Bucket=bucket, Key=file)
+    
+    delay = 1  # initial delay
+    delay_incr = 1  # additional delay in each loop
+    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
+    
+    while delay < max_delay:
+        try:
+            client.put_object(Body="", Bucket=bucket, Key=file)
+            break
+        except ClientError:
+            time.sleep(delay)
+            delay += delay_incr
+    else:
+        print(f"place_metadata_file ERROR for - {file}")
+        print(traceback.format_exc())
+        raise
 
 
 def filter_trigger_folders(trigger_folders):
