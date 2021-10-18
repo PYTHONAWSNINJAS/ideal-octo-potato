@@ -23,6 +23,7 @@ from svglib.svglib import svg2rlg
 import tempfile
 import traceback
 import time
+from botocore.exceptions import ClientError
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
