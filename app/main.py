@@ -437,11 +437,11 @@ def list_dir(prefix, bucket, client):
     -------
     Keys: list of files
     """
-    delay = 1       # initial delay
+    delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-    
-    while delay < max_delay:   
+
+    while delay < max_delay:
         try:
             keys = []
             next_token = ""
@@ -505,11 +505,11 @@ def create_success_file(s3_client, bucket, file):
     file: File Name
     """
     print("Creating Success Files")
-    
-    delay = 1       # initial delay
+
+    delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-    
+
     while delay < max_delay:
         try:
             s3_client.put_object(Body="", Bucket=bucket, Key=file)
@@ -553,11 +553,11 @@ def create_merge_trigger_file(s3_client, bucket, file):
     file
     """
     print("Creating Merge Trigger File")
-    
-    delay = 1       # initial delay
+
+    delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-    
+
     while delay < max_delay:
         try:
             s3_client.put_object(Body="", Bucket=bucket, Key=file)
@@ -581,10 +581,10 @@ def remove_files_from_metadata_bucket(
     metadata_s3_bucket
     meta_data_object_folder
     """
-    delay = 1       # initial delay
+    delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-    
+
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
@@ -598,7 +598,9 @@ def remove_files_from_metadata_bucket(
                 time.sleep(delay)
                 delay += delay_incr
     else:
-        print(f"remove_files_from_metadata_bucket File ERROR for - {meta_data_object_folder}")
+        print(
+            f"remove_files_from_metadata_bucket File ERROR for - {meta_data_object_folder}"
+        )
         print(traceback.format_exc())
         raise
 
