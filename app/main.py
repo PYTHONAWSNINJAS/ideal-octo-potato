@@ -581,15 +581,14 @@ def remove_files_from_metadata_bucket(
     metadata_s3_bucket
     meta_data_object_folder
     """
-    delay = 1  # initial delay
-    delay_incr = 1  # additional delay in each loop
-    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
     print("Removing Objects")
     for item in objects:
+        delay = 1  # initial delay
+        delay_incr = 1  # additional delay in each loop
+        max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
         while delay < max_delay:
             try:
                 s3_client.delete_object(Bucket=metadata_s3_bucket, Key=item)

@@ -83,11 +83,10 @@ def place_trigger_files(bucket, folders, client):
     """
     print("placing trigger files")
 
-    delay = 1  # initial delay
-    delay_incr = 1  # additional delay in each loop
-    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-
     for trigger_folder in folders:
+        delay = 1  # initial delay
+        delay_incr = 1  # additional delay in each loop
+        max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
         while delay < max_delay:
             try:
                 client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
