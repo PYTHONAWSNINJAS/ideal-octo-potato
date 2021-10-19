@@ -97,8 +97,6 @@ def place_trigger_files(bucket, folders, client):
                 delay += delay_incr
         else:
             print(f"place_trigger_files ERROR for - {trigger_folder}")
-            print(traceback.format_exc())
-            raise
 
 
 def place_metadata_file(bucket, file, client):
@@ -123,8 +121,6 @@ def place_metadata_file(bucket, file, client):
             delay += delay_incr
     else:
         print(f"place_metadata_file ERROR for - {file}")
-        print(traceback.format_exc())
-        raise
 
 
 def filter_trigger_folders(trigger_folders):
