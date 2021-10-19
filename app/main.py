@@ -358,14 +358,14 @@ def process_document_folders(
                             temp_pdfs, os.path.join(lambda_write_path, pdf_file_name)
                         )
                     elif file_path.endswith((".eml")):
-                            copyfile(
-                                file_path, temp_file := "".join([filename, ".txt"])
-                            )
-                            pdfkit.from_file(
-                                temp_file,
-                                os.path.join(lambda_write_path, pdf_file_name),
-                                options={"load-error-handling": "ignore"},
-                            )
+                        copyfile(
+                            file_path, temp_file := "".join([filename, ".txt"])
+                        )
+                        pdfkit.from_file(
+                            temp_file,
+                            os.path.join(lambda_write_path, pdf_file_name),
+                            options={"load-error-handling": "ignore"},
+                        )
                     else:
                         try:
                             pdfkit.from_file(
