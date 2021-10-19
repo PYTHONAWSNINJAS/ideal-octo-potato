@@ -599,7 +599,7 @@ def remove_files_from_metadata_bucket(
             except ClientError:
                 time.sleep(delay)
                 delay += delay_incr
-        
+
     print(
         f"remove_files_from_metadata_bucket File ERROR for - {meta_data_object_folder}"
     )
