@@ -188,10 +188,8 @@ def preprocess(args):
     except Exception as e:
         print(f"Preprocess ERROR for - {s3_document_folder}, The error is {e}")
         print(traceback.format_exc())
-        return {"statusCode": 500, "body": str(traceback.format_exc())}
 
 
-# noinspection PyShadowingNames,PyUnusedLocal
 @app.route("/", methods=["POST"])
 def index():
     """
@@ -200,7 +198,6 @@ def index():
     event: lambda event
     context: lambda context
     """
-    # noinspection PyBroadException
     try:
         body = request.json
         s3_sub_folder = os.environ["s3_sub_folder"]
