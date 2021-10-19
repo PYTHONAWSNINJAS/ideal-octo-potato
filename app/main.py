@@ -496,7 +496,7 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
         print("total_no_of_trigger_files -", total_no_of_trigger_files)
         return total_no_of_trigger_files
     except Exception as e:
-        print(f"fetch_metadata_file ERROR for - {meta_data_object_folder}")
+        print(f"fetch_metadata_file ERROR for - {e, meta_data_object_folder}")
         print(traceback.format_exc())
 
 
