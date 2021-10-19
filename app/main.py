@@ -363,12 +363,11 @@ def process_document_folders(
                             pdfkit.from_file(
                                 temp_file,
                                 os.path.join(lambda_write_path, pdf_file_name),
-                                options={"quiet": ""},
+                                options={"enable-local-file-access": "", "load-error-handling": "ignore"},
                             )
                         except Exception as e:
-                            print(e)
+                            print(f"\n{e} {filename}")
                             print(traceback.format_exc())
-                            converted = True
                     else:
                         try:
                             pdfkit.from_file(
@@ -377,7 +376,7 @@ def process_document_folders(
                                 options={"enable-local-file-access": "", "quiet": ""},
                             )
                         except Exception as e:
-                            print("\n{e}Trying again {filename}")
+                            print(f"\n{e}Trying again {filename}")
                             copyfile(
                                 file_path, temp_file := "".join([filename, ".txt"])
                             )
