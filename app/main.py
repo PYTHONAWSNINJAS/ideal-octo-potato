@@ -363,7 +363,7 @@ def process_document_folders(
                             pdfkit.from_file(
                                 temp_file,
                                 os.path.join(lambda_write_path, pdf_file_name),
-                                options={"load-error-handling": "true"},
+                                options={"enable-local-file-access": "", "load-error-handling": "ignore"},
                             )
                         except Exception as e:
                             print(e)
