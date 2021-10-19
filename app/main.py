@@ -468,8 +468,6 @@ def list_dir(prefix, bucket, client):
             delay += delay_incr
     else:
         print(f"list dir PDF ERROR for - {prefix}")
-        print(traceback.format_exc())
-        raise
     return keys
 
 
@@ -485,17 +483,21 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     -------
     total_no_of_trigger_files: no of trigger files
     """
-    pattern_to_look = meta_data_object_folder.split("/")[-2]
-    objects = list_dir(
-        prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
-    )
-    meta_data_object = [
-        item for item in objects if item.split("/")[-1].startswith(pattern_to_look)
-    ][0]
-    total_no_of_trigger_files = int(meta_data_object.split("/")[-1].split("_")[1])
-    print("meta_data_object -", meta_data_object)
-    print("total_no_of_trigger_files -", total_no_of_trigger_files)
-    return total_no_of_trigger_files
+    try:
+        pattern_to_look = meta_data_object_folder.split("/")[-2]
+        objects = list_dir(
+            prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
+        )
+        meta_data_object = [
+            item for item in objects if item.split("/")[-1].startswith(pattern_to_look)
+        ][0]
+        total_no_of_trigger_files = int(meta_data_object.split("/")[-1].split("_")[1])
+        print("meta_data_object -", meta_data_object)
+        print("total_no_of_trigger_files -", total_no_of_trigger_files)
+        return total_no_of_trigger_files
+    except Exception as e:
+        print(f"fetch_metadata_file ERROR for - {meta_data_object_folder}")
+        print(traceback.format_exc())
 
 
 def create_success_file(s3_client, bucket, file):
@@ -521,9 +523,7 @@ def create_success_file(s3_client, bucket, file):
             delay += delay_incr
     else:
         print(f"create_success_file ERROR for - {file}")
-        print(traceback.format_exc())
-        raise
-
+        
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     """
@@ -569,8 +569,6 @@ def create_merge_trigger_file(s3_client, bucket, file):
             delay += delay_incr
     else:
         print(f"Creating Merge Trigger File ERROR for - {file}")
-        print(traceback.format_exc())
-        raise
 
 
 def remove_files_from_metadata_bucket(
@@ -603,8 +601,6 @@ def remove_files_from_metadata_bucket(
             print(
                 f"remove_files_from_metadata_bucket File ERROR for - {meta_data_object_folder,item}"
             )
-            print(traceback.format_exc())
-            raise
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
