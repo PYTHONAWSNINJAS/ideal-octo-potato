@@ -523,7 +523,7 @@ def create_success_file(s3_client, bucket, file):
             delay += delay_incr
     else:
         print(f"create_success_file ERROR for - {file}")
-        
+
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
     """
