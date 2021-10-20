@@ -20,10 +20,11 @@ from botocore.exceptions import ClientError
 import logging
 import sys
 
-# template_folder points to current directory. Flask will look for '/static/'
-app = Flask(__name__, template_folder=".")
-# The rest of your file here
 
+app = Flask(__name__, template_folder=".")
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def list_dir(prefix, bucket, client):
     """
@@ -98,7 +99,7 @@ def place_trigger_files(bucket, folders, client):
                 time.sleep(delay)
                 delay += delay_incr
         else:
-            loger.info(f"place_trigger_files ERROR for: {trigger_folder}")
+            logger.info(f"place_trigger_files ERROR for: {trigger_folder}")
 
 
 def place_metadata_file(bucket, file, client):
