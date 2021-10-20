@@ -78,7 +78,7 @@ def download_dir(prefix, local, bucket, client):
             if not os.path.exists(os.path.dirname(destination_pathname)):
                 os.makedirs(os.path.dirname(destination_pathname))
             client.download_file(bucket, k, destination_pathname)
-    except Exception as e:
+    except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
             exception_type, exception_value, exception_traceback
@@ -447,7 +447,7 @@ def process_document_folders(
                                 os.path.join(lambda_write_path, pdf_file_name),
                                 options={"enable-local-file-access": "", "quiet": ""},
                             )
-                        except Exception as e:
+                        except Exception as _:
                             logger.info(f"Trying again: {filename}")
                             copyfile(
                                 file_path, temp_file := "".join([filename, ".txt"])
