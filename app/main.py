@@ -428,7 +428,7 @@ def process_document_folders(
                                 temp_file,
                                 os.path.join(lambda_write_path, pdf_file_name),
                             )
-                        except Exception as exp:
+                        except Exception as _:
                             exception_type, exception_value, exception_traceback = sys.exc_info()
                             traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
                             err_msg = json.dumps({
