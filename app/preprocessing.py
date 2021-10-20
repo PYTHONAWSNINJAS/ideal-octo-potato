@@ -186,12 +186,16 @@ def preprocess(args):
         )
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
         logger.error(err_msg)
 
 
@@ -258,12 +262,16 @@ def index():
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
         logger.error(err_msg)
         return {"statusCode": 500, "body": str(traceback.format_exc())}
 

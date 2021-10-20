@@ -27,7 +27,7 @@ from botocore.exceptions import ClientError
 import logging
 import sys
 import json
- 
+
 from itertools import islice
 
 FILE_PATTERN_TO_IGNORE = "_small"
@@ -78,12 +78,16 @@ def download_dir(prefix, local, bucket, client):
             client.download_file(bucket, k, destination_pathname)
     except Exception as e:
         exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
         logger.error(err_msg)
 
 
@@ -107,12 +111,16 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
         return True
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
         logger.error(err_msg)
         return False
 
@@ -134,12 +142,16 @@ def merge_pdf(pdfs, filename):
         merger.close()
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
         logger.error(err_msg)
 
 
@@ -303,13 +315,21 @@ def process_document_folders(
                         )
                         converted = True
                     except Exception as _:
-                        exception_type, exception_value, exception_traceback = sys.exc_info()
-                        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-                        err_msg = json.dumps({
-                            "errorType": exception_type.__name__,
-                            "errorMessage": str(exception_value),
-                            "stackTrace": traceback_string
-                        })
+                        (
+                            exception_type,
+                            exception_value,
+                            exception_traceback,
+                        ) = sys.exc_info()
+                        traceback_string = traceback.format_exception(
+                            exception_type, exception_value, exception_traceback
+                        )
+                        err_msg = json.dumps(
+                            {
+                                "errorType": exception_type.__name__,
+                                "errorMessage": str(exception_value),
+                                "stackTrace": traceback_string,
+                            }
+                        )
                         logger.error(err_msg)
                 elif file_path.endswith(".txt"):
                     pdf_txt = get_pdf_object(11)
@@ -389,29 +409,34 @@ def process_document_folders(
                         )
                     elif file_path.endswith((".eml")):
                         try:
-                            copyfile(file_path, temp_file := "".join([filename, ".txt"]))
+                            copyfile(
+                                file_path, temp_file := "".join([filename, ".txt"])
+                            )
                             pdfkit.from_file(
                                 temp_file,
                                 os.path.join(lambda_write_path, pdf_file_name),
-                                options={"enable-local-file-access": "", "load-error-handling": "ignore"},
+                                options={
+                                    "enable-local-file-access": "",
+                                    "load-error-handling": "ignore",
+                                },
                             )
                         except Exception as e:
                             rint(f"{e}Trying again {filename}")
                             copyfile(
                                 file_path, temp_file := "".join([filename, ".txt"])
                             )
-                            
+
                             with open(temp_file, "r") as myfile:
                                 head = list(islice(myfile, 1000))
 
                             with open(temp_file, mode="w") as f2:
                                 for item in head:
                                     f2.write(item)
-                                    
+
                             logger.info("Done Copying to txt. Converting")
                             pdfkit.from_file(
                                 temp_file,
-                                os.path.join(lambda_write_path, pdf_file_name)
+                                os.path.join(lambda_write_path, pdf_file_name),
                             )
                     else:
                         try:
@@ -463,12 +488,16 @@ def process_document_folders(
 
         except Exception as _:
             exception_type, exception_value, exception_traceback = sys.exc_info()
-            traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-            err_msg = json.dumps({
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string
-            })
+            traceback_string = traceback.format_exception(
+                exception_type, exception_value, exception_traceback
+            )
+            err_msg = json.dumps(
+                {
+                    "errorType": exception_type.__name__,
+                    "errorMessage": str(exception_value),
+                    "stackTrace": traceback_string,
+                }
+            )
             logger.error(err_msg)
 
         if converted:
@@ -559,12 +588,16 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
         return total_no_of_trigger_files
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
         logger.error(err_msg)
 
 
@@ -678,7 +711,7 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
-    logger.info(f'event: {event}')
+    logger.info(f"event: {event}")
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     folder_path = event["Records"][0]["s3"]["object"]["key"]
     s3_folder = folder_path.split("/")[0]
