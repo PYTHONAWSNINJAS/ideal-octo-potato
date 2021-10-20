@@ -415,19 +415,6 @@ def process_document_folders(
                             copyfile(
                                 file_path, temp_file := "".join([filename, ".txt"])
                             )
-                            pdfkit.from_file(
-                                temp_file,
-                                os.path.join(lambda_write_path, pdf_file_name),
-                                options={
-                                    "enable-local-file-access": "",
-                                    "load-error-handling": "ignore",
-                                },
-                            )
-                        except Exception as e:
-                            rint(f"{e}Trying again {filename}")
-                            copyfile(
-                                file_path, temp_file := "".join([filename, ".txt"])
-                            )
 
                             with open(temp_file, "r") as myfile:
                                 head = list(islice(myfile, 1000))
@@ -436,11 +423,20 @@ def process_document_folders(
                                 for item in head:
                                     f2.write(item)
 
-                            logger.info("Done Copying to txt. Converting")
+                            logger.info("Done Copying to txt. Converting...")
                             pdfkit.from_file(
                                 temp_file,
                                 os.path.join(lambda_write_path, pdf_file_name),
                             )
+                        except Exception as exp:
+                            exception_type, exception_value, exception_traceback = sys.exc_info()
+                            traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+                            err_msg = json.dumps({
+                                "errorType": exception_type.__name__,
+                                "errorMessage": str(exception_value),
+                                "stackTrace": traceback_string
+                            })
+                            logger.error(err_msg)
                     else:
                         try:
                             pdfkit.from_file(
