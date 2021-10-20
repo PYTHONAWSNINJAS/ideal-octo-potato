@@ -24,6 +24,11 @@ import tempfile
 import traceback
 import time
 from botocore.exceptions import ClientError
+import logging
+import sys
+import json
+ 
+from itertools import islice
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
@@ -72,8 +77,14 @@ def download_dir(prefix, local, bucket, client):
                 os.makedirs(os.path.dirname(destination_pathname))
             client.download_file(bucket, k, destination_pathname)
     except Exception as e:
-        print(f"Download ERROR for - {prefix}, The error is {e}")
-        print(traceback.format_exc())
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
 
 
 def create_pdf(file_path, lambda_write_path, pdf_file_name):
@@ -94,9 +105,15 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
         with open(os.path.join(lambda_write_path, pdf_file_name), "w+b") as f:
             f.write(pdf_png)
         return True
-    except Exception as e:
-        print(f"Create PDF ERROR for - {file_path}, The error is {e}")
-        print(traceback.format_exc())
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
         return False
 
 
@@ -115,9 +132,15 @@ def merge_pdf(pdfs, filename):
 
         merger.write(filename)
         merger.close()
-    except Exception as e:
-        print(f"Merge PDF ERROR for - {filename}, The error is {e}")
-        print(traceback.format_exc())
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
 
 
 def init():
@@ -231,8 +254,8 @@ def process_document_folders(
                             file_path, lambda_write_path, pdf_file_name
                         )
                     if converted:
-                        print(
-                            f"Created - {os.path.join(lambda_write_path, pdf_file_name)}"
+                        logger.info(
+                            f"Created: {os.path.join(lambda_write_path, pdf_file_name)}"
                         )
                         with open(
                             os.path.join(lambda_write_path, pdf_file_name), "rb"
@@ -251,7 +274,7 @@ def process_document_folders(
                                 ),
                             )
                     else:
-                        print(f"PDF not created for - {current_item}")
+                        logger.info(f"PDF not created for: {current_item}")
             else:
                 converted = False
                 filename, _ = os.path.splitext(file_path)
@@ -261,7 +284,7 @@ def process_document_folders(
                 )
                 s3_object = pdf_file_name.split(os.sep)[-1]
 
-                print(f"\nProcessing {file_path}")
+                logger.info(f"Processing:{file_path}")
 
                 if filename.endswith(FILE_PATTERN_TO_IGNORE):
                     continue
@@ -279,8 +302,15 @@ def process_document_folders(
                             options={"quiet": ""},
                         )
                         converted = True
-                    except Exception as e:
-                        print(f"ERROR for - {file_path}, The error is {e}")
+                    except Exception as _:
+                        exception_type, exception_value, exception_traceback = sys.exc_info()
+                        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+                        err_msg = json.dumps({
+                            "errorType": exception_type.__name__,
+                            "errorMessage": str(exception_value),
+                            "stackTrace": traceback_string
+                        })
+                        logger.error(err_msg)
                 elif file_path.endswith(".txt"):
                     pdf_txt = get_pdf_object(11)
                     with open(file_path, "r") as f:
@@ -366,8 +396,23 @@ def process_document_folders(
                                 options={"enable-local-file-access": "", "load-error-handling": "ignore"},
                             )
                         except Exception as e:
-                            print(f"\n{e} {filename}")
-                            print(traceback.format_exc())
+                            rint(f"{e}Trying again {filename}")
+                            copyfile(
+                                file_path, temp_file := "".join([filename, ".txt"])
+                            )
+                            
+                            with open(temp_file, "r") as myfile:
+                                head = list(islice(myfile, 1000))
+
+                            with open(temp_file, mode="w") as f2:
+                                for item in head:
+                                    f2.write(item)
+                                    
+                            logger.info("Done Copying to txt. Converting")
+                            pdfkit.from_file(
+                                temp_file,
+                                os.path.join(lambda_write_path, pdf_file_name)
+                            )
                     else:
                         try:
                             pdfkit.from_file(
@@ -376,7 +421,7 @@ def process_document_folders(
                                 options={"enable-local-file-access": "", "quiet": ""},
                             )
                         except Exception as e:
-                            print(f"\n{e}Trying again {filename}")
+                            logger.info(f"Trying again: {filename}")
                             copyfile(
                                 file_path, temp_file := "".join([filename, ".txt"])
                             )
@@ -416,11 +461,18 @@ def process_document_folders(
                         temp_file, os.path.join(lambda_write_path, pdf_file_name)
                     )
 
-        except Exception as e:
-            print(f"ERROR for - {file_path}, The error is {e}")
+        except Exception as _:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+            err_msg = json.dumps({
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string
+            })
+            logger.error(err_msg)
 
         if converted:
-            print(f"Created - {os.path.join(lambda_write_path, pdf_file_name)}")
+            logger.info(f"Created: {os.path.join(lambda_write_path, pdf_file_name)}")
             with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
                 s3_client.upload_fileobj(
                     data,
@@ -434,7 +486,7 @@ def process_document_folders(
                     ),
                 )
         else:
-            print(f"PDF not created for - {current_item}")
+            logger.info(f"PDF not created for: {current_item}")
 
 
 def list_dir(prefix, bucket, client):
@@ -477,7 +529,7 @@ def list_dir(prefix, bucket, client):
             time.sleep(delay)
             delay += delay_incr
     else:
-        print(f"list dir PDF ERROR for - {prefix}")
+        logger.info(f"list dir PDF ERROR for: {prefix}")
     return keys
 
 
@@ -502,12 +554,18 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
             item for item in objects if item.split("/")[-1].startswith(pattern_to_look)
         ][0]
         total_no_of_trigger_files = int(meta_data_object.split("/")[-1].split("_")[1])
-        print("meta_data_object -", meta_data_object)
-        print("total_no_of_trigger_files -", total_no_of_trigger_files)
+        logger.info(f"meta_data_object: {meta_data_object}")
+        logger.info(f"total_no_of_trigger_files: {total_no_of_trigger_files}")
         return total_no_of_trigger_files
-    except Exception as e:
-        print(f"fetch_metadata_file ERROR for - {e, meta_data_object_folder}")
-        print(traceback.format_exc())
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
 
 
 def create_success_file(s3_client, bucket, file):
@@ -518,7 +576,7 @@ def create_success_file(s3_client, bucket, file):
     bucket: Bucket Name
     file: File Name
     """
-    print("Creating Success Files")
+    logger.info("Creating Success Files")
 
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
@@ -532,7 +590,7 @@ def create_success_file(s3_client, bucket, file):
             time.sleep(delay)
             delay += delay_incr
     else:
-        print(f"create_success_file ERROR for - {file}")
+        logger.info(f"create_success_file ERROR for: {file}")
 
 
 def count_success_files(s3_client, metadata_s3_bucket, meta_data_object_folder):
@@ -564,7 +622,7 @@ def create_merge_trigger_file(s3_client, bucket, file):
     bucket
     file
     """
-    print("Creating Merge Trigger File")
+    logger.info("Creating Merge Trigger File")
 
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
@@ -578,7 +636,7 @@ def create_merge_trigger_file(s3_client, bucket, file):
             time.sleep(delay)
             delay += delay_incr
     else:
-        print(f"Creating Merge Trigger File ERROR for - {file}")
+        logger.info(f"Creating Merge Trigger File ERROR for: {file}")
 
 
 def remove_files_from_metadata_bucket(
@@ -594,7 +652,7 @@ def remove_files_from_metadata_bucket(
     objects = list_dir(
         prefix=meta_data_object_folder, bucket=metadata_s3_bucket, client=s3_client
     )
-    print("Removing Objects")
+    logger.info("Removing Objects")
     for item in objects:
         delay = 1  # initial delay
         delay_incr = 1  # additional delay in each loop
@@ -607,12 +665,11 @@ def remove_files_from_metadata_bucket(
                 time.sleep(delay)
                 delay += delay_incr
         else:
-            print(
-                f"remove_files_from_metadata_bucket File ERROR for - {meta_data_object_folder,item}"
+            logger.info(
+                f"remove_files_from_metadata_bucket File ERROR for: {meta_data_object_folder,item}"
             )
 
 
-# noinspection PyShadowingNames,PyUnusedLocal
 def lambda_handler(event, context):
     """
 
@@ -621,7 +678,7 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
-    print(event)
+    logger.info(f'event: {event}')
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     folder_path = event["Records"][0]["s3"]["object"]["key"]
     s3_folder = folder_path.split("/")[0]
@@ -663,7 +720,7 @@ def lambda_handler(event, context):
     meta_data_object_folder = "".join(
         [s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"]
     )
-    print("meta_data_object_folder -", meta_data_object_folder)
+    logger.info(f"meta_data_object_folder: {meta_data_object_folder}")
     total_no_of_trigger_files = fetch_metadata_file(
         s3_client, meta_data_object_folder, metadata_s3_bucket
     )
@@ -688,7 +745,7 @@ def lambda_handler(event, context):
                 ".json",
             ]
         )
-        print("merge_trigger_file -", merge_trigger_file)
+        logger.info(f"merge_trigger_file: f{merge_trigger_file}")
         create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
         remove_files_from_metadata_bucket(
             s3_client, metadata_s3_bucket, meta_data_object_folder

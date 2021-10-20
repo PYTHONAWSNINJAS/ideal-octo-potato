@@ -17,6 +17,10 @@ import concurrent.futures
 import time
 from botocore.exceptions import ClientError
 
+import logging
+import sys
+import json
+
 # template_folder points to current directory. Flask will look for '/static/'
 app = Flask(__name__, template_folder=".")
 # The rest of your file here
@@ -81,7 +85,7 @@ def place_trigger_files(bucket, folders, client):
     bucket: bucket name
     folders: trigger folder paths
     """
-    print("placing trigger files")
+    logger.info("placing trigger files")
 
     for trigger_folder in folders:
         delay = 1  # initial delay
@@ -95,7 +99,7 @@ def place_trigger_files(bucket, folders, client):
                 time.sleep(delay)
                 delay += delay_incr
         else:
-            print(f"place_trigger_files ERROR for - {trigger_folder}")
+            loger.info(f"place_trigger_files ERROR for: {trigger_folder}")
 
 
 def place_metadata_file(bucket, file, client):
@@ -105,7 +109,7 @@ def place_metadata_file(bucket, file, client):
     bucket
     file
     """
-    print("placing metadata files")
+    logger.info("placing metadata files")
 
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
@@ -119,7 +123,7 @@ def place_metadata_file(bucket, file, client):
             time.sleep(delay)
             delay += delay_incr
     else:
-        print(f"place_metadata_file ERROR for - {file}")
+        logger.info(f"place_metadata_file ERROR for: {file}")
 
 
 def filter_trigger_folders(trigger_folders):
@@ -168,21 +172,27 @@ def preprocess(args):
         files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
         trigger_folders = extract_folder_paths(files)
         filtered_trigger_folders = filter_trigger_folders(trigger_folders)
-        print("\n\nfiltered_trigger_folders - ", filtered_trigger_folders)
-        print("s3_document_folder", s3_document_folder)
+        logger.info(f"filtered_trigger_folders: {filtered_trigger_folders}")
+        logger.info(f"s3_document_folder: {s3_document_folder}")
         doc_metadata_file_path = (
             prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
         )
-        print("doc_metadata_file_path - ", doc_metadata_file_path)
+        logger.info(f"doc_metadata_file_path: {doc_metadata_file_path}")
         place_metadata_file(
             bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
         )
         place_trigger_files(
             bucket=trigger_s3_bucket, folders=trigger_folders, client=s3_client
         )
-    except Exception as e:
-        print(f"Preprocess ERROR for - {s3_document_folder}, The error is {e}")
-        print(traceback.format_exc())
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
 
 
 @app.route("/", methods=["POST"])
@@ -246,9 +256,15 @@ def index():
             )
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
-    except Exception as e:
-        print(f"ERROR for - {body}, The error is {e}")
-        print(traceback.format_exc())
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(exception_type, exception_value, exception_traceback)
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
         return {"statusCode": 500, "body": str(traceback.format_exc())}
 
 
