@@ -19,7 +19,6 @@ from botocore.exceptions import ClientError
 
 import logging
 import sys
-import json
 
 # template_folder points to current directory. Flask will look for '/static/'
 app = Flask(__name__, template_folder=".")
