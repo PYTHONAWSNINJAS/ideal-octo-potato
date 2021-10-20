@@ -36,6 +36,7 @@ FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 def download_dir(prefix, local, bucket, client):
     """
 
