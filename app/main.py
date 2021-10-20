@@ -359,7 +359,7 @@ def process_document_folders(
                         temp_unredacted_file, lambda_write_path, pdf_file_name
                     )
                 elif file_path.lower().endswith(
-                    (".png", ".jpg", ".gif", ".tif", ".tiff")
+                    (".png", ".jpg", ".gif", ".tif", ".TIF", ".tiff")
                 ):
                     converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
                 elif file_path.endswith((".pcd", ".bmp")):
