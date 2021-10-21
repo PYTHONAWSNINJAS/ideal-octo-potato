@@ -15,7 +15,7 @@ import extract_msg
 import pandas as pd
 import pdfkit
 import pytesseract
-from PIL import Image
+from PIL import Image, ImageSequence
 from PyPDF2 import PdfFileMerger
 from fpdf import FPDF
 from reportlab.graphics import renderPM
@@ -358,10 +358,10 @@ def process_document_folders(
                     converted = create_pdf(
                         temp_unredacted_file, lambda_write_path, pdf_file_name
                     )
-                elif file_path.lower().endswith(
-                    (".png", ".jpg", ".gif", ".tif", ".TIF", ".tiff")
-                ):
+                elif file_path.lower().endswith((".png", ".jpg", ".gif")):
                     converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
+                elif file_path.lower().endswith((".tif", ".TIF", ".tiff")):
+                    converted = tiff_to_pdf(file_path, lambda_write_path, pdf_file_name)
                 elif file_path.endswith((".pcd", ".bmp")):
                     Image.open(file_path).save(temp_file := "".join([filename, ".png"]))
                     converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
@@ -708,6 +708,39 @@ def remove_files_from_metadata_bucket(
             logger.info(
                 f"remove_files_from_metadata_bucket File ERROR for: {meta_data_object_folder,item}"
             )
+
+
+def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
+    """To convert tiff to pdf
+    Args:
+        file_path: path to tiff file
+    """ 
+    try:
+        image = Image.open(file_path)
+
+        images = []
+        for i, page in enumerate(ImageSequence.Iterator(image)):
+            page = page.convert("RGB")
+            images.append(page)
+        if len(images) == 1:
+            images[0].save(os.path.join(lambda_write_path, pdf_file_name))
+        else:
+            images[0].save(os.path.join(lambda_write_path, pdf_file_name), save_all=True, append_images=images[1:])
+        return True
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
+        return False
 
 
 def lambda_handler(event, context):
