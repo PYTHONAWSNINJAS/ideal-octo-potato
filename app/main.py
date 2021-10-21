@@ -714,7 +714,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
     """To convert tiff to pdf
     Args:
         file_path: path to tiff file
-    """ 
+    """
     try:
         image = Image.open(file_path)
 
@@ -725,7 +725,11 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         if len(images) == 1:
             images[0].save(os.path.join(lambda_write_path, pdf_file_name))
         else:
-            images[0].save(os.path.join(lambda_write_path, pdf_file_name), save_all=True, append_images=images[1:])
+            images[0].save(
+                os.path.join(lambda_write_path, pdf_file_name),
+                save_all=True,
+                append_images=images[1:],
+            )
         return True
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
