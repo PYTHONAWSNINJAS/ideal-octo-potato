@@ -728,7 +728,9 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         images = []
         pdfs = []
         for i, page in enumerate(ImageSequence.Iterator(image)):
-            tmp_image_path = os.path.join(lambda_write_path,"temp_image_"+str(i)+".png")
+            tmp_image_path = os.path.join(
+                lambda_write_path, "temp_image_" + str(i) + ".png"
+            )
             tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
             x, y = page.size
             page = page.resize((int(x-x*.15),int(y-y*.15)),Image.ANTIALIAS)

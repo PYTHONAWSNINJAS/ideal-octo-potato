@@ -80,12 +80,14 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
     Args:
         file_path: path to tiff file
     """
-    
+
     image = Image.open(file_path)
     images = []
     pdfs = []
     for i, page in enumerate(ImageSequence.Iterator(image)):
-        tmp_image_path = os.path.join(lambda_write_path,"temp_image_"+str(i)+".png")
+        tmp_image_path = os.path.join(
+            lambda_write_path, "temp_image_" + str(i) + ".png"
+        )
         tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
         x, y = page.size
         page = page.resize((int(x-x*.15),int(y-y*.15)),Image.ANTIALIAS)
@@ -96,9 +98,12 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         _ = create_pdf(file_path, lambda_write_path, pdf_file_name)
     else:
         merge_pdf(pdfs, pdf_file_name)
-            
+
+
 if __name__ == "__main__":
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = (
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    )
     file_path = r"D:\tmp\case_number\exhibits\folder1\3\J29.tiff"
     lambda_write_path = r"\tmp"
     pdf_file_name = file_path.split(r"\/")[-1].replace("tiff","pdf")
