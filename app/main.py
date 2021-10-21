@@ -706,7 +706,7 @@ def remove_files_from_metadata_bucket(
                 delay += delay_incr
         else:
             logger.info(
-                f"remove_files_from_metadata_bucket File ERROR for: {meta_data_object_folder,item}"
+                f"ERROR for: {meta_data_object_folder,item}"
             )
 
 
@@ -731,13 +731,12 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
             tmp_image_path = os.path.join(lambda_write_path,"temp_image_"+str(i)+".png")
             tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
             x, y = page.size
-            ratio = x/y
             page = page.resize((int(x-x*.15),int(y-y*.15)),Image.ANTIALIAS)
             page.save(tmp_image_path)
-            converted = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
+            _ = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
             pdfs.append(os.path.join(lambda_write_path, tmp_pdf_file_name))
         if len(images) == 1:
-            converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
+            _ = create_pdf(file_path, lambda_write_path, pdf_file_name)
         else:
             merge_pdf(pdfs, pdf_file_name)
         return True
