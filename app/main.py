@@ -711,25 +711,35 @@ def remove_files_from_metadata_bucket(
 
 
 def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
-    """To convert tiff to pdf
-    Args:
-        file_path: path to tiff file
+    """
+
+    Parameters
+    ----------
+    file_path: file path of the image
+    lambda_write_path: output path of the pdf file
+    pdf_file_name: name of the output pdf file
+
+    Returns True if the pdf file is created
+    -------
+
     """
     try:
         image = Image.open(file_path)
-
         images = []
-        for _, page in enumerate(ImageSequence.Iterator(image)):
-            page = page.convert("RGB")
-            images.append(page)
+        pdfs = []
+        for i, page in enumerate(ImageSequence.Iterator(image)):
+            tmp_image_path = os.path.join(lambda_write_path,"temp_image_"+str(i)+".png")
+            tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
+            x, y = page.size
+            ratio = x/y
+            page = page.resize((int(x-x*.15),int(y-y*.15)),Image.ANTIALIAS)
+            page.save(tmp_image_path)
+            converted = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
+            pdfs.append(os.path.join(lambda_write_path, tmp_pdf_file_name))
         if len(images) == 1:
-            images[0].save(os.path.join(lambda_write_path, pdf_file_name))
+            converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
         else:
-            images[0].save(
-                os.path.join(lambda_write_path, pdf_file_name),
-                save_all=True,
-                append_images=images[1:],
-            )
+            merge_pdf(pdfs, pdf_file_name)
         return True
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
