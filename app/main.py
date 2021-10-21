@@ -719,7 +719,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         image = Image.open(file_path)
 
         images = []
-        for i, page in enumerate(ImageSequence.Iterator(image)):
+        for _, page in enumerate(ImageSequence.Iterator(image)):
             page = page.convert("RGB")
             images.append(page)
         if len(images) == 1:
