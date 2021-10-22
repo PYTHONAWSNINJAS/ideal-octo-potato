@@ -416,7 +416,7 @@ def process_document_folders(
                                 file_path, temp_file := "".join([filename, ".txt"])
                             )
 
-                            with open(temp_file, "r") as myfile:
+                            with open(temp_file, "rb") as myfile:
                                 head = list(islice(myfile, 1000))
 
                             with open(temp_file, mode="w") as f2:
