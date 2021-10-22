@@ -90,7 +90,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         )
         tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
         x, y = page.size
-        page = page.resize((int(x-x*.15),int(y-y*.15)),Image.ANTIALIAS)
+        page = page.resize((int(x - x * 0.15), int(y - y * 0.15)), Image.ANTIALIAS)
         page.save(tmp_image_path)
         _ = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
         pdfs.append(os.path.join(lambda_write_path, tmp_pdf_file_name))
@@ -106,5 +106,5 @@ if __name__ == "__main__":
     )
     file_path = r"D:\tmp\case_number\exhibits\folder1\3\J29.tiff"
     lambda_write_path = r"\tmp"
-    pdf_file_name = file_path.split(r"\/")[-1].replace("tiff","pdf")
+    pdf_file_name = file_path.split(r"\/")[-1].replace("tiff", "pdf")
     tiff_to_pdf(file_path, lambda_write_path, pdf_file_name)
