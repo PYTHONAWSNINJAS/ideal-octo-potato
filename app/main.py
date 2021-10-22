@@ -336,7 +336,7 @@ def process_document_folders(
                         logger.error(err_msg)
                 elif file_path.endswith(".txt"):
                     pdf_txt = get_pdf_object(11)
-                    with open(file_path, "r") as f:
+                    with open(file_path, "rb") as f:
                         lines = f.readlines()
                     for line in lines:
                         pdf_txt.write(5, str(line))
@@ -421,7 +421,7 @@ def process_document_folders(
 
                         with open(temp_file, mode="wb") as f2:
                             for item in head:
-                                if item.strip() == "Content-Disposition: attachment;":
+                                if item.strip() == "Content-Disposition":
                                     break
                                 f2.write(item)
 
