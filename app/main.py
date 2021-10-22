@@ -419,7 +419,7 @@ def process_document_folders(
                         with open(temp_file, "rb") as myfile:
                             head = list(islice(myfile, 1000))
 
-                        with open(temp_file, mode="w") as f2:
+                        with open(temp_file, mode="wb") as f2:
                             for item in head:
                                 if item.strip() == "Content-Disposition: attachment;":
                                     break
