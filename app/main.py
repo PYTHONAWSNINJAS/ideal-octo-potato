@@ -238,7 +238,7 @@ def process_document_folders(
             trigger_folder,
         )
     ):
-        converted = ""
+        converted = False
         pdf_file_name = ""
         s3_location = ""
         s3_object = ""
@@ -381,6 +381,7 @@ def process_document_folders(
                             os.path.join(lambda_write_path, pdf_file_name),
                             options={"enable-local-file-access": "", "quiet": ""},
                         )
+                        converted = True
                     elif file_path.endswith(".csv"):
                         df = pd.read_csv(file_path)
                         df.to_html(temp_file := "".join([filename, ".html"]))
@@ -389,6 +390,7 @@ def process_document_folders(
                             os.path.join(lambda_write_path, pdf_file_name),
                             options={"enable-local-file-access": "", "quiet": ""},
                         )
+                        converted = True
                     elif file_path.endswith((".xls", ".xlsx")):
                         temp_pdfs = []
                         xls = pd.ExcelFile(file_path)
@@ -410,42 +412,26 @@ def process_document_folders(
                         merge_pdf(
                             temp_pdfs, os.path.join(lambda_write_path, pdf_file_name)
                         )
+                        converted = True
                     elif file_path.endswith((".eml")):
-                        try:
-                            copyfile(
-                                file_path, temp_file := "".join([filename, ".txt"])
-                            )
+                        copyfile(
+                            file_path, temp_file := "".join([filename, ".txt"])
+                        )
 
-                            with open(temp_file, "rb") as myfile:
-                                head = list(islice(myfile, 1000))
+                        with open(temp_file, "rb") as myfile:
+                            head = list(islice(myfile, 1000))
 
-                            with open(temp_file, mode="w") as f2:
-                                for item in head:
-                                    if item.startswith("Content-Disposition: attachment;"):
-                                        break
-                                    f2.write(item)
-                                    
-                            pdfkit.from_file(
-                                temp_file,
-                                os.path.join(lambda_write_path, pdf_file_name),
-                            )
-                        except Exception as _:
-                            (
-                                exception_type,
-                                exception_value,
-                                exception_traceback,
-                            ) = sys.exc_info()
-                            traceback_string = traceback.format_exception(
-                                exception_type, exception_value, exception_traceback
-                            )
-                            err_msg = json.dumps(
-                                {
-                                    "errorType": exception_type.__name__,
-                                    "errorMessage": str(exception_value),
-                                    "stackTrace": traceback_string,
-                                }
-                            )
-                            logger.error(err_msg)
+                        with open(temp_file, mode="w") as f2:
+                            for item in head:
+                                if item.startswith(("Content-Disposition: attachment;")):
+                                    break
+                                f2.write(item)
+                                
+                        pdfkit.from_file(
+                            temp_file,
+                            os.path.join(lambda_write_path, pdf_file_name),
+                        )
+                        converted = True
                     else:
                         try:
                             pdfkit.from_file(
@@ -453,6 +439,7 @@ def process_document_folders(
                                 os.path.join(lambda_write_path, pdf_file_name),
                                 options={"enable-local-file-access": "", "quiet": ""},
                             )
+                            converted = True
                         except Exception as _:
                             logger.info(f"Trying again: {filename}")
                             copyfile(
@@ -463,7 +450,6 @@ def process_document_folders(
                                 os.path.join(lambda_write_path, pdf_file_name),
                                 options={"quiet": ""},
                             )
-                    converted = True
                 elif file_path.endswith(".msg"):
                     msg_properties = []
                     msg = extract_msg.Message(file_path)
@@ -493,6 +479,7 @@ def process_document_folders(
                     pdfkit.from_file(
                         temp_file, os.path.join(lambda_write_path, pdf_file_name)
                     )
+                    converted = True
 
         except Exception as _:
             exception_type, exception_value, exception_traceback = sys.exc_info()
