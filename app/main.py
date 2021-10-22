@@ -455,11 +455,11 @@ def process_document_folders(
                         [
                             msg.date,
                             "",
-                            "".join(["To:", msg.to]),
+                            "".join(filter(None, ["To:", msg.to])),
                             "",
                             msg.subject,
                             msg.body,
-                            "".join(["From:", msg.sender]),
+                            "".join(filter(None, ["From:", msg.sender])),
                         ]
                     )
 
