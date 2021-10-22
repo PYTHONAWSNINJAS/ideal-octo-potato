@@ -13,7 +13,8 @@ def process(file_path, filename):
 
     with open(temp_file, mode="w") as f2:
         for item in head:
-            if item in ["Content-Disposition: attachment;"]:
+            print(item)
+            if item.strip() == "Content-Disposition: attachment;":
                 break
             f2.write(item)
             

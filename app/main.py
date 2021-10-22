@@ -421,7 +421,7 @@ def process_document_folders(
 
                         with open(temp_file, mode="w") as f2:
                             for item in head:
-                                if item in ["Content-Disposition: attachment;"]:
+                                if item.strip() == "Content-Disposition: attachment;":
                                     break
                                 f2.write(item)
 
