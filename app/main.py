@@ -414,19 +414,19 @@ def process_document_folders(
                         )
                         converted = True
                     elif file_path.endswith((".eml")):
-                        copyfile(
-                            file_path, temp_file := "".join([filename, ".txt"])
-                        )
+                        copyfile(file_path, temp_file := "".join([filename, ".txt"]))
 
                         with open(temp_file, "rb") as myfile:
                             head = list(islice(myfile, 1000))
 
                         with open(temp_file, mode="w") as f2:
                             for item in head:
-                                if item.startswith(("Content-Disposition: attachment;")):
+                                if item.startswith(
+                                    ("Content-Disposition: attachment;")
+                                ):
                                     break
                                 f2.write(item)
-                                
+
                         pdfkit.from_file(
                             temp_file,
                             os.path.join(lambda_write_path, pdf_file_name),
