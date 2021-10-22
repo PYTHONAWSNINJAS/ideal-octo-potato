@@ -421,9 +421,10 @@ def process_document_folders(
 
                             with open(temp_file, mode="w") as f2:
                                 for item in head:
+                                    if item.startswith("Content-Disposition: attachment;"):
+                                        break
                                     f2.write(item)
-
-                            logger.info("Done Copying to txt. Converting...")
+                                    
                             pdfkit.from_file(
                                 temp_file,
                                 os.path.join(lambda_write_path, pdf_file_name),
