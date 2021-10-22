@@ -13,7 +13,7 @@ def process(file_path, filename):
 
     with open(temp_file, mode="w") as f2:
         for item in head:
-            if item.startswith("Content-Disposition: attachment;"):
+            if item in ["Content-Disposition: attachment;"]:
                 break
             f2.write(item)
             
@@ -22,8 +22,8 @@ def process(file_path, filename):
         os.path.join(lambda_write_path, pdf_file_name),
     )
 
-file_path = r"D:\tmp\case_number\exhibits\folder1\3\email_11.eml"
-filename = "email_11"
+file_path = r"D:\tmp\case_number\exhibits\folder1\3\email_7.eml"
+filename = "email_7"
 lambda_write_path=r"\tmp"
-pdf_file_name = "email_11_dv.pdf"
+pdf_file_name = "email_7_dv.pdf"
 process(file_path, filename)
