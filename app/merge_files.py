@@ -47,7 +47,13 @@ def init():
             }
         )
         logger.error(err_msg)
-    return [s3_client, main_s3_bucket, metadata_s3_bucket, lambda_write_path, pdf_file_suffix]
+    return [
+        s3_client,
+        main_s3_bucket,
+        metadata_s3_bucket,
+        lambda_write_path,
+        pdf_file_suffix,
+    ]
 
 
 def merge_pdf(pdfs, filename):
@@ -194,7 +200,13 @@ def lambda_handler(event, context):
     s3_folder = control_file.split("/")[0]
 
     try:
-        s3_client, main_s3_bucket, metadata_s3_bucket, lambda_write_path, pdf_file_suffix = init()
+        (
+            s3_client,
+            main_s3_bucket,
+            metadata_s3_bucket,
+            lambda_write_path,
+            pdf_file_suffix,
+        ) = init()
 
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
