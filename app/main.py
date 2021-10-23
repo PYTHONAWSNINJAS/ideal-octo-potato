@@ -454,17 +454,30 @@ def process_document_folders(
                 elif file_path.endswith(".msg"):
                     msg_properties = []
                     msg = extract_msg.Message(file_path)
-                    msg_properties.extend(
-                        [
-                            msg.date,
-                            "",
-                            "".join(filter(None, ["To:", msg.to])),
-                            "",
-                            msg.subject,
-                            "".join(filter(None, ["", msg.Body])),
-                            "".join(filter(None, ["From:", msg.sender])),
-                        ]
-                    )
+                    
+                    try:
+                        msg_properties.extend(
+                            [
+                                msg.date,
+                                "",
+                                "".join(filter(None, ["To:", msg.to])),
+                                "",
+                                msg.subject,
+                                "".join(filter(None, ["", msg.Body])),
+                                "".join(filter(None, ["From:", msg.sender])),
+                            ]
+                        )
+                    except AttributeError:
+                        msg_properties.extend(
+                            [
+                                msg.date,
+                                "",
+                                "".join(filter(None, ["To:", msg.to])),
+                                "",
+                                msg.subject,
+                                "".join(filter(None, ["From:", msg.sender])),
+                            ]
+                        )
 
                     pdf_email = get_pdf_object(12)
                     for i in msg_properties:
