@@ -246,7 +246,7 @@ def process_document_folders(
             if os.path.isdir(
                 file_path := os.path.join(downloaded_folder_path, current_item)
             ) and file_path.endswith("full_marks"):
-                logger.info(f"Inside full_marks")
+                logger.info("Inside full_marks")
                 for item_in_full_marks in os.listdir(file_path):
                     logger.info(f"item_in_full_marks: {item_in_full_marks}")
                     converted = False
