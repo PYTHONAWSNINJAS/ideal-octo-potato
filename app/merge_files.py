@@ -15,7 +15,6 @@ import tempfile
 
 import logging
 import sys
-import json
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -30,6 +29,7 @@ def init():
     try:
         lambda_write_path = tempfile.gettempdir() + "/"
         main_s3_bucket = os.environ["main_s3_bucket"]
+        metadata_s3_bucket = os.environ["metadata_s3_bucket"]
         pdf_file_suffix = "_dv"
 
         session = boto3.Session()
@@ -47,7 +47,7 @@ def init():
             }
         )
         logger.error(err_msg)
-    return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix]
+    return [s3_client, main_s3_bucket, metadata_s3_bucket, lambda_write_path, pdf_file_suffix]
 
 
 def merge_pdf(pdfs, filename):
@@ -144,17 +144,17 @@ def process(
         logger.error(err_msg)
 
 
-def delete_metadata_folder(control_file, s3_client):
+def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, s3_client):
     """delete meta data folder after merging
     Args:
-        control_file ([type]): the key file that
+        control_file_path ([type]): the key file that
         came from the s3 trigger. Modify the path
         to get the meta data folder path.
         s3_client ([type]): s3 client object
     """    
     try:
-        metadata_folder_to_delete = control_file.replace("doc_pdf", "exhibits").replace("control_files/", "").replace(".json", "")
-        bucket = s3_client.Bucket('metadata-bucket-11')
+        metadata_folder_to_delete = control_file_path.replace("doc_pdf", "exhibits").replace("control_files/", "").replace(".json", "")
+        bucket = s3_client.Bucket(metadata_s3_bucket_name)
         bucket.objects.filter(Prefix=metadata_folder_to_delete+"/").delete()
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
@@ -184,7 +184,7 @@ def lambda_handler(event, context):
     s3_folder = control_file.split("/")[0]
     
     try:
-        s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix = init()
+        s3_client, main_s3_bucket, metadata_s3_bucket, lambda_write_path, pdf_file_suffix = init()
 
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
@@ -207,7 +207,7 @@ def lambda_handler(event, context):
                 s3_folder,
             )
 
-        delete_metadata_folder(control_file, s3_client)
+        delete_metadata_folder(control_file, metadata_s3_bucket, s3_client)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
