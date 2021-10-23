@@ -125,7 +125,9 @@ def process(
         merge_pdf(pdfs, lambda_write_path + pdf_file_name)
 
         logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
-        logger.info(f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}")
+        logger.info(
+            f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
+        )
         with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
             s3_client.upload_fileobj(
                 merged_data,
