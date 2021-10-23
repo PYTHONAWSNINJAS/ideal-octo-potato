@@ -213,7 +213,7 @@ def lambda_handler(event, context):
         exhibit_id = data["exhibit"]
 
         if not data["files"]:
-            print("Empty Control File.")
+            logger.info("Empty Control File.")
             delete_metadata_folder(control_file, metadata_s3_bucket, s3_client)
             s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
 
