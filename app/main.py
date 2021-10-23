@@ -467,7 +467,7 @@ def process_document_folders(
                                 "".join(filter(None, ["From:", msg.sender])),
                             ]
                         )
-                    except AttributeError:
+                    except Exception as _:
                         msg_properties.extend(
                             [
                                 msg.date,
