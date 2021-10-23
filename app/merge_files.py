@@ -116,7 +116,7 @@ def process(
 
         for item in data["files"]:
             file_name = item[file_type].split("/")[-1]
-            print(f"downloading {file_name}")
+            logger.info(f"downloading: {file_name}")
             s3_client.download_file(
                 bucket_name, item[file_type], lambda_write_path + file_name
             )
@@ -124,8 +124,8 @@ def process(
 
         merge_pdf(pdfs, lambda_write_path + pdf_file_name)
 
-        print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
-        print(
+        logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
+        logger.info(
             "Uploading to - ",
             bucket_name
             + "/"
