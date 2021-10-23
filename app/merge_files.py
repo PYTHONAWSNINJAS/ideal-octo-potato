@@ -121,7 +121,13 @@ def process(
         print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
         print(
             "Uploading to - ",
-            bucket_name + "/" + s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+            bucket_name
+            + "/"
+            + s3_folder
+            + "/doc_pdf/"
+            + exhibit_id
+            + "/"
+            + pdf_file_name,
         )
         with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
             s3_client.upload_fileobj(
@@ -151,11 +157,15 @@ def delete_metadata_folder(control_file, s3_client):
         came from the s3 trigger. Modify the path
         to get the meta data folder path.
         s3_client ([type]): s3 client object
-    """    
+    """
     try:
-        metadata_folder_to_delete = control_file.replace("doc_pdf", "exhibits").replace("control_files/", "").replace(".json", "")
-        bucket = s3_client.Bucket('metadata-bucket-11')
-        bucket.objects.filter(Prefix=metadata_folder_to_delete+"/").delete()
+        metadata_folder_to_delete = (
+            control_file.replace("doc_pdf", "exhibits")
+            .replace("control_files/", "")
+            .replace(".json", "")
+        )
+        bucket = s3_client.Bucket("metadata-bucket-11")
+        bucket.objects.filter(Prefix=metadata_folder_to_delete + "/").delete()
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -169,7 +179,7 @@ def delete_metadata_folder(control_file, s3_client):
             }
         )
         logger.error(err_msg)
-    
+
 
 def lambda_handler(event, context):
     """
@@ -182,7 +192,7 @@ def lambda_handler(event, context):
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     control_file = event["Records"][0]["s3"]["object"]["key"]
     s3_folder = control_file.split("/")[0]
-    
+
     try:
         s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix = init()
 
