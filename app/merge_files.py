@@ -13,6 +13,13 @@ from PyPDF2 import PdfFileMerger
 import traceback
 import tempfile
 
+import logging
+import sys
+import json
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 def init():
     """
@@ -20,13 +27,26 @@ def init():
     Returns: all the initialised variables
     -------
     """
-    lambda_write_path = tempfile.gettempdir() + "/"
-    main_s3_bucket = os.environ["main_s3_bucket"]
-    pdf_file_suffix = "_dv"
+    try:
+        lambda_write_path = tempfile.gettempdir() + "/"
+        main_s3_bucket = os.environ["main_s3_bucket"]
+        pdf_file_suffix = "_dv"
 
-    session = boto3.Session()
-    s3_client = session.client(service_name="s3")
-
+        session = boto3.Session()
+        s3_client = session.client(service_name="s3")
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
     return [s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix]
 
 
@@ -38,13 +58,27 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-    merger = PdfFileMerger()
+    try:
+        merger = PdfFileMerger()
 
-    for pdf_file in pdfs:
-        merger.append(pdf_file)
+        for pdf_file in pdfs:
+            merger.append(pdf_file)
 
-    merger.write(filename)
-    merger.close()
+        merger.write(filename)
+        merger.close()
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
 
 
 def process(
@@ -70,33 +104,73 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    pdf_file_name = file_type + pdf_file_suffix + ".pdf"
-    pdfs = []
+    try:
+        pdf_file_name = file_type + pdf_file_suffix + ".pdf"
+        pdfs = []
 
-    for item in data["files"]:
-        file_name = item[file_type].split("/")[-1]
-        print(f"downloading {file_name}")
-        s3_client.download_file(
-            bucket_name, item[file_type], lambda_write_path + file_name
+        for item in data["files"]:
+            file_name = item[file_type].split("/")[-1]
+            print(f"downloading {file_name}")
+            s3_client.download_file(
+                bucket_name, item[file_type], lambda_write_path + file_name
+            )
+            pdfs.append(lambda_write_path + file_name)
+
+        merge_pdf(pdfs, lambda_write_path + pdf_file_name)
+
+        print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
+        print(
+            "Uploading to - ",
+            bucket_name + "/" + s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
         )
-        pdfs.append(lambda_write_path + file_name)
-
-    merge_pdf(pdfs, lambda_write_path + pdf_file_name)
-
-    print(f"Merged - {os.path.join(lambda_write_path, pdf_file_name)}")
-    print(
-        "Uploading to - ",
-        bucket_name + "/" + s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
-    )
-    with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
-        s3_client.upload_fileobj(
-            merged_data,
-            bucket_name,
-            s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+        with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
+            s3_client.upload_fileobj(
+                merged_data,
+                bucket_name,
+                s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+            )
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
         )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
 
 
-# noinspection PyShadowingNames,PyUnusedLocal
+def delete_metadata_folder(control_file, s3_client):
+    """delete meta data folder after merging
+    Args:
+        control_file ([type]): the key file that
+        came from the s3 trigger. Modify the path
+        to get the meta data folder path.
+        s3_client ([type]): s3 client object
+    """    
+    try:
+        metadata_folder_to_delete = control_file.replace("doc_pdf", "exhibits").replace("control_files/", "").replace(".json", "")
+        bucket = s3_client.Bucket('metadata-bucket-11')
+        bucket.objects.filter(Prefix=metadata_folder_to_delete+"/").delete()
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
+    
+
 def lambda_handler(event, context):
     """
 
@@ -108,6 +182,7 @@ def lambda_handler(event, context):
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     control_file = event["Records"][0]["s3"]["object"]["key"]
     s3_folder = control_file.split("/")[0]
+    
     try:
         s3_client, main_s3_bucket, lambda_write_path, pdf_file_suffix = init()
 
@@ -118,7 +193,6 @@ def lambda_handler(event, context):
         if not data["files"]:
             print("Empty Control File.")
             s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-            return {"statusCode": 204, "body": "Empty Control File."}
 
         # loop two times in the data for source and current
         for file_type in ["source", "current"]:
@@ -133,9 +207,18 @@ def lambda_handler(event, context):
                 s3_folder,
             )
 
+        delete_metadata_folder(control_file, s3_client)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-        return {"statusCode": 200, "body": "Merged"}
-    except Exception as e:
-        print(f"ERROR for - {control_file}, The error is {e}")
-        print(traceback.format_exc())
-        return {"statusCode": 500, "body": str(traceback.format_exc())}
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
