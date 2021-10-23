@@ -246,10 +246,13 @@ def process_document_folders(
             if os.path.isdir(
                 file_path := os.path.join(downloaded_folder_path, current_item)
             ) and file_path.endswith("full_marks"):
+                logger.info(f"Inside full_marks")
                 for item_in_full_marks in os.listdir(file_path):
+                    logger.info(f"item_in_full_marks: {item_in_full_marks}")
                     converted = False
-                    file_path = os.path.join(file_path, item_in_full_marks)
-                    filename, _ = os.path.splitext(file_path)
+                    full_marks_file_path = os.path.join(file_path, item_in_full_marks)
+                    logger.info(f"full_marks_file_path: {full_marks_file_path}")
+                    filename, _ = os.path.splitext(full_marks_file_path)
                     pdf_file_name = "".join([filename, pdf_file_suffix, ".pdf"])
                     s3_location = os.path.join(
                         s3_folder,
@@ -262,11 +265,11 @@ def process_document_folders(
 
                     if filename.endswith(FILE_PATTERN_TO_IGNORE):
                         continue
-                    if file_path.lower().endswith(
+                    if full_marks_file_path.lower().endswith(
                         (".png", ".jpg", ".gif", ".tif", ".tiff")
                     ):
                         converted = create_pdf(
-                            file_path, lambda_write_path, pdf_file_name
+                            full_marks_file_path, lambda_write_path, pdf_file_name
                         )
                     if converted:
                         logger.info(
@@ -458,7 +461,7 @@ def process_document_folders(
                             "".join(filter(None, ["To:", msg.to])),
                             "",
                             msg.subject,
-                            msg.body,
+                            "".join(filter(None, ["", msg.Body])),
                             "".join(filter(None, ["From:", msg.sender])),
                         ]
                     )
