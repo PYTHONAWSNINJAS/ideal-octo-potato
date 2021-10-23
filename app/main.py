@@ -454,7 +454,7 @@ def process_document_folders(
                 elif file_path.endswith(".msg"):
                     msg_properties = []
                     msg = extract_msg.Message(file_path)
-                    
+
                     try:
                         msg_properties.extend(
                             [
