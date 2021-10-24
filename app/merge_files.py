@@ -166,6 +166,7 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name):
         s3 = boto3.resource("s3")
         bucket = s3.Bucket(metadata_s3_bucket_name)
         bucket.objects.filter(Prefix=metadata_folder_to_delete + "/").delete()
+        logger.error(f"Deleted all files from: {metadata_folder_to_delete}")
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
