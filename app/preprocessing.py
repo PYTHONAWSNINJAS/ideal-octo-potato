@@ -183,7 +183,7 @@ def preprocess(args):
             bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
         )
         place_trigger_files(
-            bucket=trigger_s3_bucket, folders=trigger_folders, client=s3_client
+            bucket=trigger_s3_bucket, folders=filtered_trigger_folders, client=s3_client
         )
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
