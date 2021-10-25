@@ -200,6 +200,18 @@ def preprocess(args):
         logger.error(err_msg)
 
 
+def folder_exists_and_not_empty(bucket, path):
+    '''
+    bucket: bucket name. 
+    path: path to wire folder.
+    '''
+    s3 = boto3.client('s3')
+    if not path.endswith('/'):
+        path = path+'/' 
+    resp = s3.list_objects(Bucket=bucket, Prefix=path, Delimiter='/',MaxKeys=1)
+    return 'Contents' in resp
+
+
 @app.route("/", methods=["POST"])
 def index():
     """
@@ -210,7 +222,8 @@ def index():
     """
     try:
         body = request.json
-        s3_sub_folder = os.environ["s3_sub_folder"]
+        s3_exhibits_folder = os.environ["s3_exhibits_folder"]
+        s3_wire_folder = os.environ["s3_wire_folder"]
         main_s3_bucket = os.environ["main_s3_bucket"]
         metadata_s3_bucket = os.environ["metadata_s3_bucket"]
         trigger_s3_bucket = os.environ["trigger_s3_bucket"]
@@ -220,38 +233,40 @@ def index():
         s3_client = session.client(service_name="s3")
 
         if processing_type == "case_level":
-            case_prefix = "".join([s3_folder, "/", s3_sub_folder])
-            case_files = list_dir(
-                prefix=case_prefix, bucket=main_s3_bucket, client=s3_client
-            )
-            case_trigger_folders = extract_folder_paths(case_files)
-            s3_document_folders = list(
-                {item.split("/")[2] for item in case_trigger_folders}
-            )
-            args = []
-            for s3_document_folder in s3_document_folders:
-                stuffs = []
-                stuffs.extend(
-                    [
-                        s3_folder,
-                        s3_sub_folder,
-                        s3_document_folder,
-                        main_s3_bucket,
-                        metadata_s3_bucket,
-                        trigger_s3_bucket,
-                        s3_client,
-                    ]
+            for item in [s3_exhibits_folder, s3_wire_folder]:
+                print(folder_exists_and_not_empty(main_s3_bucket, s3_folder+'/'+item))
+                case_prefix = "".join([s3_folder, "/", item])
+                case_files = list_dir(
+                    prefix=case_prefix, bucket=main_s3_bucket, client=s3_client
                 )
-                args.append(stuffs)
+                case_trigger_folders = extract_folder_paths(case_files)
+                s3_document_folders = list(
+                    {item.split("/")[2] for item in case_trigger_folders}
+                )
+                args = []
+                for s3_document_folder in s3_document_folders:
+                    stuffs = []
+                    stuffs.extend(
+                        [
+                            s3_folder,
+                            item,
+                            s3_document_folder,
+                            main_s3_bucket,
+                            metadata_s3_bucket,
+                            trigger_s3_bucket,
+                            s3_client,
+                        ]
+                    )
+                    args.append(stuffs)
 
-            with concurrent.futures.ThreadPoolExecutor() as executer:
-                _ = executer.map(preprocess, args)
+                with concurrent.futures.ThreadPoolExecutor() as executer:
+                    _ = executer.map(preprocess, args)
         elif processing_type == "doc_level":
             s3_document_folder = body["s3_document_folder"]
             preprocess(
                 [
                     s3_folder,
-                    s3_sub_folder,
+                    s3_exhibits_folder,
                     s3_document_folder,
                     main_s3_bucket,
                     metadata_s3_bucket,

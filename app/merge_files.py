@@ -159,7 +159,7 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name):
     """
     try:
         metadata_folder_to_delete = (
-            control_file_path.replace("doc_pdf", "exhibits")
+            control_file_path.replace("doc_pdf", "exhibits").replace("doc_pdf", "wire")
             .replace("control_files/", "")
             .replace(".json", "")
         )

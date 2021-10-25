@@ -220,7 +220,7 @@ def process_document_folders(
         s3_client boto3 object: S3 Session Client Object
         bucket_name str: main s3 bucket name
         s3_folder str: s3 folder i.e case_number
-        s3_sub_folder str: s3 sub folder i.e exhibits
+        s3_sub_folder str: s3 sub folder i.e exhibits or wire
         s3_document_directory str: s3 document directory
         i.e document folder
         lambda_write_path str: lambda_write_path i.e /tmp
