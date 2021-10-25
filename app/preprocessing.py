@@ -201,15 +201,15 @@ def preprocess(args):
 
 
 def folder_exists_and_not_empty(bucket, path):
-    '''
-    bucket: bucket name. 
+    """
+    bucket: bucket name.
     path: path to wire folder.
-    '''
-    s3 = boto3.client('s3')
-    if not path.endswith('/'):
-        path = path+'/' 
-    resp = s3.list_objects(Bucket=bucket, Prefix=path, Delimiter='/',MaxKeys=1)
-    return 'Contents' in resp
+    """
+    s3 = boto3.client("s3")
+    if not path.endswith("/"):
+        path = path + "/"
+    resp = s3.list_objects(Bucket=bucket, Prefix=path, Delimiter="/", MaxKeys=1)
+    return "Contents" in resp
 
 
 @app.route("/", methods=["POST"])
@@ -234,7 +234,9 @@ def index():
 
         if processing_type == "case_level":
             for item in [s3_exhibits_folder, s3_wire_folder]:
-                print(folder_exists_and_not_empty(main_s3_bucket, s3_folder+'/'+item))
+                print(
+                    folder_exists_and_not_empty(main_s3_bucket, s3_folder + "/" + item)
+                )
                 case_prefix = "".join([s3_folder, "/", item])
                 case_files = list_dir(
                     prefix=case_prefix, bucket=main_s3_bucket, client=s3_client
