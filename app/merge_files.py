@@ -149,17 +149,18 @@ def process(
         logger.error(err_msg)
 
 
-def delete_metadata_folder(control_file_path, metadata_s3_bucket_name):
-    """delete meta data folder after merging
+def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
+    """Delete meta data folder after merging.
     Args:
         control_file_path ([type]): the key file that
         came from the s3 trigger. Modify the path
         to get the meta data folder path.
         s3_client ([type]): s3 client object
+        folder_type: wire or exhibits
     """
     try:
         metadata_folder_to_delete = (
-            control_file_path.replace("doc_pdf", "exhibits")
+            control_file_path.replace("doc_pdf", folder_type)
             .replace("control_files/", "")
             .replace(".json", "")
         )
@@ -206,10 +207,11 @@ def lambda_handler(event, context):
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
         exhibit_id = data["exhibit"]
+        folder_type = data["type"]
 
         if not data["files"]:
             logger.info("Empty Control File.")
-            delete_metadata_folder(control_file, metadata_s3_bucket)
+            delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
             s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
 
         # loop two times in the data for source and current
@@ -225,7 +227,7 @@ def lambda_handler(event, context):
                 s3_folder,
             )
 
-        delete_metadata_folder(control_file, metadata_s3_bucket)
+        delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
