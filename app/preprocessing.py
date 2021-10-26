@@ -234,7 +234,8 @@ def index():
 
         if processing_type == "case_level":
             for item in [s3_exhibits_folder, s3_wire_folder]:
-                if folder_exists_and_not_empty(main_s3_bucket, s3_folder + "/" + item):
+                folder_exists = folder_exists_and_not_empty(main_s3_bucket, s3_folder + "/" + item)
+                if folder_exists:
                     case_prefix = "".join([s3_folder, "/", item])
                     case_files = list_dir(
                         prefix=case_prefix, bucket=main_s3_bucket, client=s3_client
