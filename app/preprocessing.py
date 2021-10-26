@@ -208,7 +208,7 @@ def folder_exists_and_not_empty(bucket, path):
     s3 = boto3.client("s3")
     if not path.endswith("/"):
         path = path + "/"
-    resp = s3.list_objects_v2(Bucket=bucket, Prefix=path, Delimiter="/", MaxKeys=1)
+    resp = s3.list_objects_v2(Bucket=bucket, Prefix=path, Delimiter="", MaxKeys=1)
     return "Contents" in resp
 
 
