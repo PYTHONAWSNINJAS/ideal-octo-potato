@@ -736,6 +736,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
             page = page.resize((int(x - x * 0.45), int(y - y * 0.45)), Image.ANTIALIAS)
             page.save(tmp_image_path)
             _ = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
+            logger.info(f"Created: {tmp_pdf_file_name}")
             pdfs.append(os.path.join(lambda_write_path, tmp_pdf_file_name))
         if len(images) == 1:
             _ = create_pdf(file_path, lambda_write_path, pdf_file_name)
