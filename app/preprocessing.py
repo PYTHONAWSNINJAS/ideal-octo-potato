@@ -176,7 +176,7 @@ def preprocess(args):
         logger.info(f"filtered_trigger_folders: {filtered_trigger_folders}")
         logger.info(f"s3_document_folder: {s3_document_folder}")
         doc_metadata_file_path = (
-            prefix + s3_document_folder + "_" + str(len(filtered_trigger_folders))
+            prefix + s3_document_folder + "___" + str(len(filtered_trigger_folders))
         )
         logger.info(f"doc_metadata_file_path: {doc_metadata_file_path}")
         place_metadata_file(
