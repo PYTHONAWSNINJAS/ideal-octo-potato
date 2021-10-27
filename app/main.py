@@ -27,7 +27,7 @@ from botocore.exceptions import ClientError
 import logging
 import sys
 import json
-
+import concurrent.futures
 from itertools import islice
 
 FILE_PATTERN_TO_IGNORE = "_small"
