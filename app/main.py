@@ -486,14 +486,14 @@ def process_document_folders(
 
                     pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
                     converted = True
-                elif file_path.endswith(".db"):
-                    con = sqlite3.connect(file_path)
-                    df = pd.read_sql_query("select * from <table_name>", con)
-                    df.to_html(temp_file := "".join([filename, ".html"]))
-                    pdfkit.from_file(
-                        temp_file, os.path.join(lambda_write_path, pdf_file_name)
-                    )
-                    converted = True
+                # elif file_path.endswith(".db"):
+                #     con = sqlite3.connect(file_path)
+                #     df = pd.read_sql_query("select * from <table_name>", con)
+                #     df.to_html(temp_file := "".join([filename, ".html"]))
+                #     pdfkit.from_file(
+                #         temp_file, os.path.join(lambda_write_path, pdf_file_name)
+                #     )
+                #     converted = True
 
         except Exception as _:
             exception_type, exception_value, exception_traceback = sys.exc_info()
