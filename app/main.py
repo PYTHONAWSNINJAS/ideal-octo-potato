@@ -709,19 +709,19 @@ def remove_files_from_metadata_bucket(
         else:
             logger.info(f"ERROR for: {meta_data_object_folder,item}")
 
+
 def process_tiff(args):
     lambda_write_path, i, page = args
-    tmp_image_path = os.path.join(
-        lambda_write_path, "temp_image_" + str(i) + ".png"
-    )
+    tmp_image_path = os.path.join(lambda_write_path, "temp_image_" + str(i) + ".png")
     x, y = page.size
     page = page.resize((int(x - x * 0.25), int(y - y * 0.25)), Image.ANTIALIAS)
     page.save(tmp_image_path)
-    
+
     tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
     _ = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
     logger.info(f"Created: {tmp_pdf_file_name}")
     return os.path.join(lambda_write_path, tmp_pdf_file_name)
+
 
 def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
     """
@@ -744,13 +744,13 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
             stuffs = []
             stuffs.extend([lambda_write_path, i, page.convert("L")])
             args.append(stuffs)
-        
+
         with concurrent.futures.ThreadPoolExecutor() as executer:
             results = executer.map(process_tiff, args)
-            
+
             for res in results:
                 pdfs.append(res)
-        
+
         if len(pdfs) == 1:
             _ = create_pdf(file_path, lambda_write_path, pdf_file_name)
         else:
