@@ -384,7 +384,7 @@ def process_document_folders(
                         pdfkit.from_file(
                             temp_file,
                             os.path.join(lambda_write_path, pdf_file_name),
-                            options={"enable-local-file-access": "", "quiet": ""},
+                            options={"enable-local-file-access": ""},
                         )
                         converted = True
                     elif file_path.endswith(".csv"):
