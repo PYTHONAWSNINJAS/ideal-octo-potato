@@ -364,7 +364,10 @@ def process_document_folders(
                         pdfkit.from_file(
                             temp_file,
                             os.path.join(lambda_write_path, pdf_file_name),
-                            options={"enable-local-file-access": "", "load-error-handling": "ignore"},
+                            options={
+                                "enable-local-file-access": "",
+                                "load-error-handling": "ignore",
+                            },
                         )
                         converted = True
                     elif file_path.endswith(".csv"):
@@ -482,7 +485,11 @@ def process_document_folders(
                 if file_path.endswith("mht"):
                     converted = True
                 else:
-                    exception_type, exception_value, exception_traceback = sys.exc_info()
+                    (
+                        exception_type,
+                        exception_value,
+                        exception_traceback,
+                    ) = sys.exc_info()
                     traceback_string = traceback.format_exception(
                         exception_type, exception_value, exception_traceback
                     )
