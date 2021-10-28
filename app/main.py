@@ -366,7 +366,9 @@ def process_document_folders(
                 elif file_path.lower().endswith((".tif", ".TIF", ".tiff")):
                     converted = tiff_to_pdf(file_path, lambda_write_path, pdf_file_name)
                 elif file_path.endswith((".bmp")):
-                    Image.open(file_path).save(os.path.join(lambda_write_path, pdf_file_name),"pdf")
+                    Image.open(file_path).save(
+                        os.path.join(lambda_write_path, pdf_file_name), "pdf"
+                    )
                     converted = True
                 elif file_path.endswith(".svg"):
                     drawing = svg2rlg(file_path, resolve_entities=True)
