@@ -310,9 +310,7 @@ def process_document_folders(
                     copyfile(file_path, pdf_file_name)
                     converted = True
                 elif file_path.endswith(".mif"):
-                    copyfile(
-                        file_path, temp_mif_file := "".join([filename, ".txt"])
-                    )
+                    copyfile(file_path, temp_mif_file := "".join([filename, ".txt"]))
                     pdfkit.from_file(
                         temp_mif_file,
                         os.path.join(lambda_write_path, pdf_file_name),
@@ -480,7 +478,7 @@ def process_document_folders(
                 #     converted = True
 
         except Exception as e:
-            if 'Done' not in str(e):
+            if "Done" not in str(e):
                 exception_type, exception_value, exception_traceback = sys.exc_info()
                 traceback_string = traceback.format_exception(
                     exception_type, exception_value, exception_traceback
