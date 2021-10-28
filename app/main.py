@@ -479,18 +479,21 @@ def process_document_folders(
 
         except Exception as e:
             if "Done" not in str(e):
-                exception_type, exception_value, exception_traceback = sys.exc_info()
-                traceback_string = traceback.format_exception(
-                    exception_type, exception_value, exception_traceback
-                )
-                err_msg = json.dumps(
-                    {
-                        "errorType": exception_type.__name__,
-                        "errorMessage": str(exception_value),
-                        "stackTrace": traceback_string,
-                    }
-                )
-                logger.error(err_msg)
+                if file_path.endswith("mht"):
+                    converted = True
+                else:
+                    exception_type, exception_value, exception_traceback = sys.exc_info()
+                    traceback_string = traceback.format_exception(
+                        exception_type, exception_value, exception_traceback
+                    )
+                    err_msg = json.dumps(
+                        {
+                            "errorType": exception_type.__name__,
+                            "errorMessage": str(exception_value),
+                            "stackTrace": traceback_string,
+                        }
+                    )
+                    logger.error(err_msg)
             else:
                 converted = True
 
