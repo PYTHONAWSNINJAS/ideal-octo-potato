@@ -310,33 +310,15 @@ def process_document_folders(
                     copyfile(file_path, pdf_file_name)
                     converted = True
                 elif file_path.endswith(".mif"):
-                    try:
-                        copyfile(
-                            file_path, temp_mif_file := "".join([filename, ".txt"])
-                        )
-                        pdfkit.from_file(
-                            temp_mif_file,
-                            os.path.join(lambda_write_path, pdf_file_name),
-                            options={"quiet": ""},
-                        )
-                        converted = True
-                    except Exception as _:
-                        (
-                            exception_type,
-                            exception_value,
-                            exception_traceback,
-                        ) = sys.exc_info()
-                        traceback_string = traceback.format_exception(
-                            exception_type, exception_value, exception_traceback
-                        )
-                        err_msg = json.dumps(
-                            {
-                                "errorType": exception_type.__name__,
-                                "errorMessage": str(exception_value),
-                                "stackTrace": traceback_string,
-                            }
-                        )
-                        logger.error(err_msg)
+                    copyfile(
+                        file_path, temp_mif_file := "".join([filename, ".txt"])
+                    )
+                    pdfkit.from_file(
+                        temp_mif_file,
+                        os.path.join(lambda_write_path, pdf_file_name),
+                        options={"quiet": ""},
+                    )
+                    converted = True
                 elif file_path.endswith(".txt"):
                     pdf_txt = get_pdf_object(11)
                     with open(file_path, "rb") as f:
@@ -497,19 +479,22 @@ def process_document_folders(
                 #     )
                 #     converted = True
 
-        except Exception as _:
-            exception_type, exception_value, exception_traceback = sys.exc_info()
-            traceback_string = traceback.format_exception(
-                exception_type, exception_value, exception_traceback
-            )
-            err_msg = json.dumps(
-                {
-                    "errorType": exception_type.__name__,
-                    "errorMessage": str(exception_value),
-                    "stackTrace": traceback_string,
-                }
-            )
-            logger.error(err_msg)
+        except Exception as e:
+            if 'Done' not in str(e):
+                exception_type, exception_value, exception_traceback = sys.exc_info()
+                traceback_string = traceback.format_exception(
+                    exception_type, exception_value, exception_traceback
+                )
+                err_msg = json.dumps(
+                    {
+                        "errorType": exception_type.__name__,
+                        "errorMessage": str(exception_value),
+                        "stackTrace": traceback_string,
+                    }
+                )
+                logger.error(err_msg)
+            else:
+                converted = True
 
         if converted:
             logger.info(f"Created: {os.path.join(lambda_write_path, pdf_file_name)}")
