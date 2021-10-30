@@ -64,27 +64,14 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-    try:
-        merger = PdfFileMerger()
+    
+    merger = PdfFileMerger()
 
-        for pdf_file in pdfs:
-            merger.append(pdf_file)
+    for pdf_file in pdfs:
+        merger.append(pdf_file)
 
-        merger.write(filename)
-        merger.close()
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.error(err_msg)
+    merger.write(filename)
+    merger.close()
 
 def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id):
     delay = 1  # initial delay
@@ -100,7 +87,7 @@ def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_fo
                     s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
                 )
             break
-        except ClientError:
+        except OSError as e:
             time.sleep(delay)
             delay += delay_incr
     else:
@@ -130,39 +117,25 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    try:
-        pdf_file_name = file_type + pdf_file_suffix + ".pdf"
-        pdfs = []
+    
+    pdf_file_name = file_type + pdf_file_suffix + ".pdf"
+    pdfs = []
 
-        for item in data["files"]:
-            file_name = item[file_type].split("/")[-1]
-            logger.info(f"downloading: {file_name}")
-            s3_client.download_file(
-                bucket_name, item[file_type], lambda_write_path + file_name
-            )
-            pdfs.append(lambda_write_path + file_name)
+    for item in data["files"]:
+        file_name = item[file_type].split("/")[-1]
+        logger.info(f"downloading: {item[file_type]}")
+        s3_client.download_file(
+            bucket_name, item[file_type], lambda_write_path + file_name
+        )
+        pdfs.append(lambda_write_path + file_name)
 
-        merge_pdf(pdfs, lambda_write_path + pdf_file_name)
+    merge_pdf(pdfs, lambda_write_path + pdf_file_name)
 
-        logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
-        logger.info(
-            f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
-        )
-        upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id)        
-        
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.error(err_msg)
+    logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
+    logger.info(
+        f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
+    )
+    upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id)
 
 
 def delete_metadata_folder(
