@@ -102,9 +102,9 @@ def merge_pdf(pdfs, filename, batchsize):
                     with open(pdf, "rb") as file:
                         merger.append(PdfFileReader(file))
 
-                merger.write(pdf_file_name + str(i) + ".pdf")
+                merger.write(filename + str(i) + ".pdf")
                 merger.close()
-                final_pdfs.append(pdf_file_name + str(i) + ".pdf")
+                final_pdfs.append(filename + str(i) + ".pdf")
 
         logger.info(f"Merging Final {str(len(list_of_batches))} pdf files.")
         merger = PdfFileMerger()

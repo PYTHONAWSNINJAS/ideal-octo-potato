@@ -64,9 +64,9 @@ def merge_pdf(pdfs, filename, batchsize):
                         print(e)
                         print(f"error merging: {pdf}")
         
-                merger.write(pdf_file_name+str(i)+".pdf")
+                merger.write(filename+str(i)+".pdf")
                 merger.close()
-                final_pdfs.append(pdf_file_name+str(i)+".pdf")
+                final_pdfs.append(filename+str(i)+".pdf")
         
         print(f"Merging Final {str(len(list_of_batches))} pdf files.")
         merger = PdfFileMerger()
