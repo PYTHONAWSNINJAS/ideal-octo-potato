@@ -1,4 +1,3 @@
-
 import json
 import os
 
@@ -23,11 +22,10 @@ def merge_pdf(pdfs, filename, batchsize):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-    
-    
+
     pdfs.sort(reverse=False)
     print(f"Number of pdfs to Merge: {str(len(pdfs))}")
-    if len(pdfs)<batchsize:
+    if len(pdfs) < batchsize:
         merger = PdfFileMerger()
         for pdf_file in pdfs:
             merger.append(pdf_file)
@@ -36,14 +34,14 @@ def merge_pdf(pdfs, filename, batchsize):
     else:
         batch_pdfs = []
         list_of_batches = []
-        for count, pdf in enumerate(pdfs, 1):        
+        for count, pdf in enumerate(pdfs, 1):
             batch_pdfs.append(pdf)
             if count % batchsize == 0:
                 list_of_batches.append(batch_pdfs)
                 batch_pdfs = []
 
             if count > len(pdfs) + 2:
-                print('List count larger than number of PDFs. Exiting..')
+                print("List count larger than number of PDFs. Exiting..")
                 os.sys.exit(1)
 
         list_of_batches.append(batch_pdfs)
@@ -59,15 +57,15 @@ def merge_pdf(pdfs, filename, batchsize):
                     try:
                         with open(pdf, "rb") as file:
                             merger.append(PdfFileReader(file))
-                            
+
                     except Exception as e:
                         print(e)
                         print(f"error merging: {pdf}")
-        
-                merger.write(filename+str(i)+".pdf")
+
+                merger.write(filename + str(i) + ".pdf")
                 merger.close()
-                final_pdfs.append(filename+str(i)+".pdf")
-        
+                final_pdfs.append(filename + str(i) + ".pdf")
+
         print(f"Merging Final {str(len(list_of_batches))} pdf files.")
         merger = PdfFileMerger()
         for pdf_file in final_pdfs:
@@ -75,14 +73,12 @@ def merge_pdf(pdfs, filename, batchsize):
         print(f"Creating: {filename}")
         merger.write(filename)
         merger.close()
-        
 
-            
+
 if __name__ == "__main__":
-    
+
     pdfs = [r"\tmp\a.pdf", r"\tmp\b.pdf", r"\tmp\c.pdf"]
     lambda_write_path = r"\tmp"
     pdf_file_name = "final.pdf"
     batchsize = 1
-    merge_pdf(pdfs, lambda_write_path +'\\'+ pdf_file_name, batchsize)
-    
+    merge_pdf(pdfs, lambda_write_path + "\\" + pdf_file_name, batchsize)
