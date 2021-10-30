@@ -170,7 +170,7 @@ def process(
         )
         pdfs.append(lambda_write_path + file_name)
 
-    merge_pdf(pdfs, lambda_write_path + pdf_file_name)
+    merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
 
     logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
     logger.info(
