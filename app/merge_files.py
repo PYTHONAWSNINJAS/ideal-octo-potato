@@ -8,7 +8,7 @@ import json
 import os
 
 import boto3
-from PyPDF2 import PdfFileMerger
+from PyPDF2 import PdfFileMerger, PdfFileReader
 
 import traceback
 import tempfile
@@ -56,7 +56,7 @@ def init():
     ]
 
 
-def merge_pdf(pdfs, filename):
+def merge_pdf(pdfs, filename, batchsize):
     """
 
     Parameters
@@ -65,13 +65,54 @@ def merge_pdf(pdfs, filename):
     filename: filename of the consolidated file
     """
     
-    merger = PdfFileMerger()
+    
+    pdfs.sort(reverse=False)
+    logger.info(f"Number of pdfs to Merge: {str(len(pdfs))}")
+    if len(pdfs)<batchsize:
+        merger = PdfFileMerger()
+        for pdf_file in pdfs:
+            merger.append(pdf_file)
+        merger.write(filename)
+        merger.close()
+    else:
+        batch_pdfs = []
+        list_of_batches = []
+        for count, pdf in enumerate(pdfs, 1):        
+            batch_pdfs.append(pdf)
+            if count % batchsize == 0:
+                list_of_batches.append(batch_pdfs)
+                batch_pdfs = []
 
-    for pdf_file in pdfs:
-        merger.append(pdf_file)
+            if count > len(pdfs) + 2:
+                logger.info('List count larger than number of PDFs. Exiting..')
+                os.sys.exit(1)
 
-    merger.write(filename)
-    merger.close()
+        list_of_batches.append(batch_pdfs)
+        list_of_batches = [x for x in list_of_batches if x]
+        logger.info(list_of_batches)
+        logger.info(f"No of batches: {str(len(list_of_batches))}")
+
+        final_pdfs = []
+        for i, batchlist in enumerate(list_of_batches):
+            logger.info(f"Processing Batch: {str(i)} with length: {str(len(batchlist))}")
+            if len(batchlist) > 0:
+                merger = PdfFileMerger()
+                for pdf in batchlist:
+                    with open(pdf, "rb") as file:
+                        merger.append(PdfFileReader(file))
+        
+                merger.write(pdf_file_name+str(i)+".pdf")
+                merger.close()
+                final_pdfs.append(pdf_file_name+str(i)+".pdf")
+        
+        logger.info(f"Merging Final {str(len(list_of_batches))} pdf files.")
+        merger = PdfFileMerger()
+        for pdf_file in final_pdfs:
+            merger.append(pdf_file)
+        logger.info(f"Creating: {filename}")
+        merger.write(filename)
+        merger.close()
+
 
 def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id):
     delay = 1  # initial delay
