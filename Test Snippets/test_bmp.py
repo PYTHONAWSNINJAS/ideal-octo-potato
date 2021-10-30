@@ -5,8 +5,10 @@ import logging
 import sys
 import json
 import traceback
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
 
 def create_pdf(file_path, lambda_write_path, pdf_file_name):
     """
@@ -46,10 +48,10 @@ if __name__ == "__main__":
     pytesseract.pytesseract.tesseract_cmd = (
         r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     )
-    file_path =  r"D:\tmp\case_number\exhibits\folder1\3\ole2.bmp"
+    file_path = r"D:\tmp\case_number\exhibits\folder1\3\ole2.bmp"
     lambda_write_path = r"\tmp"
     pdf_file_name = "ole2.pdf"
     filename, _ = os.path.splitext(file_path)
-    
+
     Image.open(file_path).save(temp_file := "".join([filename, ".png"]))
     converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
