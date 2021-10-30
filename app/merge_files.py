@@ -149,7 +149,9 @@ def process(
         logger.error(err_msg)
 
 
-def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type, s3_client):
+def delete_metadata_folder(
+    control_file_path, metadata_s3_bucket_name, folder_type, s3_client
+):
     """Delete meta data folder after merging.
     Args:
         control_file_path ([type]): the key file that
@@ -164,7 +166,7 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_ty
             .replace("control_files/", "")
             .replace(".json", "")
         )
-        
+
         bucket = s3_client.Bucket(metadata_s3_bucket_name)
         bucket.objects.filter(Prefix=metadata_folder_to_delete + "/").delete()
         logger.info(f"Deleted all files from: {metadata_folder_to_delete}")
