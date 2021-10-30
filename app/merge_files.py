@@ -118,26 +118,12 @@ def merge_pdf(pdfs, filename, batchsize):
 def upload_to_s3(
     lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
 ):
-    delay = 1  # initial delay
-    delay_incr = 1  # additional delay in each loop
-    max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
-
-    while delay < max_delay:
-        try:
-            with open(
-                os.path.join(lambda_write_path, pdf_file_name), "rb"
-            ) as merged_data:
-                s3_client.upload_fileobj(
-                    merged_data,
-                    bucket_name,
-                    s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
-                )
-            break
-        except OSError as e:
-            time.sleep(delay)
-            delay += delay_incr
-    else:
-        logger.error(f"upload_to_s3 ERROR for: {s3_folder}")
+    with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
+        s3_client.upload_fileobj(
+            merged_data,
+            bucket_name,
+            s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+        )
 
 
 def process(

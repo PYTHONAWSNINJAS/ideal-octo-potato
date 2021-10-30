@@ -4,7 +4,7 @@ from PIL import Image, ImageSequence
 import logging
 import sys
 import json
-
+import traceback
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
