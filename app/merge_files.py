@@ -149,7 +149,7 @@ def process(
         logger.error(err_msg)
 
 
-def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
+def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type, s3_client):
     """Delete meta data folder after merging.
     Args:
         control_file_path ([type]): the key file that
@@ -164,8 +164,8 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_ty
             .replace("control_files/", "")
             .replace(".json", "")
         )
-        s3 = boto3.resource("s3")
-        bucket = s3.Bucket(metadata_s3_bucket_name)
+        
+        bucket = s3_client.Bucket(metadata_s3_bucket_name)
         bucket.objects.filter(Prefix=metadata_folder_to_delete + "/").delete()
         logger.info(f"Deleted all files from: {metadata_folder_to_delete}")
     except Exception as _:
@@ -227,7 +227,7 @@ def lambda_handler(event, context):
                 s3_folder,
             )
 
-        delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
+        delete_metadata_folder(control_file, metadata_s3_bucket, folder_type, s3_client)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
