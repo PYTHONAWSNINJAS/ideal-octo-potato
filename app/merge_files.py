@@ -64,7 +64,7 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-    
+
     merger = PdfFileMerger()
 
     for pdf_file in pdfs:
@@ -73,14 +73,19 @@ def merge_pdf(pdfs, filename):
     merger.write(filename)
     merger.close()
 
-def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id):
+
+def upload_to_s3(
+    lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
+):
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
 
     while delay < max_delay:
         try:
-            with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
+            with open(
+                os.path.join(lambda_write_path, pdf_file_name), "rb"
+            ) as merged_data:
                 s3_client.upload_fileobj(
                     merged_data,
                     bucket_name,
@@ -93,7 +98,7 @@ def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_fo
     else:
         logger.error(f"upload_to_s3 ERROR for: {s3_folder}")
 
-    
+
 def process(
     file_type,
     exhibit_id,
@@ -117,7 +122,7 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    
+
     pdf_file_name = file_type + pdf_file_suffix + ".pdf"
     pdfs = []
 
@@ -135,7 +140,9 @@ def process(
     logger.info(
         f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
     )
-    upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id)
+    upload_to_s3(
+        lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
+    )
 
 
 def delete_metadata_folder(
