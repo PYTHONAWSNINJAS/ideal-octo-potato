@@ -86,14 +86,19 @@ def merge_pdf(pdfs, filename):
         )
         logger.error(err_msg)
 
-def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id):
+
+def upload_to_s3(
+    lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
+):
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
 
     while delay < max_delay:
         try:
-            with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
+            with open(
+                os.path.join(lambda_write_path, pdf_file_name), "rb"
+            ) as merged_data:
                 s3_client.upload_fileobj(
                     merged_data,
                     bucket_name,
@@ -106,7 +111,7 @@ def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_fo
     else:
         logger.error(f"upload_to_s3 ERROR for: {s3_folder}")
 
-    
+
 def process(
     file_type,
     exhibit_id,
@@ -148,8 +153,15 @@ def process(
         logger.info(
             f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
         )
-        upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id)        
-        
+        upload_to_s3(
+            lambda_write_path,
+            pdf_file_name,
+            s3_client,
+            bucket_name,
+            s3_folder,
+            exhibit_id,
+        )
+
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
