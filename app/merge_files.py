@@ -64,11 +64,10 @@ def merge_pdf(pdfs, filename, batchsize):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-    
-    
+
     pdfs.sort(reverse=False)
     logger.info(f"Number of pdfs to Merge: {str(len(pdfs))}")
-    if len(pdfs)<batchsize:
+    if len(pdfs) < batchsize:
         merger = PdfFileMerger()
         for pdf_file in pdfs:
             merger.append(pdf_file)
@@ -77,14 +76,14 @@ def merge_pdf(pdfs, filename, batchsize):
     else:
         batch_pdfs = []
         list_of_batches = []
-        for count, pdf in enumerate(pdfs, 1):        
+        for count, pdf in enumerate(pdfs, 1):
             batch_pdfs.append(pdf)
             if count % batchsize == 0:
                 list_of_batches.append(batch_pdfs)
                 batch_pdfs = []
 
             if count > len(pdfs) + 2:
-                logger.info('List count larger than number of PDFs. Exiting..')
+                logger.info("List count larger than number of PDFs. Exiting..")
                 os.sys.exit(1)
 
         list_of_batches.append(batch_pdfs)
@@ -94,17 +93,19 @@ def merge_pdf(pdfs, filename, batchsize):
 
         final_pdfs = []
         for i, batchlist in enumerate(list_of_batches):
-            logger.info(f"Processing Batch: {str(i)} with length: {str(len(batchlist))}")
+            logger.info(
+                f"Processing Batch: {str(i)} with length: {str(len(batchlist))}"
+            )
             if len(batchlist) > 0:
                 merger = PdfFileMerger()
                 for pdf in batchlist:
                     with open(pdf, "rb") as file:
                         merger.append(PdfFileReader(file))
-        
-                merger.write(pdf_file_name+str(i)+".pdf")
+
+                merger.write(pdf_file_name + str(i) + ".pdf")
                 merger.close()
-                final_pdfs.append(pdf_file_name+str(i)+".pdf")
-        
+                final_pdfs.append(pdf_file_name + str(i) + ".pdf")
+
         logger.info(f"Merging Final {str(len(list_of_batches))} pdf files.")
         merger = PdfFileMerger()
         for pdf_file in final_pdfs:
@@ -114,14 +115,18 @@ def merge_pdf(pdfs, filename, batchsize):
         merger.close()
 
 
-def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id):
+def upload_to_s3(
+    lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
+):
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
     max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
 
     while delay < max_delay:
         try:
-            with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
+            with open(
+                os.path.join(lambda_write_path, pdf_file_name), "rb"
+            ) as merged_data:
                 s3_client.upload_fileobj(
                     merged_data,
                     bucket_name,
@@ -134,7 +139,7 @@ def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_fo
     else:
         logger.error(f"upload_to_s3 ERROR for: {s3_folder}")
 
-    
+
 def process(
     file_type,
     exhibit_id,
@@ -158,7 +163,7 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    
+
     pdf_file_name = file_type + pdf_file_suffix + ".pdf"
     pdfs = []
 
@@ -176,7 +181,9 @@ def process(
     logger.info(
         f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
     )
-    upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id)
+    upload_to_s3(
+        lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
+    )
 
 
 def delete_metadata_folder(
