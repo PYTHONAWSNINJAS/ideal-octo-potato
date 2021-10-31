@@ -1,5 +1,10 @@
 version = 1
 
+test_patterns = [
+  "Test Snippets/**",
+  "test_*.py"
+]
+
 [[analyzers]]
 name = "docker"
 enabled = true
@@ -7,10 +12,7 @@ enabled = true
 [[analyzers]]
 name = "python"
 enabled = true
-test_patterns = [
-  "Test Snippets/**",
-  "test_*.py"
-]
+
   [analyzers.meta]
   runtime_version = "3.x.x"
 
