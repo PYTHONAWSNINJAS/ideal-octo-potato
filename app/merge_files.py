@@ -64,7 +64,6 @@ def merge_pdf(pdfs, filename, batchsize):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-
     pdfs.sort(reverse=False)
     logger.info(f"Number of pdfs to Merge: {str(len(pdfs))}")
     if len(pdfs) < batchsize:
@@ -149,7 +148,6 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-
     pdf_file_name = file_type + pdf_file_suffix + ".pdf"
     pdfs = []
 
