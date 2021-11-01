@@ -170,9 +170,7 @@ def process(
     )
 
 
-def delete_metadata_folder(
-    control_file_path, metadata_s3_bucket_name, folder_type
-):
+def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
     """Delete meta data folder after merging.
     Args:
         control_file_path ([type]): the key file that
