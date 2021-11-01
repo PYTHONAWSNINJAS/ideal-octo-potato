@@ -214,6 +214,7 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
+    logger.info(f"event: {event}")
     trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     control_file = event["Records"][0]["s3"]["object"]["key"]
     s3_folder = control_file.split("/")[0]
