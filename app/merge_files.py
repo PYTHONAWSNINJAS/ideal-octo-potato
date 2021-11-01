@@ -171,7 +171,7 @@ def process(
 
 
 def delete_metadata_folder(
-    control_file_path, metadata_s3_bucket_name, folder_type, s3_client
+    control_file_path, metadata_s3_bucket_name, folder_type
 ):
     """Delete meta data folder after merging.
     Args:
@@ -250,7 +250,7 @@ def lambda_handler(event, context):
                 s3_folder,
             )
 
-        delete_metadata_folder(control_file, metadata_s3_bucket, folder_type, s3_client)
+        delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()

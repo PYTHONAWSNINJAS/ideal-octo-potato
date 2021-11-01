@@ -11,12 +11,10 @@ if __name__ == "__main__":
         pdf_file_name = file_path.split(r"\/")[-1].replace("mht", "pdf")
         filename, _ = os.path.splitext(file_path)
 
-        copyfile(file_path, temp_file := "".join([filename, ".html"]))
-
         pdfkit.from_file(
-            temp_file,
+            file_path,
             os.path.join(lambda_write_path, pdf_file_name),
-            options={"enable-local-file-access": "", "load-error-handling": "ignore"},
+            options={"enable-local-file-access": "", "load-error-handling": "skip"},
         )
     except Exception as e:
         if "Done" not in str(e):
