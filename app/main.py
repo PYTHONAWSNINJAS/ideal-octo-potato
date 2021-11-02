@@ -48,35 +48,49 @@ def download_dir(prefix, local, bucket, client):
     -------
 
     """
-    keys = []
-    dirs = []
-    next_token = ""
-    base_kwargs = {
-        "Bucket": bucket,
-        "Prefix": prefix,
-    }
-    while next_token is not None:
-        kwargs = base_kwargs.copy()
-        if next_token != "":
-            kwargs.update({"ContinuationToken": next_token})
-        results = client.list_objects_v2(**kwargs)
-        contents = results.get("Contents")
-        for i in contents:
-            k = i.get("Key")
-            if k[-1] != "/":
-                keys.append(k)
-            else:
-                dirs.append(k)
-        next_token = results.get("NextContinuationToken")
-    for d in dirs:
-        destination_pathname = os.path.join(local, d)
-        if not os.path.exists(os.path.dirname(destination_pathname)):
-            os.makedirs(os.path.dirname(destination_pathname))
-    for k in keys:
-        destination_pathname = os.path.join(local, k)
-        if not os.path.exists(os.path.dirname(destination_pathname)):
-            os.makedirs(os.path.dirname(destination_pathname))
-        client.download_file(bucket, k, destination_pathname)
+    try:
+        keys = []
+        dirs = []
+        next_token = ""
+        base_kwargs = {
+            "Bucket": bucket,
+            "Prefix": prefix,
+        }
+        while next_token is not None:
+            kwargs = base_kwargs.copy()
+            if next_token != "":
+                kwargs.update({"ContinuationToken": next_token})
+            results = client.list_objects_v2(**kwargs)
+            contents = results.get("Contents")
+            for i in contents:
+                k = i.get("Key")
+                if k[-1] != "/":
+                    keys.append(k)
+                else:
+                    dirs.append(k)
+            next_token = results.get("NextContinuationToken")
+        for d in dirs:
+            destination_pathname = os.path.join(local, d)
+            if not os.path.exists(os.path.dirname(destination_pathname)):
+                os.makedirs(os.path.dirname(destination_pathname))
+        for k in keys:
+            destination_pathname = os.path.join(local, k)
+            if not os.path.exists(os.path.dirname(destination_pathname)):
+                os.makedirs(os.path.dirname(destination_pathname))
+            client.download_file(bucket, k, destination_pathname)
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
 
 
 def create_pdf(file_path, lambda_write_path, pdf_file_name):
