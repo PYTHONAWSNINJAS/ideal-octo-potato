@@ -20,7 +20,6 @@ from PyPDF2 import PdfFileMerger
 from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
-import tempfile
 import traceback
 import time
 from botocore.exceptions import ClientError
@@ -164,7 +163,7 @@ def init():
     Returns: all the initialised variables
     -------
     """
-    lambda_write_path = tempfile.gettempdir() + "/"
+    lambda_write_path = os.environ["lambda_write_path"]
     main_s3_bucket = os.environ["main_s3_bucket"]
     metadata_s3_bucket = os.environ["metadata_s3_bucket"]
     merge_trigger_bucket = os.environ["merge_trigger_bucket"]
