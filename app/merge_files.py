@@ -27,7 +27,7 @@ def init():
     -------
     """
     try:
-        lambda_write_path = tempfile.gettempdir() + "/"
+        lambda_write_path = os.environ["lambda_write_path"]
         main_s3_bucket = os.environ["main_s3_bucket"]
         metadata_s3_bucket = os.environ["metadata_s3_bucket"]
         pdf_file_suffix = "_dv"
