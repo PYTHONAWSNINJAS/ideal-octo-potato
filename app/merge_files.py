@@ -119,7 +119,7 @@ def merge_pdf(pdfs, filename, batchsize):
 def upload_to_s3(
     lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
 ):
-    with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
+    with open(lambda_write_path + pdf_file_name, "rb") as merged_data:
         # s3_client.upload_fileobj(
         #     merged_data,
         #     bucket_name,
@@ -167,11 +167,11 @@ def process(
         pdfs.append(lambda_write_path + file_name)
 
     if len(pdfs)==1: 
-        copyfile(pdfs[0], pdf_file_name)
+        copyfile(pdfs[0], lambda_write_path + pdf_file_name)
     else:
         merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
 
-    logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
+    logger.info(f"Merged: {lambda_write_path + pdf_file_name}")
     logger.info(
         f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
     )
