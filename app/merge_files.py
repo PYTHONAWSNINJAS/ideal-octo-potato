@@ -128,7 +128,7 @@ def upload_to_s3(
         s3_client.put_object(
             Body=merged_data,
             Bucket=bucket_name,
-            Key=s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name
+            Key=s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
         )
 
 
@@ -166,7 +166,7 @@ def process(
         )
         pdfs.append(lambda_write_path + file_name)
 
-    if len(pdfs)==1: 
+    if len(pdfs) == 1:
         copyfile(pdfs[0], pdf_file_name)
     else:
         merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
