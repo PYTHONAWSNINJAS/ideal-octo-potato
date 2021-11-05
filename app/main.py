@@ -810,7 +810,7 @@ def lambda_handler(event, context):
         s3_output_folder,
         trigger_folder,
     )
-    rmtree(lambda_write_path + folder_path)
+    # rmtree(lambda_write_path + folder_path)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
 
     meta_data_object_folder = "".join(
