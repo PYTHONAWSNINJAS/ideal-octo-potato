@@ -34,7 +34,6 @@ def init():
 
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
-        s3_client.setS3ClientOptions(S3ClientOptions.builder().disableChunkedEncoding().build())
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
