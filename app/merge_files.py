@@ -7,6 +7,8 @@ The control file has paths to the converted pdfs that needs to be merged.
 import json
 import os
 
+from shutil import copyfile
+
 import boto3
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
@@ -164,7 +166,10 @@ def process(
         )
         pdfs.append(lambda_write_path + file_name)
 
-    merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
+    if len(pdfs)==1: 
+        copyfile(pdfs[0], pdf_file_name)
+    else:
+        merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
 
     logger.info(f"Merged: {os.path.join(lambda_write_path, pdf_file_name)}")
     logger.info(
