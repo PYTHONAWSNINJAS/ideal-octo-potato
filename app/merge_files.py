@@ -34,6 +34,7 @@ def init():
 
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
+        s3_client.setS3ClientOptions(S3ClientOptions.builder().disableChunkedEncoding().build())
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -118,10 +119,15 @@ def upload_to_s3(
     lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
 ):
     with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as merged_data:
-        s3_client.upload_fileobj(
-            merged_data,
-            bucket_name,
-            s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+        # s3_client.upload_fileobj(
+        #     merged_data,
+        #     bucket_name,
+        #     s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+        # )
+        s3_client.put_object(
+            Body=merged_data,
+            Bucket=bucket_name,
+            Key=s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name
         )
 
 
