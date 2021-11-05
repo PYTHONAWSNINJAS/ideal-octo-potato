@@ -166,7 +166,7 @@ def process(
         )
         pdfs.append(lambda_write_path + file_name)
 
-    if len(pdfs)==1: 
+    if len(pdfs) == 1:
         copyfile(pdfs[0], lambda_write_path + pdf_file_name)
     else:
         merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
