@@ -7,7 +7,7 @@ The control file has paths to the converted pdfs that needs to be merged.
 import json
 import os
 
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 import boto3
 from PyPDF2 import PdfFileMerger, PdfFileReader
@@ -250,3 +250,6 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
+    
+    rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
+    rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
