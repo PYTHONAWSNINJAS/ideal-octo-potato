@@ -149,7 +149,10 @@ def process(
     for item in data["files"]:
         file_name = item[file_type].split("/")[-1]
         logger.info(f"downloading: {item[file_type]}")
-        os.mkdir(item[file_type].replace(file_name, ""))
+        
+        if not os.path.exists(lambda_write_path + item[file_type].replace(file_name,"")):
+            os.makedirs(lambda_write_path + item[file_type].replace(file_name,""))
+        
         s3_client.download_file(
             bucket_name, item[file_type], lambda_write_path + item[file_type]
         )
@@ -221,8 +224,10 @@ def lambda_handler(event, context):
             logger.info("Empty Control File.")
             delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
             s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-            rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
-            rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
+            if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
+                rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
+            if os.path.exists(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"):    
+                rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
             return None
 
         # loop two times in the data for source and current
@@ -240,6 +245,10 @@ def lambda_handler(event, context):
 
         delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
+        if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
+            rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
+        if os.path.exists(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"):    
+            rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -253,20 +262,3 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
-    
-    try:
-        rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
-        rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.info(err_msg)
