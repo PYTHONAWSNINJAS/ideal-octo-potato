@@ -125,6 +125,7 @@ def upload_to_s3(
         #     bucket_name,
         #     s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
         # )
+        merged_data.seek(0)
         s3_client.put_object(
             Body=merged_data,
             Bucket=bucket_name,
