@@ -23,6 +23,7 @@ logger.setLevel(logging.INFO)
 
 import time
 
+
 def init():
     """
     Initialises variables required for the program to operate
