@@ -164,7 +164,7 @@ def process(
     )
     time.sleep(5)
     upload_to_s3(
-        lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
+        lambda_write_path, pdf_file_name, s3_client, bucket_name
     )
 
 
