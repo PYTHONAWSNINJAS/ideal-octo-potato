@@ -143,16 +143,16 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    pdf_file_name = file_type + pdf_file_suffix + ".pdf"
+    pdf_file_name = s3_folder + "/doc_pdf/" + exhibit_id + "/" + file_type + pdf_file_suffix + ".pdf"
     pdfs = []
 
     for item in data["files"]:
         file_name = item[file_type].split("/")[-1]
         logger.info(f"downloading: {item[file_type]}")
         s3_client.download_file(
-            bucket_name, item[file_type], lambda_write_path + file_name
+            bucket_name, item[file_type], lambda_write_path + item[file_type]
         )
-        pdfs.append(lambda_write_path + file_name)
+        pdfs.append(lambda_write_path + item[file_type])
 
     if len(pdfs) == 1:
         copyfile(pdfs[0], lambda_write_path + pdf_file_name)
@@ -210,9 +210,6 @@ def lambda_handler(event, context):
             lambda_write_path,
             pdf_file_suffix,
         ) = init()
-
-        lambda_write_path = lambda_write_path + control_file.split("/")[-1].replace(".json","") + "/"
-        logger.info(f"lambda_write_path is {lambda_write_path}")
         
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
