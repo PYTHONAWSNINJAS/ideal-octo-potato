@@ -119,13 +119,12 @@ def merge_pdf(pdfs, filename, batchsize):
 def upload_to_s3(
     lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
 ):
-    with open(lambda_write_path + pdf_file_name, "rb") as merged_data:
+    with open(lambda_write_path + pdf_file_name, "r") as merged_data:
         # s3_client.upload_fileobj(
         #     merged_data,
         #     bucket_name,
         #     s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
         # )
-        merged_data.seek(0)
         s3_client.put_object(
             Body=merged_data,
             Bucket=bucket_name,
