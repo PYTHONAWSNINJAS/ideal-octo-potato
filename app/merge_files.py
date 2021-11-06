@@ -143,7 +143,15 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    pdf_file_name = s3_folder + "/doc_pdf/" + exhibit_id + "/" + file_type + pdf_file_suffix + ".pdf"
+    pdf_file_name = (
+        s3_folder
+        + "/doc_pdf/"
+        + exhibit_id
+        + "/"
+        + file_type
+        + pdf_file_suffix
+        + ".pdf"
+    )
     pdfs = []
 
     for item in data["files"]:
@@ -210,7 +218,7 @@ def lambda_handler(event, context):
             lambda_write_path,
             pdf_file_suffix,
         ) = init()
-        
+
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
         exhibit_id = data["s3_sub_folder"]
@@ -250,6 +258,6 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
-    
+
     rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
     rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
