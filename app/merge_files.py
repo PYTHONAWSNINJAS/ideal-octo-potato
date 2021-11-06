@@ -145,8 +145,10 @@ def process(
         file_name = item[file_type].split("/")[-1]
         logger.info(f"downloading: {item[file_type]}")
         
-        if not os.path.exists(lambda_write_path + item[file_type].replace(file_name,"")):
+        try:
             os.makedirs(lambda_write_path + item[file_type].replace(file_name,""))
+        except FileExistsError:
+            logger.info(f"directory already exists")
         
         s3_client.download_file(
             bucket_name, item[file_type], lambda_write_path + item[file_type]
