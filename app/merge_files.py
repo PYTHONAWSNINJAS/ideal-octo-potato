@@ -301,3 +301,5 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
+
+    return logger.info("Finished.")
