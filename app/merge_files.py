@@ -149,6 +149,7 @@ def process(
     for item in data["files"]:
         file_name = item[file_type].split("/")[-1]
         logger.info(f"downloading: {item[file_type]}")
+        os.mkdir(item[file_type].replace(file_name, ""))
         s3_client.download_file(
             bucket_name, item[file_type], lambda_write_path + item[file_type]
         )
