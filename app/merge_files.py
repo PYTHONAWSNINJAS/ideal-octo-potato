@@ -104,9 +104,7 @@ def merge_pdf(pdfs, filename, batchsize):
         merger.close()
 
 
-def upload_to_s3(
-    lambda_write_path, pdf_file_name, s3_client, bucket_name
-    ):
+def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name):
     with open(lambda_write_path + pdf_file_name, "rb") as merged_data:
         s3_client.put_object(
             Body=merged_data,
@@ -138,16 +136,26 @@ def process(
     pdf_file_suffix: _dv
     s3_folder: the upload location of the merged file
     """
-    pdf_file_name = s3_folder + "/doc_pdf/" + exhibit_id + "/" + file_type + pdf_file_suffix + ".pdf"
+    pdf_file_name = (
+        s3_folder
+        + "/doc_pdf/"
+        + exhibit_id
+        + "/"
+        + file_type
+        + pdf_file_suffix
+        + ".pdf"
+    )
     pdfs = []
 
     for item in data["files"]:
         file_name = item[file_type].split("/")[-1]
         logger.info(f"downloading: {item[file_type]}")
-        
-        if not os.path.exists(lambda_write_path + item[file_type].replace(file_name,"")):
-            os.makedirs(lambda_write_path + item[file_type].replace(file_name,""))
-        
+
+        if not os.path.exists(
+            lambda_write_path + item[file_type].replace(file_name, "")
+        ):
+            os.makedirs(lambda_write_path + item[file_type].replace(file_name, ""))
+
         s3_client.download_file(
             bucket_name, item[file_type], lambda_write_path + item[file_type]
         )
@@ -163,9 +171,7 @@ def process(
         f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
     )
     time.sleep(5)
-    upload_to_s3(
-        lambda_write_path, pdf_file_name, s3_client, bucket_name
-    )
+    upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name)
 
 
 def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
@@ -209,7 +215,7 @@ def lambda_handler(event, context):
             lambda_write_path,
             pdf_file_suffix,
         ) = init()
-        
+
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
         exhibit_id = data["s3_sub_folder"]
@@ -219,10 +225,28 @@ def lambda_handler(event, context):
             logger.info("Empty Control File.")
             delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
             s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-            if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
+            if os.path.exists(
+                lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"
+            ):
                 rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
-            if os.path.exists(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"):    
-                rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
+            if os.path.exists(
+                lambda_write_path
+                + s3_folder
+                + "/"
+                + folder_type
+                + "/"
+                + exhibit_id
+                + "/"
+            ):
+                rmtree(
+                    lambda_write_path
+                    + s3_folder
+                    + "/"
+                    + folder_type
+                    + "/"
+                    + exhibit_id
+                    + "/"
+                )
             return None
 
         # loop two times in the data for source and current
@@ -240,10 +264,22 @@ def lambda_handler(event, context):
 
         delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-        if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
+        if os.path.exists(
+            lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"
+        ):
             rmtree(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/")
-        if os.path.exists(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"):    
-            rmtree(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/")
+        if os.path.exists(
+            lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
+        ):
+            rmtree(
+                lambda_write_path
+                + s3_folder
+                + "/"
+                + folder_type
+                + "/"
+                + exhibit_id
+                + "/"
+            )
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
