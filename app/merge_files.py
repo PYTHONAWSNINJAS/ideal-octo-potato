@@ -108,15 +108,10 @@ def upload_to_s3(
     lambda_write_path, pdf_file_name, s3_client, bucket_name, s3_folder, exhibit_id
 ):
     with open(lambda_write_path + pdf_file_name, "rb") as merged_data:
-        # s3_client.upload_fileobj(
-        #     merged_data,
-        #     bucket_name,
-        #     s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
-        # )
         s3_client.put_object(
             Body=merged_data,
             Bucket=bucket_name,
-            Key=s3_folder + "/doc_pdf/" + exhibit_id + "/" + pdf_file_name,
+            Key=pdf_file_name,
         )
 
 
