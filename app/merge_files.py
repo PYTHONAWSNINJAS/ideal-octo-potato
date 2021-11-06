@@ -211,9 +211,11 @@ def lambda_handler(event, context):
             pdf_file_suffix,
         ) = init()
 
-        lambda_write_path = lambda_write_path + control_file.split("/")[-1].replace(".json","") + "/"
+        lambda_write_path = (
+            lambda_write_path + control_file.split("/")[-1].replace(".json", "") + "/"
+        )
         logger.info(f"lambda_write_path is {lambda_write_path}")
-        
+
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
         exhibit_id = data["s3_sub_folder"]
