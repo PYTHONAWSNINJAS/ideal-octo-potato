@@ -28,27 +28,13 @@ def init():
     Returns: all the initialised variables
     -------
     """
-    try:
-        lambda_write_path = os.environ["lambda_write_path"]
-        main_s3_bucket = os.environ["main_s3_bucket"]
-        metadata_s3_bucket = os.environ["metadata_s3_bucket"]
-        pdf_file_suffix = "_dv"
+    lambda_write_path = os.environ["lambda_write_path"]
+    main_s3_bucket = os.environ["main_s3_bucket"]
+    metadata_s3_bucket = os.environ["metadata_s3_bucket"]
+    pdf_file_suffix = "_dv"
 
-        session = boto3.Session()
-        s3_client = session.client(service_name="s3")
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.error(err_msg)
+    session = boto3.Session()
+    s3_client = session.client(service_name="s3")
     return [
         s3_client,
         main_s3_bucket,
@@ -189,29 +175,15 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_ty
         s3_client ([type]): s3 client object
         folder_type: wire or exhibits
     """
-    try:
-        metadata_folder_to_delete = (
-            control_file_path.replace("doc_pdf", folder_type)
-            .replace("control_files/", "")
-            .replace(".json", "")
-        )
-        s3 = boto3.resource("s3")
-        bucket = s3.Bucket(metadata_s3_bucket_name)
-        bucket.objects.filter(Prefix=metadata_folder_to_delete + "/").delete()
-        logger.info(f"Deleted all files from: {metadata_folder_to_delete}")
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.error(err_msg)
+    metadata_folder_to_delete = (
+        control_file_path.replace("doc_pdf", folder_type)
+        .replace("control_files/", "")
+        .replace(".json", "")
+    )
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(metadata_s3_bucket_name)
+    bucket.objects.filter(Prefix=metadata_folder_to_delete + "/").delete()
+    logger.info(f"Deleted all files from: {metadata_folder_to_delete}")
 
 
 def lambda_handler(event, context):
