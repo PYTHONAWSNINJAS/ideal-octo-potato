@@ -18,10 +18,10 @@ import tempfile
 import logging
 import sys
 
+import time
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-import time
 
 
 def init():
