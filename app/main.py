@@ -295,7 +295,7 @@ def process_document_folders(
             else:
                 converted = False
                 filename, _ = os.path.splitext(file_path)
-                pdf_file_name = "".join([file_path.replace(filename+'.'+_,""), filename, pdf_file_suffix, ".pdf"])
+                pdf_file_name = "".join([filename, pdf_file_suffix, ".pdf"])
                 s3_location = os.path.join(
                     s3_folder, s3_sub_folder, s3_document_directory, trigger_folder
                 )
