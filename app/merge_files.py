@@ -219,6 +219,7 @@ def lambda_handler(event, context):
             logger.info("Empty Control File.")
             delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
             s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
+            return None
 
         # loop two times in the data for source and current
         for file_type in ["source", "current"]:
