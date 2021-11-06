@@ -810,7 +810,10 @@ def lambda_handler(event, context):
         s3_output_folder,
         trigger_folder,
     )
-    # rmtree(lambda_write_path + folder_path)
+    
+    if os.path.exists(lambda_write_path + folder_path):    
+        rmtree(lambda_write_path + folder_path)
+        
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
 
     meta_data_object_folder = "".join(
@@ -843,6 +846,3 @@ def lambda_handler(event, context):
         )
         logger.info(f"merge_trigger_file: f{merge_trigger_file}")
         create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
-        # remove_files_from_metadata_bucket(
-        #     s3_client, metadata_s3_bucket, meta_data_object_folder
-        # )
