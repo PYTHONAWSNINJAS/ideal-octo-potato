@@ -746,7 +746,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
                 pdfs.append(res)
 
         if len(pdfs) == 1:
-            _ = create_pdf(file_path, lambda_write_path, pdf_file_name)
+            copyfile(pdfs[0], pdf_file_name)
         else:
             merge_pdf(pdfs, pdf_file_name)
         return True
