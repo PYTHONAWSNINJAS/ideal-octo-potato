@@ -149,13 +149,26 @@ def process(
 
     for item in data["files"]:
         file_name = item[file_type].split("/")[-1]
-        logger.info(f"downloading: {item[file_type]}")
 
         try:
-            os.makedirs(lambda_write_path + item[file_type].replace(file_name, ""))
-        except FileExistsError:
-            logger.info("directory already exists")
+            dir_to_create = lambda_write_path + item[file_type].replace(file_name, "")
+            os.makedirs(name=dir_to_create, mode=0o777, exist_ok=True)
+        except Exception as _:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            traceback_string = traceback.format_exception(
+                exception_type, exception_value, exception_traceback
+            )
+            err_msg = json.dumps(
+                {
+                    "errorType": exception_type.__name__,
+                    "errorMessage": str(exception_value),
+                    "stackTrace": traceback_string,
+                }
+            )
+            logger.error(err_msg)
 
+        logger.info(f"Downloading: {item[file_type]}")
+        
         s3_client.download_file(
             bucket_name, item[file_type], lambda_write_path + item[file_type]
         )
@@ -168,7 +181,7 @@ def process(
 
     logger.info(f"Merged: {lambda_write_path + pdf_file_name}")
     logger.info(
-        f"Uploading to: {bucket_name}/{s3_folder}/doc_pdf/{exhibit_id}/{pdf_file_name}"
+        f"Uploading to: {bucket_name}/{pdf_file_name}"
     )
     time.sleep(5)
     upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name)
