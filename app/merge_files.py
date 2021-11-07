@@ -152,6 +152,7 @@ def process(
 
         try:
             dir_to_create = lambda_write_path + item[file_type].replace(file_name, "")
+            logger.info(f"dir_to_create: {dir_to_create}")
             os.makedirs(name=dir_to_create, mode=0o777, exist_ok=True)
         except Exception as _:
             exception_type, exception_value, exception_traceback = sys.exc_info()

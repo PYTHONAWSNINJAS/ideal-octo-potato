@@ -265,9 +265,15 @@ def process_document_folders(
                     if filename.endswith(FILE_PATTERN_TO_IGNORE):
                         continue
                     if full_marks_file_path.lower().endswith(
-                        (".png", ".jpg", ".gif", ".tif", ".tiff")
+                        (".png", ".jpg", ".gif")
                     ):
                         converted = create_pdf(
+                            full_marks_file_path, lambda_write_path, pdf_file_name
+                        )
+                    if full_marks_file_path.lower().endswith(
+                        (".tif", ".TIF", ".tiff")
+                    ):
+                        converted = tiff_to_pdf(
                             full_marks_file_path, lambda_write_path, pdf_file_name
                         )
                     if converted:
@@ -705,15 +711,16 @@ def remove_files_from_metadata_bucket(
 
 
 def process_tiff(args):
-    lambda_write_path, i, page = args
-    tmp_image_path = os.path.join(lambda_write_path, "temp_image_" + str(i) + ".png")
+    lambda_write_path, file_path, i, page = args
+    tmp_image_path = os.path.join(file_path.replace(file_path.split('/')[-1],""), "temp_image_" + str(i) + ".png")
+    logger.info(f"temp image path: {tmp_image_path}")
     x, y = page.size
     page = page.resize((int(x - x * 0.25), int(y - y * 0.25)), Image.ANTIALIAS)
     page.save(tmp_image_path)
 
     tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
     _ = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
-    logger.info(f"Created: {tmp_pdf_file_name}")
+    logger.info(f"Created tmp pdf: {tmp_pdf_file_name}")
     return os.path.join(lambda_write_path, tmp_pdf_file_name)
 
 
@@ -736,7 +743,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         args = []
         for i, page in enumerate(ImageSequence.Iterator(image)):
             stuffs = []
-            stuffs.extend([lambda_write_path, i, page.convert("L")])
+            stuffs.extend([lambda_write_path, file_path, i, page.convert("L")])
             args.append(stuffs)
 
         with concurrent.futures.ThreadPoolExecutor() as executer:
