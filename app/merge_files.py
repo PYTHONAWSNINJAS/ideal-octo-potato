@@ -168,7 +168,7 @@ def process(
             logger.error(err_msg)
 
         logger.info(f"Downloading: {item[file_type]}")
-        
+
         s3_client.download_file(
             bucket_name, item[file_type], lambda_write_path + item[file_type]
         )
@@ -180,9 +180,7 @@ def process(
         merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
 
     logger.info(f"Merged: {lambda_write_path + pdf_file_name}")
-    logger.info(
-        f"Uploading to: {bucket_name}/{pdf_file_name}"
-    )
+    logger.info(f"Uploading to: {bucket_name}/{pdf_file_name}")
     time.sleep(5)
     upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name)
 
