@@ -148,13 +148,11 @@ def process(
     pdfs = []
 
     for item in data["files"]:
-        file_name = item[file_type].split("/")[-1]
-
         try:
-            dir_to_create = lambda_write_path + item[file_type].replace(file_name, "")
-            logger.info(f"dir_to_create: {dir_to_create}")
-            if not os.path.exists(os.path.dirname(dir_to_create)):
-                os.makedirs(name=dir_to_create, exist_ok=True)
+            file_path = lambda_write_path + item[file_type]
+            logger.info(f"file_path: {file_path}")
+            if not os.path.exists(os.path.dirname(file_path)):
+                os.makedirs(name=os.path.dirname(file_path), exist_ok=True)
         except Exception as _:
             exception_type, exception_value, exception_traceback = sys.exc_info()
             traceback_string = traceback.format_exception(
@@ -172,13 +170,13 @@ def process(
         logger.info(f"Downloading: {item[file_type]}")
 
         s3_client.download_file(
-            bucket_name, item[file_type], lambda_write_path + item[file_type]
+            bucket_name, item[file_type], file_path
         )
-        pdfs.append(lambda_write_path + item[file_type])
+        pdfs.append(file_path)
 
-        merge_pdf(pdfs, lambda_write_path + pdf_file_name, 500)
+        merge_pdf(pdfs, file_path, 500)
 
-    logger.info(f"Merged: {lambda_write_path + pdf_file_name}")
+    logger.info(f"Merged: {file_path}")
     logger.info(f"Uploading to: {bucket_name}/{pdf_file_name}")
     time.sleep(5)
     upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name)
