@@ -273,7 +273,7 @@ def lambda_handler(event, context):
                 pdf_file_suffix,
                 s3_folder,
             )
-            
+
             if os.path.exists(
                 lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"
             ):
@@ -281,9 +281,15 @@ def lambda_handler(event, context):
                     lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
                     ignore_errors=True,
                 )
-            
+
             if os.path.exists(
-                lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
+                lambda_write_path
+                + s3_folder
+                + "/"
+                + folder_type
+                + "/"
+                + exhibit_id
+                + "/"
             ):
                 rmtree(
                     lambda_write_path
