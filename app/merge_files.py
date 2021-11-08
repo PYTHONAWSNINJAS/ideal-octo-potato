@@ -169,9 +169,7 @@ def process(
 
         logger.info(f"Downloading: {item[file_type]}")
 
-        s3_client.download_file(
-            bucket_name, item[file_type], file_path
-        )
+        s3_client.download_file(bucket_name, item[file_type], file_path)
         pdfs.append(file_path)
 
         merge_pdf(pdfs, file_path, 500)
