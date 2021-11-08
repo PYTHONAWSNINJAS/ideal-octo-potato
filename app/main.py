@@ -72,11 +72,11 @@ def download_dir(prefix, local, bucket, client):
         for d in dirs:
             destination_pathname = os.path.join(local, d)
             if not os.path.exists(os.path.dirname(destination_pathname)):
-                os.makedirs(os.path.dirname(destination_pathname))
+                os.makedirs(os.path.dirname(destination_pathname), exist_ok=True)
         for k in keys:
             destination_pathname = os.path.join(local, k)
             if not os.path.exists(os.path.dirname(destination_pathname)):
-                os.makedirs(os.path.dirname(destination_pathname))
+                os.makedirs(os.path.dirname(destination_pathname), exist_ok=True)
             client.download_file(bucket, k, destination_pathname)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()

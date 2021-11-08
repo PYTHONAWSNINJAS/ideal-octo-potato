@@ -153,7 +153,8 @@ def process(
         try:
             dir_to_create = lambda_write_path + item[file_type].replace(file_name, "")
             logger.info(f"dir_to_create: {dir_to_create}")
-            os.makedirs(name=dir_to_create, mode=0o777, exist_ok=True)
+            if not os.path.exists(os.path.dirname(dir_to_create)):
+                os.makedirs(name=dir_to_create, exist_ok=True)
         except Exception as _:
             exception_type, exception_value, exception_traceback = sys.exc_info()
             traceback_string = traceback.format_exception(
@@ -277,29 +278,31 @@ def lambda_handler(event, context):
                 pdf_file_suffix,
                 s3_folder,
             )
+            
+            if os.path.exists(
+                lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"
+            ):
+                rmtree(
+                    lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
+                    ignore_errors=True,
+                )
+            
+            if os.path.exists(
+                lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
+            ):
+                rmtree(
+                    lambda_write_path
+                    + s3_folder
+                    + "/"
+                    + folder_type
+                    + "/"
+                    + exhibit_id
+                    + "/",
+                    ignore_errors=True,
+                )
 
         delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-        if os.path.exists(
-            lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"
-        ):
-            rmtree(
-                lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
-                ignore_errors=True,
-            )
-        if os.path.exists(
-            lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
-        ):
-            rmtree(
-                lambda_write_path
-                + s3_folder
-                + "/"
-                + folder_type
-                + "/"
-                + exhibit_id
-                + "/",
-                ignore_errors=True,
-            )
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
