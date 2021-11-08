@@ -237,6 +237,9 @@ def index():
                 folder_exists = folder_exists_and_not_empty(
                     main_s3_bucket, s3_folder + "/" + item
                 )
+                # add a code to list all control files and 
+                # in the next step check if folder and 
+                # control file both exists.
                 if folder_exists:
                     case_prefix = "".join([s3_folder, "/", item])
                     case_files = list_dir(
