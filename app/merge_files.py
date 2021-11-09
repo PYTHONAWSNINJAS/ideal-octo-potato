@@ -175,7 +175,7 @@ def process(
 
         merge_pdf(pdfs, pdf_file_name, 500)
 
-    logger.info(f"Merged: {file_path}")
+    logger.info(f"Merged: {pdf_file_name}")
     logger.info(f"Uploading to: {bucket_name}/{pdf_file_name}")
     time.sleep(5)
     upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name)
