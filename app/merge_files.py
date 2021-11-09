@@ -172,7 +172,7 @@ def process(
         s3_client.download_file(bucket_name, item[file_type], file_path)
         pdfs.append(file_path)
 
-        merge_pdf(pdfs, file_path, 500)
+        merge_pdf(pdfs, pdf_file_name, 500)
 
     logger.info(f"Merged: {file_path}")
     logger.info(f"Uploading to: {bucket_name}/{pdf_file_name}")
