@@ -104,8 +104,8 @@ def merge_pdf(pdfs, filename, batchsize):
         merger.close()
 
 
-def upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name):
-    with open(lambda_write_path + pdf_file_name, "rb") as merged_data:
+def upload_to_s3(pdf_file_name, s3_client, bucket_name):
+    with open(pdf_file_name, "rb") as merged_data:
         s3_client.put_object(
             Body=merged_data,
             Bucket=bucket_name,
@@ -176,9 +176,9 @@ def process(
         merge_pdf(pdfs, pdf_file_name, 500)
 
     logger.info(f"Merged: {pdf_file_name}")
-    logger.info(f"Uploading to: {bucket_name}/{pdf_file_name}")
+    logger.info(f"Uploading to: {bucket_name}{pdf_file_name}")
     time.sleep(5)
-    upload_to_s3(lambda_write_path, pdf_file_name, s3_client, bucket_name)
+    upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
 
 def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
