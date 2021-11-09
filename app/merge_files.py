@@ -137,7 +137,8 @@ def process(
     s3_folder: the upload location of the merged file
     """
     pdf_file_name = (
-        s3_folder
+        lambda_write_path
+        + s3_folder
         + "/doc_pdf/"
         + exhibit_id
         + "/"
