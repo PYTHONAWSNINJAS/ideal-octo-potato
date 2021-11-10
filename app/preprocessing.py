@@ -211,6 +211,9 @@ def folder_exists_and_not_empty(bucket, path):
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=path, Delimiter="", MaxKeys=1)
     return "Contents" in resp
 
+def list_control_files():
+    pass
+    
 
 @app.route("/", methods=["POST"])
 def index():
@@ -237,9 +240,6 @@ def index():
                 folder_exists = folder_exists_and_not_empty(
                     main_s3_bucket, s3_folder + "/" + item
                 )
-                # add a code to list all control files and
-                # in the next step check if folder and
-                # control file both exists.
                 if folder_exists:
                     case_prefix = "".join([s3_folder, "/", item])
                     case_files = list_dir(
@@ -251,6 +251,9 @@ def index():
                     )
                     args = []
                     for s3_document_folder in s3_document_folders:
+                        # add a code to list all control files and
+                        # in the next step check if folder and
+                        # control file both exists.
                         stuffs = []
                         stuffs.extend(
                             [

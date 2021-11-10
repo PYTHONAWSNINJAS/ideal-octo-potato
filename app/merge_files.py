@@ -175,6 +175,7 @@ def process(
         pdfs.append(file_path)
 
         merge_pdf(pdfs, pdf_file_name, 500)
+        time.sleep(2)
 
     logger.info(f"Merged: {pdf_file_name}")
     logger.info(f"Uploading to: {bucket_name}{pdf_file_name}")
