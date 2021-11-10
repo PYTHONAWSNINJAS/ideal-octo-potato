@@ -58,6 +58,7 @@ def merge_pdf(pdfs, filename, batchsize):
     logger.info(f"Number of pdfs to Merge: {str(len(pdfs))}")
     if len(pdfs) < batchsize:
         merger = PdfFileMerger()
+        logger.info(f"pdf files: {pdfs}")
         for pdf_file in pdfs:
             merger.append(pdf_file)
         merger.write(filename)
@@ -174,9 +175,12 @@ def process(
         logger.info(f"Downloading: {item[file_type]}")
         s3_client.download_file(bucket_name, item[file_type], file_path)
         pdfs.append(file_path)
+        time.sleep(2)
     
+    time.sleep(2)
     merge_pdf(pdfs, pdf_file_name, 500)
     logger.info(f"Merged: {pdf_file_name}")
+    time.sleep(2)
     logger.info(f"Uploading: {pdf_file_name}")
     upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
