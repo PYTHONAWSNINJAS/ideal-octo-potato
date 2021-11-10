@@ -147,8 +147,8 @@ def process(
         + pdf_file_suffix
         + ".pdf"
     )
+    
     pdfs = []
-
     for item in data["files"]:
         try:
             file_path = lambda_write_path + item[file_type]
@@ -170,13 +170,10 @@ def process(
             logger.error(err_msg)
 
         logger.info(f"Downloading: {item[file_type]}")
-
         s3_client.download_file(bucket_name, item[file_type], file_path)
         pdfs.append(file_path)
-
-        merge_pdf(pdfs, pdf_file_name, 500)
-        time.sleep(2)
-
+    
+    merge_pdf(pdfs, pdf_file_name, 500)
     logger.info(f"Merged: {pdf_file_name}")
     logger.info(f"Uploading to: {bucket_name}{pdf_file_name}")
     time.sleep(5)
