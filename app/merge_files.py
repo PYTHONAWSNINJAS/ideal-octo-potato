@@ -62,6 +62,7 @@ def merge_pdf(pdfs, filename, batchsize):
             merger.append(pdf_file)
         merger.write(filename)
         merger.close()
+        logger.info(f"Creating: {filename}")
     else:
         batch_pdfs = []
         list_of_batches = []
@@ -106,12 +107,13 @@ def merge_pdf(pdfs, filename, batchsize):
 
 def upload_to_s3(pdf_file_name, s3_client, bucket_name):
     s3_path = pdf_file_name.replace(os.environ["lambda_write_path"],"")
-    with open(pdf_file_name, "rb") as merged_data:
-        s3_client.put_object(
-            Body=merged_data,
-            Bucket=bucket_name,
-            Key=s3_path,
-        )
+    s3_client.upload_file(pdf_file_name, bucket, s3_path)
+    # with open(pdf_file_name, "rb") as merged_data:
+    #     s3_client.put_object(
+    #         Body=merged_data,
+    #         Bucket=bucket_name,
+    #         Key=s3_path,
+    #     )
 
 
 def process(
@@ -175,8 +177,7 @@ def process(
     
     merge_pdf(pdfs, pdf_file_name, 500)
     logger.info(f"Merged: {pdf_file_name}")
-    logger.info(f"Uploading to: {bucket_name}{pdf_file_name}")
-    time.sleep(5)
+    logger.info(f"Uploading: {pdf_file_name}")
     upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
 
