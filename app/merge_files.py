@@ -107,7 +107,7 @@ def merge_pdf(pdfs, filename, batchsize):
 
 
 def upload_to_s3(pdf_file_name, s3_client, bucket_name):
-    s3_path = pdf_file_name.replace(os.environ["lambda_write_path"],"")
+    s3_path = pdf_file_name.replace(os.environ["lambda_write_path"], "")
     s3_client.upload_file(pdf_file_name, bucket_name, s3_path)
     # with open(pdf_file_name, "rb") as merged_data:
     #     s3_client.put_object(
@@ -150,7 +150,7 @@ def process(
         + pdf_file_suffix
         + ".pdf"
     )
-    
+
     pdfs = []
     for item in data["files"]:
         try:
@@ -176,7 +176,7 @@ def process(
         s3_client.download_file(bucket_name, item[file_type], file_path)
         pdfs.append(file_path)
         time.sleep(2)
-    
+
     time.sleep(2)
     merge_pdf(pdfs, pdf_file_name, 500)
     logger.info(f"Merged: {pdf_file_name}")
