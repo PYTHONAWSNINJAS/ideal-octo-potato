@@ -211,9 +211,10 @@ def folder_exists_and_not_empty(bucket, path):
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=path, Delimiter="", MaxKeys=1)
     return "Contents" in resp
 
+
 def list_control_files():
-    pass
-    
+    raise NotImplementedError()
+
 
 @app.route("/", methods=["POST"])
 def index():
