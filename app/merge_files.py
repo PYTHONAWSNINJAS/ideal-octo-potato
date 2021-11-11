@@ -157,6 +157,7 @@ def process(
         try:
             file_path = lambda_write_path + item[file_type]
             logger.info(f"file_path: {file_path}")
+            logger.info(f"dir_path: {os.path.dirname(file_path)}")
             if not os.path.exists(os.path.dirname(file_path)):
                 os.makedirs(name=os.path.dirname(file_path), exist_ok=True)
         except Exception as _:
@@ -174,7 +175,8 @@ def process(
             logger.error(err_msg)
 
         logger.info(f"Downloading: {item[file_type]}")
-        s3_client.download_file(bucket_name, item[file_type], file_path)
+        if os.path.isdir(os.path.dirname(file_path)):
+            s3_client.download_file(bucket_name, item[file_type], file_path)
         if os.path.isfile(file_path):
             logger.info("File Exists after Download. Appending to list")
             pdfs.append(file_path)
