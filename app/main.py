@@ -28,6 +28,7 @@ import sys
 import json
 import concurrent.futures
 from itertools import islice
+import random
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
@@ -849,10 +850,11 @@ def lambda_handler(event, context):
                 ".json",
             ]
         )
-        logger.info(f"merge_trigger_file: f{merge_trigger_file}")
+        logger.info(f"merge_trigger_file: {merge_trigger_file}")
         
         #check if merge trigger file is present, if not create the file.
         # This is to avoid double puts and parallel events in lambda
+        time.sleep(random.randint(4,30))
         try:
             s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
         except ClientError as _:
