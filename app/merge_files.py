@@ -178,8 +178,7 @@ def process(
         if os.path.isfile(file_path):
             logger.info("File Exists after Download. Appending to list")
             pdfs.append(file_path)
-        
-        
+
     merge_pdf(pdfs, pdf_file_name, 500)
     logger.info(f"Merged: {pdf_file_name}")
     logger.info(f"Uploading: {pdf_file_name}")
