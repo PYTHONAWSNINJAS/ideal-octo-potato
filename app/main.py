@@ -855,5 +855,5 @@ def lambda_handler(event, context):
         # This is to avoid double puts and parallel events in lambda
         try:
             s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
-        except ClientError as e:
+        except ClientError as _:
             create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
