@@ -60,7 +60,8 @@ def merge_pdf(pdfs, filename, batchsize):
         merger = PdfFileMerger()
         logger.info(f"pdf files: {pdfs}")
         for pdf_file in pdfs:
-            merger.append(pdf_file)
+            with open(pdf_file, "rb") as file:
+                merger.append(PdfFileReader(file))
         merger.write(filename)
         merger.close()
         logger.info(f"Creating: {filename}")
@@ -174,15 +175,17 @@ def process(
 
         logger.info(f"Downloading: {item[file_type]}")
         s3_client.download_file(bucket_name, item[file_type], file_path)
-        pdfs.append(file_path)
-        time.sleep(2)
-
-    time.sleep(2)
+        if os.path.isfile(file_path):
+            logger.info("File Exists after Download. Appending to list")
+            pdfs.append(file_path)
+        
+        
     merge_pdf(pdfs, pdf_file_name, 500)
     logger.info(f"Merged: {pdf_file_name}")
-    time.sleep(2)
     logger.info(f"Uploading: {pdf_file_name}")
-    upload_to_s3(pdf_file_name, s3_client, bucket_name)
+    if os.path.isfile(pdf_file_name):
+        logger.info("File Exists after Merging. Uploading to S3.")
+        upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
 
 def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
