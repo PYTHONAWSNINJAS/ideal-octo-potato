@@ -212,7 +212,7 @@ def folder_exists_and_not_empty(bucket, path):
     return "Contents" in resp
 
 def list_control_files():
-    pass
+    raise NotImplementedError()
     
 
 @app.route("/", methods=["POST"])
