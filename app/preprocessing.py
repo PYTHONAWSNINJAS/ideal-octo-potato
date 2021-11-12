@@ -96,7 +96,7 @@ def place_trigger_files(bucket, folders, client):
             try:
                 # check if the trigger folder is the last one,
                 # and put a delayed trigger but leave it its only one trigger.
-                if len(folders)>1:
+                if len(folders) > 1:
                     if trigger_folder == list(folders)[-1]:
                         time.sleep(300)
 
