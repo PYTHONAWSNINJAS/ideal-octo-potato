@@ -94,12 +94,6 @@ def place_trigger_files(bucket, folders, client):
         max_delay = 30  # max delay of one loop. Total delay is (max_delay**2)/2
         while delay < max_delay:
             try:
-                # check if the trigger folder is the last one,
-                # and put a delayed trigger but leave it its only one trigger.
-                if len(folders)>1:
-                    if trigger_folder == list(folders)[-1]:
-                        time.sleep(300)
-
                 client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
                 break
             except ClientError:
