@@ -854,7 +854,7 @@ def lambda_handler(event, context):
         
         #check if merge trigger file is present, if not create the file.
         # This is to avoid double puts and parallel events in lambda
-        time.sleep(random.randint(4,30))
+        time.sleep(random.randint(2,60))
         try:
             s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
         except ClientError as _:
