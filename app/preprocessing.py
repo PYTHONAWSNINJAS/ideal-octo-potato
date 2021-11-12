@@ -97,7 +97,7 @@ def place_trigger_files(bucket, folders, client):
                 # check if the trigger folder is the last one,
                 # and put a delayed trigger
                 if trigger_folder == folders[-1]:
-                    time.sleep(60)
+                    time.sleep(300)
                 
                 client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
                 break
