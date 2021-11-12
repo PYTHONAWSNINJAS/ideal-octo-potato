@@ -858,5 +858,4 @@ def lambda_handler(event, context):
         try:
             s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
         except ClientError as _:
-            time.sleep(random.randint(2,60))
             create_merge_trigger_file(s3_client, merge_trigger_bucket, merge_trigger_file)
