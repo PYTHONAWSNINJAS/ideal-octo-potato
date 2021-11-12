@@ -98,7 +98,7 @@ def place_trigger_files(bucket, folders, client):
                 # and put a delayed trigger
                 if trigger_folder == folders[-1]:
                     time.sleep(300)
-                
+
                 client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
                 break
             except ClientError:
