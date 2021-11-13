@@ -212,8 +212,12 @@ def folder_exists_and_not_empty(bucket, path):
     return "Contents" in resp
 
 
-def list_control_files():
-    raise NotImplementedError()
+def check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder):
+    try:
+        s3_client.head_object(Bucket=main_s3_bucket, Key=s3_folder+'/doc_pdf/control_files/'+s3_document_folder+'.json')
+        return True
+    except ClientError as _:
+        return False
 
 
 @app.route("/", methods=["POST"])
@@ -238,10 +242,9 @@ def index():
 
         if processing_type == "case_level":
             for item in [s3_exhibits_folder, s3_wire_folder]:
-                folder_exists = folder_exists_and_not_empty(
+                if folder_exists_and_not_empty(
                     main_s3_bucket, s3_folder + "/" + item
-                )
-                if folder_exists:
+                ):
                     case_prefix = "".join([s3_folder, "/", item])
                     case_files = list_dir(
                         prefix=case_prefix, bucket=main_s3_bucket, client=s3_client
@@ -255,19 +258,20 @@ def index():
                         # add a code to list all control files and
                         # in the next step check if folder and
                         # control file both exists.
-                        stuffs = []
-                        stuffs.extend(
-                            [
-                                s3_folder,
-                                item,
-                                s3_document_folder,
-                                main_s3_bucket,
-                                metadata_s3_bucket,
-                                trigger_s3_bucket,
-                                s3_client,
-                            ]
-                        )
-                        args.append(stuffs)
+                        if check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder):
+                            stuffs = []
+                            stuffs.extend(
+                                [
+                                    s3_folder,
+                                    item,
+                                    s3_document_folder,
+                                    main_s3_bucket,
+                                    metadata_s3_bucket,
+                                    trigger_s3_bucket,
+                                    s3_client,
+                                ]
+                            )
+                            args.append(stuffs)
 
                     with concurrent.futures.ThreadPoolExecutor() as executer:
                         _ = executer.map(preprocess, args)
