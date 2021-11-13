@@ -212,7 +212,7 @@ def folder_exists_and_not_empty(bucket, path):
     return "Contents" in resp
 
 
-def check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder):
+def check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder, s3_client):
     try:
         s3_client.head_object(Bucket=main_s3_bucket, Key=s3_folder+'/doc_pdf/control_files/'+s3_document_folder+'.json')
         return True
@@ -258,7 +258,7 @@ def index():
                         # add a code to list all control files and
                         # in the next step check if folder and
                         # control file both exists.
-                        if check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder):
+                        if check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder, s3_client):
                             stuffs = []
                             stuffs.extend(
                                 [
