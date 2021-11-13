@@ -259,13 +259,9 @@ def index():
                         # add a code to list all control files and
                         # in the next step check if folder and
                         # control file both exists.
-<<<<<<< HEAD
-                        if check_control_file_exists(main_s3_bucket, s3_folder, s3_document_folder, s3_client):
-=======
                         if check_control_file_exists(
-                            main_s3_bucket, s3_folder, s3_document_folder
+                            main_s3_bucket, s3_folder, s3_document_folder, s3_client
                         ):
->>>>>>> 0b5f9960a0ea8935e714edaaea5300a553786387
                             stuffs = []
                             stuffs.extend(
                                 [
