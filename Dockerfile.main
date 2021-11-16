@@ -19,6 +19,10 @@ RUN printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr
 RUN chmod a+x /usr/bin/wkhtmltopdf.sh
 RUN ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
 
+
+# Required for LibreOffice
+COPY ./libreoffice/lo.tar.br   /opt/
+
 COPY ./app/main.py   ./
 
 CMD ["main.lambda_handler"]
