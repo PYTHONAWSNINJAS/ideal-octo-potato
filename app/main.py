@@ -35,7 +35,7 @@ import tarfile
 import subprocess
 import brotli
 
-libre_office_install_dir = '/mnt/tmp/instdir'
+libre_office_install_dir = "/mnt/tmp/instdir"
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
@@ -488,9 +488,13 @@ def process_document_folders(
                 #         temp_file, os.path.join(lambda_write_path, pdf_file_name)
                 #     )
                 #     converted = True
-                elif file_path.endswith((".doc",".docx")):
+                elif file_path.endswith((".doc", ".docx")):
                     soffice_path = load_libre_office()
-                    converted = convert_word_to_pdf(soffice_path, file_path, os.path.join(lambda_write_path, pdf_file_name))
+                    converted = convert_word_to_pdf(
+                        soffice_path,
+                        file_path,
+                        os.path.join(lambda_write_path, pdf_file_name),
+                    )
 
         except Exception as e:
             if "Done" not in str(e):
@@ -783,12 +787,16 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
 
 
 def load_libre_office():
-    if os.path.exists(libre_office_install_dir) and os.path.isdir(libre_office_install_dir):
-        logger.info('We have a cached copy of LibreOffice, skipping extraction')
+    if os.path.exists(libre_office_install_dir) and os.path.isdir(
+        libre_office_install_dir
+    ):
+        logger.info("We have a cached copy of LibreOffice, skipping extraction")
     else:
-        logger.info('No cached copy of LibreOffice, extracting tar stream from Brotli file.')
+        logger.info(
+            "No cached copy of LibreOffice, extracting tar stream from Brotli file."
+        )
         buffer = BytesIO()
-        with open('/opt/lo.tar.br', 'rb') as brotli_file:
+        with open("/opt/lo.tar.br", "rb") as brotli_file:
             d = brotli.Decompressor()
             while True:
                 chunk = brotli_file.read(1024)
@@ -796,24 +804,28 @@ def load_libre_office():
                 if len(chunk) < 1024:
                     break
             buffer.seek(0)
-    
-        logger.info('Extracting tar stream to /mnt/tmp for caching.')
+
+        logger.info("Extracting tar stream to /mnt/tmp for caching.")
         with tarfile.open(fileobj=buffer) as tar:
-            tar.extractall('/mnt/tmp')
-        logger.info('Done caching LibreOffice!')
-    return f'{libre_office_install_dir}/program/soffice.bin'
+            tar.extractall("/mnt/tmp")
+        logger.info("Done caching LibreOffice!")
+    return f"{libre_office_install_dir}/program/soffice.bin"
 
 
 def convert_word_to_pdf(soffice_path, word_file_path, output_dir):
     conv_cmd = f"{soffice_path} --headless --norestore --invisible --nodefault --nofirststartwizard --nolockcheck --nologo --convert-to pdf:writer_pdf_Export --outdir {output_dir} {word_file_path}"
-    response = subprocess.run(conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    response = subprocess.run(
+        conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     if response.returncode != 0:
-        response = subprocess.run(conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        response = subprocess.run(
+            conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         if response.returncode != 0:
             return False
     return True
 
-            
+
 def lambda_handler(event, context):
     """
 
