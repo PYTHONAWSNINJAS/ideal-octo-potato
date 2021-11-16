@@ -797,10 +797,10 @@ def load_libre_office():
                     break
             buffer.seek(0)
     
-    logger.info('Extracting tar stream to /mnt/tmp for caching.')
-    with tarfile.open(fileobj=buffer) as tar:
-        tar.extractall('/mnt/tmp')
-    logger.info('Done caching LibreOffice!')
+        logger.info('Extracting tar stream to /mnt/tmp for caching.')
+        with tarfile.open(fileobj=buffer) as tar:
+            tar.extractall('/mnt/tmp')
+        logger.info('Done caching LibreOffice!')
     return f'{libre_office_install_dir}/program/soffice.bin'
 
 
