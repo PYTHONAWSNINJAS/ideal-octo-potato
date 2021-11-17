@@ -865,8 +865,6 @@ def lambda_handler(event, context):
     s3_sub_folder = folder_path.split("/")[1]
     s3_document_folder = folder_path.split("/")[2]
     trigger_folder = folder_path.split("/")[3]
-
-    libre_office_install_dir = lambda_write_path + folder_path + "/instdir"
     
     (
         s3_client,
@@ -884,6 +882,8 @@ def lambda_handler(event, context):
         bucket=bucket_name,
         client=s3_client,
     )
+    
+    libre_office_install_dir = lambda_write_path + folder_path + "/instdir"
 
     process_document_folders(
         s3_client,
