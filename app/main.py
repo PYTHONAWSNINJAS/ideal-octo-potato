@@ -217,7 +217,7 @@ def process_document_folders(
     s3_output_folder,
     trigger_folder,
     folder_path,
-    libre_office_install_dir
+    libre_office_install_dir,
 ):
     """
     This will process all files in the Trigger folder
@@ -489,7 +489,9 @@ def process_document_folders(
                 #     )
                 #     converted = True
                 elif file_path.endswith((".doc", ".docx")):
-                    soffice_path = load_libre_office(folder_path, libre_office_install_dir)
+                    soffice_path = load_libre_office(
+                        folder_path, libre_office_install_dir
+                    )
                     converted = convert_word_to_pdf(
                         soffice_path,
                         file_path,
@@ -866,7 +868,7 @@ def lambda_handler(event, context):
     s3_sub_folder = folder_path.split("/")[1]
     s3_document_folder = folder_path.split("/")[2]
     trigger_folder = folder_path.split("/")[3]
-    
+
     (
         s3_client,
         bucket_name,
@@ -883,7 +885,7 @@ def lambda_handler(event, context):
         bucket=bucket_name,
         client=s3_client,
     )
-    
+
     libre_office_install_dir = lambda_write_path + folder_path + "/instdir"
 
     process_document_folders(
@@ -897,7 +899,7 @@ def lambda_handler(event, context):
         s3_output_folder,
         trigger_folder,
         folder_path,
-        libre_office_install_dir
+        libre_office_install_dir,
     )
 
     if os.path.exists(lambda_write_path + folder_path):
