@@ -490,7 +490,12 @@ def process_document_folders(
                 #     converted = True
                 elif file_path.endswith((".doc",".docx")):
                     soffice_path = load_libre_office()
-                    converted = convert_word_to_pdf(soffice_path, file_path, os.path.join(lambda_write_path, pdf_file_name))
+                    converted = convert_word_to_pdf(soffice_path, file_path, os.path.dirname(os.path.join(lambda_write_path, pdf_file_name)))
+                    if converted:
+                        copyfile(
+                                f"{os.path.dirname(os.path.join(lambda_write_path, pdf_file_name))}/{file_name}.pdf", 
+                                f"{os.path.dirname(os.path.join(lambda_write_path, pdf_file_name))}/{file_name}_dv.pdf", 
+                            )
 
         except Exception as e:
             if "Done" not in str(e):
@@ -516,22 +521,40 @@ def process_document_folders(
             else:
                 converted = True
 
-        if converted:
-            logger.info(f"Created: {os.path.join(lambda_write_path, pdf_file_name)}")
-            with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
-                s3_client.upload_fileobj(
-                    data,
-                    bucket_name,
-                    "".join(
-                        [
-                            s3_location.replace(s3_sub_folder, s3_output_folder),
-                            "/",
-                            s3_object,
-                        ]
-                    ),
-                )
-        else:
-            logger.info(f"PDF not created for: {current_item}")
+        try:
+            if converted:
+                logger.info(f"Created: {os.path.join(lambda_write_path, pdf_file_name)}")
+                with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
+                    s3_client.upload_fileobj(
+                        data,
+                        bucket_name,
+                        "".join(
+                            [
+                                s3_location.replace(s3_sub_folder, s3_output_folder),
+                                "/",
+                                s3_object,
+                            ]
+                        ),
+                    )
+            else:
+                logger.info(f"PDF not created for: {current_item}")
+        except Exception as e:
+            (
+                exception_type,
+                exception_value,
+                exception_traceback,
+            ) = sys.exc_info()
+            traceback_string = traceback.format_exception(
+                exception_type, exception_value, exception_traceback
+            )
+            err_msg = json.dumps(
+                {
+                    "errorType": exception_type.__name__,
+                    "errorMessage": str(exception_value),
+                    "stackTrace": traceback_string,
+                }
+            )
+            logger.error(err_msg)
 
 
 def list_dir(prefix, bucket, client):
