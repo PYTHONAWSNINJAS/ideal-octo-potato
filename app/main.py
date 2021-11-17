@@ -35,8 +35,6 @@ import tarfile
 import subprocess
 import brotli
 
-libre_office_install_dir = "/mnt/tmp/instdir"
-
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
 
@@ -218,6 +216,7 @@ def process_document_folders(
     pdf_file_suffix,
     s3_output_folder,
     trigger_folder,
+    libre_office_install_dir
 ):
     """
     This will process all files in the Trigger folder
@@ -489,7 +488,7 @@ def process_document_folders(
                 #     )
                 #     converted = True
                 elif file_path.endswith((".doc", ".docx")):
-                    soffice_path = load_libre_office()
+                    soffice_path = load_libre_office(libre_office_install_dir)
                     converted = convert_word_to_pdf(
                         soffice_path,
                         file_path,
@@ -811,7 +810,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
-def load_libre_office():
+def load_libre_office(libre_office_install_dir):
     if os.path.exists(libre_office_install_dir) and os.path.isdir(
         libre_office_install_dir
     ):
@@ -867,6 +866,8 @@ def lambda_handler(event, context):
     s3_document_folder = folder_path.split("/")[2]
     trigger_folder = folder_path.split("/")[3]
 
+    libre_office_install_dir = lambda_write_path + folder_path + "/instdir"
+    
     (
         s3_client,
         bucket_name,
@@ -894,6 +895,7 @@ def lambda_handler(event, context):
         pdf_file_suffix,
         s3_output_folder,
         trigger_folder,
+        libre_office_install_dir
     )
 
     if os.path.exists(lambda_write_path + folder_path):
