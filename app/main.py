@@ -216,7 +216,7 @@ def process_document_folders(
     pdf_file_suffix,
     s3_output_folder,
     trigger_folder,
-    libre_office_install_dir
+    libre_office_install_dir,
 ):
     """
     This will process all files in the Trigger folder
@@ -867,7 +867,7 @@ def lambda_handler(event, context):
     trigger_folder = folder_path.split("/")[3]
 
     libre_office_install_dir = lambda_write_path + folder_path + "/instdir"
-    
+
     (
         s3_client,
         bucket_name,
@@ -895,7 +895,7 @@ def lambda_handler(event, context):
         pdf_file_suffix,
         s3_output_folder,
         trigger_folder,
-        libre_office_install_dir
+        libre_office_install_dir,
     )
 
     if os.path.exists(lambda_write_path + folder_path):
