@@ -216,6 +216,7 @@ def process_document_folders(
     pdf_file_suffix,
     s3_output_folder,
     trigger_folder,
+    folder_path,
     libre_office_install_dir
 ):
     """
@@ -488,7 +489,7 @@ def process_document_folders(
                 #     )
                 #     converted = True
                 elif file_path.endswith((".doc", ".docx")):
-                    soffice_path = load_libre_office(libre_office_install_dir)
+                    soffice_path = load_libre_office(folder_path, libre_office_install_dir)
                     converted = convert_word_to_pdf(
                         soffice_path,
                         file_path,
@@ -810,7 +811,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
-def load_libre_office(libre_office_install_dir):
+def load_libre_office(folder_path, libre_office_install_dir):
     if os.path.exists(libre_office_install_dir) and os.path.isdir(
         libre_office_install_dir
     ):
@@ -831,7 +832,7 @@ def load_libre_office(libre_office_install_dir):
 
         logger.info("Extracting tar stream to /mnt/tmp for caching.")
         with tarfile.open(fileobj=buffer) as tar:
-            tar.extractall("/mnt/tmp")
+            tar.extractall(folder_path)
         logger.info("Done caching LibreOffice!")
     return f"{libre_office_install_dir}/program/soffice.bin"
 
@@ -895,6 +896,7 @@ def lambda_handler(event, context):
         pdf_file_suffix,
         s3_output_folder,
         trigger_folder,
+        folder_path,
         libre_office_install_dir
     )
 
