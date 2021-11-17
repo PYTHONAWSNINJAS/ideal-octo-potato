@@ -830,7 +830,7 @@ def load_libre_office(lambda_write_path, folder_path, libre_office_install_dir):
                     break
             buffer.seek(0)
 
-        logger.info("Extracting tar stream to /mnt/tmp for caching.")
+        logger.info(f"Extracting tar stream to {lambda_write_path+folder_path} for caching.")
         with tarfile.open(fileobj=buffer) as tar:
             tar.extractall(lambda_write_path+folder_path)
         logger.info("Done caching LibreOffice!")
