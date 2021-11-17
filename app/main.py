@@ -497,8 +497,8 @@ def process_document_folders(
                     )
                     if converted:
                         copyfile(
-                            f"{os.path.dirname(os.path.join(lambda_write_path, pdf_file_name))}/{file_name}.pdf",
-                            f"{os.path.dirname(os.path.join(lambda_write_path, pdf_file_name))}/{file_name}_dv.pdf",
+                            f"{os.path.dirname(os.path.join(lambda_write_path, pdf_file_name))}/{filename}.pdf",
+                            f"{os.path.dirname(os.path.join(lambda_write_path, pdf_file_name))}/{filename}_dv.pdf",
                         )
 
         except Exception as e:
