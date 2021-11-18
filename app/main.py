@@ -818,10 +818,11 @@ def load_libre_office(lambda_write_path, folder_path, libre_office_install_dir):
         logger.info("We have a cached copy of LibreOffice, skipping extraction")
     else:
         logger.info(
-            "No cached copy of LibreOffice, extracting tar stream from Brotli file."
+            "No cached copy of LibreOffice, copying from /opt and extracting tar stream from Brotli file."
         )
+        copyfile("/opt/lo.tar.br", temp_tar_path:=lambda_write_path + folder_path + "/temp_tar_dir/lo.tar.br", )
         buffer = BytesIO()
-        with open("/opt/lo.tar.br", "rb") as brotli_file:
+        with open(temp_tar_path, "rb") as brotli_file:
             d = brotli.Decompressor()
             while True:
                 chunk = brotli_file.read(1024)
