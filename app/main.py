@@ -822,9 +822,13 @@ def load_libre_office(lambda_write_path, folder_path, libre_office_install_dir):
         logger.info(
             "No cached copy of LibreOffice, copying from /opt and extracting tar stream from Brotli file."
         )
-        if not os.path.exists(os.path.dirname(temp_tar_path := lambda_write_path
-            + folder_path
-            + "/temp_tar_dir/lo.tar.br")):
+        if not os.path.exists(
+            os.path.dirname(
+                temp_tar_path := lambda_write_path
+                + folder_path
+                + "/temp_tar_dir/lo.tar.br"
+            )
+        ):
             os.makedirs(os.path.dirname(temp_tar_path), exist_ok=True)
         copyfile(
             "/opt/lo.tar.br",
