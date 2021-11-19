@@ -501,8 +501,6 @@ def process_document_folders(
                     if json.loads(response["Payload"].read())["response"]:
                         logger.info(f"{file_path} Processed")
                         continue
-                    logger.info("Error in response")
-                    raise
 
         except Exception as e:
             if "Done" not in str(e):
