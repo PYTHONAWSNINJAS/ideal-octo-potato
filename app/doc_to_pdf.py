@@ -106,9 +106,9 @@ def lambda_handler(event, context):
                 }
             )
             logger.error(err_msg)
-            logger.info(f"PDF not uploaded")
+            logger.info("PDF not uploaded")
             uploaded = False
     else:
-        logger.info(f"PDF not created")
+        logger.info("PDF not created")
     
     return {"response": uploaded}
