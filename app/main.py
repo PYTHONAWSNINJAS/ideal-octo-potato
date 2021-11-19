@@ -488,8 +488,12 @@ def process_document_folders(
                 #     converted = True
                 elif file_path.endswith((".doc", ".docx")):
                     lambda_client = boto3.client("lambda")
-                    payload = json.dumps({"file_path":file_path})
-                    response = lambda_client.invoke(FunctionName=os.environ["doc_to_pdf_arn"], InvocationType='RequestResponse', Payload=payload)
+                    payload = json.dumps({"file_path": file_path})
+                    response = lambda_client.invoke(
+                        FunctionName=os.environ["doc_to_pdf_arn"],
+                        InvocationType="RequestResponse",
+                        Payload=payload,
+                    )
                     if json.loads(response["Payload"].read())["response"]:
                         logger.info(f"{file_path} Processed")
                         continue
@@ -839,8 +843,6 @@ def lambda_handler(event, context):
         client=s3_client,
     )
 
-    
-
     process_document_folders(
         s3_client,
         bucket_name,
@@ -850,7 +852,7 @@ def lambda_handler(event, context):
         lambda_write_path,
         pdf_file_suffix,
         s3_output_folder,
-        trigger_folder
+        trigger_folder,
     )
 
     if os.path.exists(lambda_write_path + folder_path):
