@@ -495,7 +495,7 @@ def process_document_folders(
                         InvocationType="RequestResponse",
                         Payload=payload,
                     )
-                    
+
                     if json.loads(response["Payload"].read())["response"]:
                         logger.info(f"{file_path} Processed")
                         continue
