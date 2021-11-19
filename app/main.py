@@ -216,8 +216,6 @@ def process_document_folders(
     pdf_file_suffix,
     s3_output_folder,
     trigger_folder,
-    folder_path,
-    libre_office_install_dir,
 ):
     """
     This will process all files in the Trigger folder
@@ -489,19 +487,14 @@ def process_document_folders(
                 #     )
                 #     converted = True
                 elif file_path.endswith((".doc", ".docx")):
-                    soffice_path = load_libre_office(
-                        lambda_write_path, folder_path, libre_office_install_dir
-                    )
-                    converted = convert_word_to_pdf(
-                        soffice_path,
-                        file_path,
-                        os.path.dirname(os.path.join(lambda_write_path, pdf_file_name)),
-                    )
-                    if converted:
-                        copyfile(
-                            f"{filename}.pdf",
-                            f"{filename}_dv.pdf",
-                        )
+                    lambda_client = boto3.client("lambda")
+                    payload = json.dumps({"file_path":file_path})
+                    response = lambda_client.invoke(FunctionName=os.environ["doc_to_pdf_arn"], InvocationType='RequestResponse', Payload=payload)
+                    if json.loads(response["Payload"].read())["response"]:
+                        logger.info(f"{file_path} Processed")
+                        continue
+                    else:
+                        raise
 
         except Exception as e:
             if "Done" not in str(e):
@@ -813,56 +806,6 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
-def load_libre_office(lambda_write_path, folder_path, libre_office_install_dir):
-    if os.path.exists(libre_office_install_dir) and os.path.isdir(
-        libre_office_install_dir
-    ):
-        logger.info("We have a cached copy of LibreOffice, skipping extraction")
-    else:
-        logger.info(
-            "No cached copy of LibreOffice, copying from /opt and extracting tar stream from Brotli file."
-        )
-        if not os.path.exists(os.path.dirname(temp_tar_path := lambda_write_path
-            + folder_path
-            + "/temp_tar_dir/lo.tar.br")):
-            os.makedirs(os.path.dirname(temp_tar_path), exist_ok=True)
-        copyfile(
-            "/opt/lo.tar.br",
-            temp_tar_path,
-        )
-        buffer = BytesIO()
-        with open(temp_tar_path, "rb") as brotli_file:
-            d = brotli.Decompressor()
-            while True:
-                chunk = brotli_file.read(1024)
-                buffer.write(d.decompress(chunk))
-                if len(chunk) < 1024:
-                    break
-            buffer.seek(0)
-
-        logger.info(
-            f"Extracting tar stream to {lambda_write_path+folder_path} for caching."
-        )
-        with tarfile.open(fileobj=buffer) as tar:
-            tar.extractall(lambda_write_path + folder_path)
-        logger.info("Done caching LibreOffice!")
-    return f"{libre_office_install_dir}/program/soffice.bin"
-
-
-def convert_word_to_pdf(soffice_path, word_file_path, output_dir):
-    conv_cmd = f"{soffice_path} --headless --norestore --invisible --nodefault --nofirststartwizard --nolockcheck --nologo --convert-to pdf:writer_pdf_Export --outdir {output_dir} {word_file_path}"
-    response = subprocess.run(
-        conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    if response.returncode != 0:
-        response = subprocess.run(
-            conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        if response.returncode != 0:
-            return False
-    return True
-
-
 def lambda_handler(event, context):
     """
 
@@ -896,7 +839,7 @@ def lambda_handler(event, context):
         client=s3_client,
     )
 
-    libre_office_install_dir = lambda_write_path + folder_path + "/instdir"
+    
 
     process_document_folders(
         s3_client,
@@ -907,9 +850,7 @@ def lambda_handler(event, context):
         lambda_write_path,
         pdf_file_suffix,
         s3_output_folder,
-        trigger_folder,
-        folder_path,
-        libre_office_install_dir,
+        trigger_folder
     )
 
     if os.path.exists(lambda_write_path + folder_path):
