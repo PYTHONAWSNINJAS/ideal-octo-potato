@@ -488,8 +488,10 @@ def process_document_folders(
                 #     converted = True
                 elif file_path.endswith((".doc", ".docx")):
                     lambda_client = boto3.client("lambda")
+                    file_path = file_path.replace(lambda_write_path,"")
                     payload = json.dumps({"file_path": file_path})
                     logger.info("Invoking Doc Processing Lambda")
+                    
                     response = lambda_client.invoke(
                         FunctionName=os.environ["doc_to_pdf_arn"],
                         InvocationType="RequestResponse",
