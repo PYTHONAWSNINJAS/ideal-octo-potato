@@ -56,7 +56,9 @@ def upload_to_s3(file_path, bucket, key):
 
 
 def convert_word_to_pdf(soffice_path, word_file_path, output_dir):
-    conv_cmd = f"{soffice_path} --headless --norestore --invisible --nodefault --nofirststartwizard --nolockcheck --nologo --convert-to pdf:writer_pdf_Export --outdir {output_dir} {word_file_path}"
+    conv_cmd = f"{soffice_path} --headless --norestore --invisible --nodefault \
+    --nofirststartwizard --nolockcheck --nologo \
+    --convert-to pdf:writer_pdf_Export --outdir {output_dir} {word_file_path}"
     response = subprocess.run(
         conv_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -81,7 +83,13 @@ def lambda_handler(event, context):
     output_dir = f"/tmp/{doc_pdf_path}"
 
     logger.info(
-        f"key_prefix- {key_prefix}, base_name - {base_name}, filename - {filename}, _ - {_}, download_path - {download_path}, doc_pdf_path - {doc_pdf_path}, output_dir - {output_dir}"
+        f"key_prefix- {key_prefix},\
+        base_name - {base_name},\
+        filename - {filename},\
+        _ - {_},\
+        download_path - {download_path},\
+        doc_pdf_path - {doc_pdf_path},\
+        output_dir - {output_dir}"
     )
     download_from_s3(bucket_name, key, download_path)
 
@@ -100,7 +108,7 @@ def lambda_handler(event, context):
                     f"{doc_pdf_path}/{filename}{pdf_file_suffix}.pdf",
                 )
             uploaded = True
-        except Exception as e:
+        except Exception as _:
             (
                 exception_type,
                 exception_value,
