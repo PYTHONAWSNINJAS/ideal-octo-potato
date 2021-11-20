@@ -10,7 +10,7 @@ import sys
 import traceback
 import json
 
-libre_office_install_dir = "/tmp/instdir"
+libre_office_install_dir = os.environ["lambda_write_path"] + "/instdir"
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -35,9 +35,9 @@ def load_libre_office():
                     break
             buffer.seek(0)
 
-        logger.info("Extracting tar stream to /tmp for caching.")
+        logger.info(f"Extracting tar stream to tmp for caching.")
         with tarfile.open(fileobj=buffer) as tar:
-            tar.extractall("/tmp")
+            tar.extractall(os.environ["lambda_write_path"])
         logger.info("Done caching LibreOffice!")
 
     return f"{libre_office_install_dir}/program/soffice.bin"
@@ -75,12 +75,13 @@ def lambda_handler(event, context):
     bucket_name = os.environ["main_s3_bucket"]
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
+    lambda_write_path = os.environ["lambda_write_path"]
     key = event["file_path"]
     key_prefix, base_name = os.path.split(key)
     filename, _ = os.path.splitext(base_name)
-    download_path = f"/tmp/{key}"
+    download_path = f"{lambda_write_path}/{key}"
     doc_pdf_path = key_prefix.replace(key_prefix.split("/")[1], s3_output_folder)
-    output_dir = f"/tmp/{doc_pdf_path}"
+    output_dir = f"{lambda_write_path}/{doc_pdf_path}"
 
     logger.info(
         f"key_prefix- {key_prefix},\
