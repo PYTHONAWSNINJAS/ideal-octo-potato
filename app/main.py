@@ -820,84 +820,98 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
-    logger.info(f"event: {event}")
-    trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    folder_path = event["Records"][0]["s3"]["object"]["key"]
-    s3_folder = folder_path.split("/")[0]
-    s3_sub_folder = folder_path.split("/")[1]
-    s3_document_folder = folder_path.split("/")[2]
-    trigger_folder = folder_path.split("/")[3]
+    try:
+        logger.info(f"event: {event}")
+        trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+        folder_path = event["Records"][0]["s3"]["object"]["key"]
+        s3_folder = folder_path.split("/")[0]
+        s3_sub_folder = folder_path.split("/")[1]
+        s3_document_folder = folder_path.split("/")[2]
+        trigger_folder = folder_path.split("/")[3]
 
-    (
-        s3_client,
-        bucket_name,
-        lambda_write_path,
-        pdf_file_suffix,
-        s3_output_folder,
-        metadata_s3_bucket,
-        merge_trigger_bucket,
-    ) = init()
+        (
+            s3_client,
+            bucket_name,
+            lambda_write_path,
+            pdf_file_suffix,
+            s3_output_folder,
+            metadata_s3_bucket,
+            merge_trigger_bucket,
+        ) = init()
 
-    download_dir(
-        prefix=folder_path,
-        local=lambda_write_path,
-        bucket=bucket_name,
-        client=s3_client,
-    )
+        download_dir(
+            prefix=folder_path,
+            local=lambda_write_path,
+            bucket=bucket_name,
+            client=s3_client,
+        )
 
-    process_document_folders(
-        s3_client,
-        bucket_name,
-        s3_folder,
-        s3_sub_folder,
-        s3_document_folder,
-        lambda_write_path,
-        pdf_file_suffix,
-        s3_output_folder,
-        trigger_folder,
-    )
+        process_document_folders(
+            s3_client,
+            bucket_name,
+            s3_folder,
+            s3_sub_folder,
+            s3_document_folder,
+            lambda_write_path,
+            pdf_file_suffix,
+            s3_output_folder,
+            trigger_folder,
+        )
 
+        s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
+
+        meta_data_object_folder = "".join(
+            [s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"]
+        )
+        logger.info(f"meta_data_object_folder: {meta_data_object_folder}")
+        total_no_of_trigger_files = fetch_metadata_file(
+            s3_client, meta_data_object_folder, metadata_s3_bucket
+        )
+        create_success_file(
+            s3_client,
+            metadata_s3_bucket,
+            meta_data_object_folder + "Success_" + trigger_folder,
+        )
+        no_of_success_files = count_success_files(
+            s3_client, metadata_s3_bucket, meta_data_object_folder
+        )
+        if no_of_success_files == total_no_of_trigger_files:
+            merge_trigger_file = "".join(
+                [
+                    s3_folder,
+                    "/",
+                    s3_output_folder,
+                    "/",
+                    "control_files",
+                    "/",
+                    s3_document_folder,
+                    ".json",
+                ]
+            )
+            logger.info(f"merge_trigger_file: {merge_trigger_file}")
+
+            # check if merge trigger file is present, if not create the file.
+            # This is to avoid double puts and parallel events in lambda
+            time.sleep(random.randint(2, 60))
+            try:
+                s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
+            except ClientError as _:
+                create_merge_trigger_file(
+                    s3_client, merge_trigger_bucket, merge_trigger_file
+                )
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
+    
     if os.path.exists(lambda_write_path + folder_path):
         rmtree(lambda_write_path + folder_path, ignore_errors=True)
-
-    s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
-
-    meta_data_object_folder = "".join(
-        [s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"]
-    )
-    logger.info(f"meta_data_object_folder: {meta_data_object_folder}")
-    total_no_of_trigger_files = fetch_metadata_file(
-        s3_client, meta_data_object_folder, metadata_s3_bucket
-    )
-    create_success_file(
-        s3_client,
-        metadata_s3_bucket,
-        meta_data_object_folder + "Success_" + trigger_folder,
-    )
-    no_of_success_files = count_success_files(
-        s3_client, metadata_s3_bucket, meta_data_object_folder
-    )
-    if no_of_success_files == total_no_of_trigger_files:
-        merge_trigger_file = "".join(
-            [
-                s3_folder,
-                "/",
-                s3_output_folder,
-                "/",
-                "control_files",
-                "/",
-                s3_document_folder,
-                ".json",
-            ]
-        )
-        logger.info(f"merge_trigger_file: {merge_trigger_file}")
-
-        # check if merge trigger file is present, if not create the file.
-        # This is to avoid double puts and parallel events in lambda
-        time.sleep(random.randint(2, 60))
-        try:
-            s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
-        except ClientError as _:
-            create_merge_trigger_file(
-                s3_client, merge_trigger_bucket, merge_trigger_file
-            )
