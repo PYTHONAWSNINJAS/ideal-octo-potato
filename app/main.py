@@ -620,6 +620,7 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     -------
     total_no_of_trigger_files: no of trigger files
     """
+    total_no_of_trigger_files = 0
     try:
         pattern_to_look = meta_data_object_folder.split("/")[-2]
         objects = list_dir(
@@ -631,7 +632,6 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
         total_no_of_trigger_files = int(meta_data_object.split("/")[-1].split("___")[1])
         logger.info(f"meta_data_object: {meta_data_object}")
         logger.info(f"total_no_of_trigger_files: {total_no_of_trigger_files}")
-        return total_no_of_trigger_files
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -645,6 +645,8 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
             }
         )
         logger.error(err_msg)
+    
+    return total_no_of_trigger_files
 
 
 def create_success_file(s3_client, bucket, file):
