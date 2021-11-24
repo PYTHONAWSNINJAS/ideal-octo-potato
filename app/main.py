@@ -645,7 +645,7 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
             }
         )
         logger.error(err_msg)
-    
+
     return total_no_of_trigger_files
 
 
