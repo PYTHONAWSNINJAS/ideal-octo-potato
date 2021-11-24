@@ -894,7 +894,9 @@ def lambda_handler(event, context):
             # This is to avoid double puts and parallel events in lambda
             time.sleep(random.randint(2, 60))
             try:
-                s3_client.head_object(Bucket=merge_trigger_bucket, Key=merge_trigger_file)
+                s3_client.head_object(
+                    Bucket=merge_trigger_bucket, Key=merge_trigger_file
+                )
             except ClientError as _:
                 create_merge_trigger_file(
                     s3_client, merge_trigger_bucket, merge_trigger_file
@@ -912,6 +914,6 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
-    
+
     if os.path.exists(lambda_write_path + folder_path):
         rmtree(lambda_write_path + folder_path, ignore_errors=True)
