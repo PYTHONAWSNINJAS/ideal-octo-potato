@@ -267,15 +267,17 @@ def lambda_handler(event, context):
 
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-    
+
     if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
         rmtree(
             lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
             ignore_errors=True,
         )
-    
-    if os.path.exists(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"):
+
+    if os.path.exists(
+        lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
+    ):
         rmtree(
             lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/",
-            ignore_errors=True
+            ignore_errors=True,
         )
