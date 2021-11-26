@@ -545,7 +545,7 @@ def process_document_folders(
                     )
             else:
                 logger.info(f"PDF not created for: {current_item}")
-        except Exception as e:
+        except Exception as _:
             (
                 exception_type,
                 exception_value,
