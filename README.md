@@ -26,4 +26,4 @@ or right click -> build image from Dockerfile
 The docker terminal will display server side messages. The new terminal will display the client side messages.
 
 ## Build and Push to ECR
-Run [build_and_push.py](https://github.com/PYTHONAWSNINJAS/ideal-octo-potato/blob/7bc1d4330915f6cb3cc377a68ae9d39daf60dfa6/build_and_push.py) to build the docker image and push to AWS ECR
+Run [build_and_push.py](build_and_push.py) to build the docker image and push to AWS ECR
