@@ -217,12 +217,12 @@ def lambda_handler(event, context):
     event: lambda event
     context: lambda context
     """
-    logger.info(f"event: {event}")
-    trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    control_file = event["Records"][0]["s3"]["object"]["key"]
-    s3_folder = control_file.split("/")[0]
-
     try:
+        logger.info(f"event: {event}")
+        trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+        control_file = event["Records"][0]["s3"]["object"]["key"]
+        s3_folder = control_file.split("/")[0]
+
         (
             s3_client,
             main_s3_bucket,
@@ -238,71 +238,19 @@ def lambda_handler(event, context):
 
         if not data["files"]:
             logger.info("Empty Control File.")
-            delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
-            s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
-            if os.path.exists(
-                lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"
-            ):
-                rmtree(
-                    lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
-                    ignore_errors=True,
+        else:
+            # loop two times in the data for source and current
+            for file_type in ["source", "current"]:
+                process(
+                    file_type,
+                    exhibit_id,
+                    data,
+                    s3_client,
+                    main_s3_bucket,
+                    lambda_write_path,
+                    pdf_file_suffix,
+                    s3_folder,
                 )
-            if os.path.exists(
-                lambda_write_path
-                + s3_folder
-                + "/"
-                + folder_type
-                + "/"
-                + exhibit_id
-                + "/"
-            ):
-                rmtree(
-                    lambda_write_path
-                    + s3_folder
-                    + "/"
-                    + folder_type
-                    + "/"
-                    + exhibit_id
-                    + "/",
-                    ignore_errors=True,
-                )
-            return None
-
-        # loop two times in the data for source and current
-        for file_type in ["source", "current"]:
-            process(
-                file_type,
-                exhibit_id,
-                data,
-                s3_client,
-                main_s3_bucket,
-                lambda_write_path,
-                pdf_file_suffix,
-                s3_folder,
-            )
-
-            if os.path.exists(
-                lambda_write_path
-                + s3_folder
-                + "/"
-                + folder_type
-                + "/"
-                + exhibit_id
-                + "/"
-            ):
-                rmtree(
-                    lambda_write_path
-                    + s3_folder
-                    + "/"
-                    + folder_type
-                    + "/"
-                    + exhibit_id
-                    + "/",
-                    ignore_errors=True,
-                )
-
-        delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
-        s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -317,10 +265,17 @@ def lambda_handler(event, context):
         )
         logger.error(err_msg)
 
+    delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
+    s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
+    
     if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
         rmtree(
             lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
             ignore_errors=True,
         )
     
-    return None
+    if os.path.exists(lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"):
+        rmtree(
+            lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/",
+            ignore_errors=True
+        )
