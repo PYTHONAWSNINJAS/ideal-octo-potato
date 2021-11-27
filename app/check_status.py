@@ -46,6 +46,6 @@ def lambda_handler(event, context):
                 cur_delete.execute(f"delete from jobexecution where case_id='{case_folder}'")
             conn.commit()
             logger.info(f"Placing Completed File for Case Folder - {case_folder}")
-            s3_client.put_object(Body="", Bucket=main_s3_bucket, Key=case_folder+"/COMPLETED")
+            s3_client.put_object(Body="", Bucket=main_s3_bucket, Key=case_folder+"/runs/COMPLETED")
     conn.close()
     
