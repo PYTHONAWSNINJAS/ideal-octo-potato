@@ -212,7 +212,7 @@ def folder_exists_and_not_empty(bucket, path):
     return "Contents" in resp
  
 
-def place_rds_entry(s3_folder, total_triggers):
+def place_rds_entry(s3_folder, total_control_files):
     rds_host  = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -227,7 +227,7 @@ def place_rds_entry(s3_folder, total_triggers):
         sys.exit()
 
     with conn.cursor() as cur:
-        cur.execute(f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_triggers}',0)")
+        cur.execute(f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_control_files}',0)")
         conn.commit()
     conn.close()
     
@@ -253,8 +253,8 @@ def index():
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
         
-        total_triggers = len(list_dir(s3_folder+"/doc_pdf/control_files/", main_s3_bucket, s3_client))
-        place_rds_entry(s3_folder, total_triggers)
+        total_control_files = len(list_dir(s3_folder+"/doc_pdf/control_files/", main_s3_bucket, s3_client))
+        place_rds_entry(s3_folder, total_control_files)
 
         if processing_type == "case_level":
             for item in [s3_exhibits_folder, s3_wire_folder]:
