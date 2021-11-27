@@ -210,10 +210,27 @@ def folder_exists_and_not_empty(bucket, path):
         path = path + "/"
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=path, Delimiter="", MaxKeys=1)
     return "Contents" in resp
+ 
 
+def place_rds_entry(s3_folder, total_triggers):
+    rds_host  = os.environ["db_endpoint"]
+    name = os.environ["db_username"]
+    password = os.environ["db_password"]
+    db_name = os.environ["db_name"]
+    
+    try:
+        conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+        logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+    except pymysql.MySQLError as e:
+        logger.error("ERROR: Unexpected error: Could not connect to MySQL instance.")
+        logger.error(e)
+        sys.exit()
 
-def list_control_files():
-    raise NotImplementedError()
+    with conn.cursor() as cur:
+        cur.execute(f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_triggers}',0)")
+        conn.commit()
+    conn.close()
+    
 
 
 @app.route("/", methods=["POST"])
@@ -235,6 +252,9 @@ def index():
         s3_folder = body["s3_folder"]
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
+        
+        total_triggers = len(list_dir(s3_folder+"/doc_pdf/control_files/", main_s3_bucket, s3_client))
+        place_rds_entry(s3_folder, total_triggers)
 
         if processing_type == "case_level":
             for item in [s3_exhibits_folder, s3_wire_folder]:
@@ -271,19 +291,6 @@ def index():
 
                     with concurrent.futures.ThreadPoolExecutor() as executer:
                         _ = executer.map(preprocess, args)
-        elif processing_type == "doc_level":
-            s3_document_folder = body["s3_document_folder"]
-            preprocess(
-                [
-                    s3_folder,
-                    s3_exhibits_folder,
-                    s3_document_folder,
-                    main_s3_bucket,
-                    metadata_s3_bucket,
-                    trigger_s3_bucket,
-                    s3_client,
-                ]
-            )
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:
