@@ -218,9 +218,20 @@ def update_rds_entry(s3_folder):
     try:
         conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-    except pymysql.MySQLError as e:
-        logger.error("ERROR: Unexpected error: Could not connect to MySQL instance.")
-        logger.error(e)
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
+        return {"statusCode": 500, "body": str(traceback.format_exc())}
         sys.exit()
 
     with conn.cursor() as cur:
