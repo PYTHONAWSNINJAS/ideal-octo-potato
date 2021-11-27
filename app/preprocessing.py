@@ -232,7 +232,6 @@ def place_rds_entry(s3_folder, total_control_files):
     conn.close()
     
 
-
 @app.route("/", methods=["POST"])
 def index():
     """
