@@ -209,6 +209,39 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_ty
     logger.info(f"Deleted all files from: {metadata_folder_to_delete}")
 
 
+def update_rds_entry(s3_folder):
+    rds_host  = os.environ["db_endpoint"]
+    name = os.environ["db_username"]
+    password = os.environ["db_password"]
+    db_name = os.environ["db_name"]
+    
+    try:
+        conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+        logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+    except Exception as _:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
+        return {"statusCode": 500, "body": str(traceback.format_exc())}
+        sys.exit()
+
+    with conn.cursor() as cur:
+        cur.execute(f"update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='{s3_folder}'")
+        conn.commit()
+        for row in cur:
+            logger.info(row)
+    conn.close()
+    
+
 def lambda_handler(event, context):
     """
 
@@ -256,6 +289,7 @@ def lambda_handler(event, context):
                     pdf_file_suffix,
                     s3_folder,
                 )
+        update_rds_entry(s3_folder)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
