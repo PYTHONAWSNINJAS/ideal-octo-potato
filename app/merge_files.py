@@ -210,13 +210,15 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_ty
 
 
 def update_rds_entry(s3_folder):
-    rds_host  = os.environ["db_endpoint"]
+    rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
-    
+
     try:
-        conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+        conn = pymysql.connect(
+            host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+        )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
@@ -235,12 +237,14 @@ def update_rds_entry(s3_folder):
         sys.exit()
 
     with conn.cursor() as cur:
-        cur.execute(f"update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='{s3_folder}'")
+        cur.execute(
+            f"update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='{s3_folder}'"
+        )
         conn.commit()
         for row in cur:
             logger.info(row)
     conn.close()
-    
+
 
 def lambda_handler(event, context):
     """
@@ -256,12 +260,12 @@ def lambda_handler(event, context):
         control_file = event["Records"][0]["s3"]["object"]["key"]
         s3_folder = control_file.split("/")[0]
         exhibit_id = control_file.split("/")[3].split(".")[0]
-        
+
         if exhibit_id.startswith("document"):
             folder_type = "wire"
         else:
             folder_type = "exhibits"
-        
+
         (
             s3_client,
             main_s3_bucket,
