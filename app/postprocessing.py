@@ -10,15 +10,18 @@ logger.setLevel(logging.INFO)
 session = boto3.Session()
 s3_client = session.client(service_name="s3")
 
+
 def lambda_handler(event, context):
-    rds_host  = os.environ["db_endpoint"]
+    rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
     main_s3_bucket = os.environ["main_s3_bucket"]
-    
+
     try:
-        conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+        conn = pymysql.connect(
+            host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+        )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
@@ -37,15 +40,20 @@ def lambda_handler(event, context):
         sys.exit()
 
     with conn.cursor() as cur:
-        cur.execute("select * from jobexecution where total_triggers=processed_triggers")
+        cur.execute(
+            "select * from jobexecution where total_triggers=processed_triggers"
+        )
         for row in cur:
             logger.info(f"Found completed entries in rds - {row}")
             case_folder = row[0]
             logger.info(f"Deleting Entry from RDS for - {case_folder}")
             with conn.cursor() as cur_delete:
-                cur_delete.execute(f"delete from jobexecution where case_id='{case_folder}'")
+                cur_delete.execute(
+                    f"delete from jobexecution where case_id='{case_folder}'"
+                )
             conn.commit()
             logger.info(f"Placing Completed File for Case Folder - {case_folder}")
-            s3_client.put_object(Body="", Bucket=main_s3_bucket, Key=case_folder+"/runs/COMPLETED")
+            s3_client.put_object(
+                Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
+            )
     conn.close()
-    
