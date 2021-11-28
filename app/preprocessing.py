@@ -211,16 +211,18 @@ def folder_exists_and_not_empty(bucket, path):
         path = path + "/"
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=path, Delimiter="", MaxKeys=1)
     return "Contents" in resp
- 
+
 
 def place_rds_entry(s3_folder, total_control_files):
-    rds_host  = os.environ["db_endpoint"]
+    rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
-    
+
     try:
-        conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+        conn = pymysql.connect(
+            host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+        )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
@@ -239,10 +241,12 @@ def place_rds_entry(s3_folder, total_control_files):
         sys.exit()
 
     with conn.cursor() as cur:
-        cur.execute(f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_control_files}',0)")
+        cur.execute(
+            f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_control_files}',0)"
+        )
         conn.commit()
     conn.close()
-    
+
 
 @app.route("/", methods=["POST"])
 def index():
@@ -263,8 +267,10 @@ def index():
         s3_folder = body["s3_folder"]
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
-        
-        total_control_files = len(list_dir(s3_folder+"/doc_pdf/control_files/", main_s3_bucket, s3_client))
+
+        total_control_files = len(
+            list_dir(s3_folder + "/doc_pdf/control_files/", main_s3_bucket, s3_client)
+        )
         place_rds_entry(s3_folder, total_control_files)
 
         if processing_type == "case_level":
