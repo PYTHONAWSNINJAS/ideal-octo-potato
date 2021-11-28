@@ -255,8 +255,9 @@ def lambda_handler(event, context):
         trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
         control_file = event["Records"][0]["s3"]["object"]["key"]
         s3_folder = control_file.split("/")[0]
+        exhibit_id = control_file.split("/")[3].split(".")[0]
         
-        if control_file.split("/")[3].split(".")[0].startswith("document"):
+        if exhibit_id.startswith("document"):
             folder_type = "wire"
         else:
             folder_type = "exhibits"
