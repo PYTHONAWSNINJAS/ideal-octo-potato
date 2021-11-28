@@ -219,24 +219,8 @@ def place_rds_entry(s3_folder, total_control_files):
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
     
-    try:
-        conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
-        logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.error(err_msg)
-        return {"statusCode": 500, "body": str(traceback.format_exc())}
-        sys.exit()
+    conn = pymysql.connect(host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
 
     with conn.cursor() as cur:
         cur.execute(f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_control_files}',0)")
