@@ -20,6 +20,8 @@ import sys
 
 import time
 
+import pymysql
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
