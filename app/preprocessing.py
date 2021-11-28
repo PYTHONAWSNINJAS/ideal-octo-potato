@@ -20,6 +20,7 @@ from botocore.exceptions import ClientError
 import logging
 import sys
 
+import pymysql
 
 app = Flask(__name__, template_folder=".")
 
