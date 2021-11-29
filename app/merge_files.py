@@ -78,7 +78,7 @@ def merge_pdf(pdfs, filename, batchsize):
 
             if count > len(pdfs) + 2:
                 logger.info("List count larger than number of PDFs. Exiting..")
-                os.sys.exit(1)
+                sys.exit(1)
 
         list_of_batches.append(batch_pdfs)
         list_of_batches = [x for x in list_of_batches if x]
@@ -236,7 +236,6 @@ def update_rds_entry(s3_folder):
         )
         logger.error(err_msg)
         return {"statusCode": 500, "body": str(traceback.format_exc())}
-        sys.exit()
 
     with conn.cursor() as cur:
         cur.execute(
