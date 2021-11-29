@@ -160,45 +160,31 @@ def preprocess(args):
         args (list): list of arguments to be
         processed in parallel
     """
-    try:
-        (
-            s3_folder,
-            s3_sub_folder,
-            s3_document_folder,
-            main_s3_bucket,
-            metadata_s3_bucket,
-            trigger_s3_bucket,
-            s3_client,
-        ) = args
-        prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
-        files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
-        trigger_folders = extract_folder_paths(files)
-        filtered_trigger_folders = filter_trigger_folders(trigger_folders)
-        logger.info(f"filtered_trigger_folders: {filtered_trigger_folders}")
-        logger.info(f"s3_document_folder: {s3_document_folder}")
-        doc_metadata_file_path = (
-            prefix + s3_document_folder + "___" + str(len(filtered_trigger_folders))
-        )
-        logger.info(f"doc_metadata_file_path: {doc_metadata_file_path}")
-        place_metadata_file(
-            bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
-        )
-        place_trigger_files(
-            bucket=trigger_s3_bucket, folders=filtered_trigger_folders, client=s3_client
-        )
-    except Exception as _:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type, exception_value, exception_traceback
-        )
-        err_msg = json.dumps(
-            {
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-            }
-        )
-        logger.error(err_msg)
+    (
+        s3_folder,
+        s3_sub_folder,
+        s3_document_folder,
+        main_s3_bucket,
+        metadata_s3_bucket,
+        trigger_s3_bucket,
+        s3_client,
+    ) = args
+    prefix = "".join([s3_folder, "/", s3_sub_folder, "/", s3_document_folder, "/"])
+    files = list_dir(prefix=prefix, bucket=main_s3_bucket, client=s3_client)
+    trigger_folders = extract_folder_paths(files)
+    filtered_trigger_folders = filter_trigger_folders(trigger_folders)
+    logger.info(f"filtered_trigger_folders: {filtered_trigger_folders}")
+    logger.info(f"s3_document_folder: {s3_document_folder}")
+    doc_metadata_file_path = (
+        prefix + s3_document_folder + "___" + str(len(filtered_trigger_folders))
+    )
+    logger.info(f"doc_metadata_file_path: {doc_metadata_file_path}")
+    place_metadata_file(
+        bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
+    )
+    place_trigger_files(
+        bucket=trigger_s3_bucket, folders=filtered_trigger_folders, client=s3_client
+    )
 
 
 def folder_exists_and_not_empty(bucket, path):
