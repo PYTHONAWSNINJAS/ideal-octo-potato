@@ -25,7 +25,7 @@ def lambda_handler(event, context):
             host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-        
+
         with conn.cursor() as cur:
             cur.execute(
                 "select * from jobexecution where total_triggers=processed_triggers"
