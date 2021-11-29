@@ -240,7 +240,8 @@ def update_rds_entry(s3_folder):
 
     with conn.cursor() as cur:
         cur.execute(
-            f"update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='{s3_folder}'"
+            f"update docviewer.jobexecution set jobexecution.processed_triggers\
+            =jobexecution.processed_triggers+1 where jobexecution.case_id='{s3_folder}'"
         )
         conn.commit()
         for row in cur:

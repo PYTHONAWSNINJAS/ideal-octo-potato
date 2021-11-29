@@ -226,7 +226,8 @@ def place_rds_entry(s3_folder, total_control_files):
 
     with conn.cursor() as cur:
         cur.execute(
-            f"insert into jobexecution (case_id, total_triggers, processed_triggers) values('{s3_folder}','{total_control_files}',0)"
+            f"insert into jobexecution (case_id, total_triggers,\
+                processed_triggers) values('{s3_folder}','{total_control_files}',0)"
         )
         conn.commit()
     conn.close()
