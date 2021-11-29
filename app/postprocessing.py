@@ -36,7 +36,7 @@ def lambda_handler(event, context):
                 logger.info(f"Deleting Entry from RDS for - {case_folder}")
                 with conn.cursor() as cur_delete:
                     cur_delete.execute(
-                        f"delete from jobexecution where case_id='{case_folder}'"
+                        "delete from jobexecution where case_id = %s;", (case_folder,)
                     )
                 conn.commit()
                 logger.info(f"Placing Completed File for Case Folder - {case_folder}")
