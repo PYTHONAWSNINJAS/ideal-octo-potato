@@ -25,6 +25,26 @@ def lambda_handler(event, context):
             host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+        
+        with conn.cursor() as cur:
+            cur.execute(
+                "select * from jobexecution where total_triggers=processed_triggers"
+            )
+            for row in cur:
+                logger.info(f"Found completed entries in rds - {row}")
+                case_folder = row[0]
+                logger.info(f"Deleting Entry from RDS for - {case_folder}")
+                with conn.cursor() as cur_delete:
+                    cur_delete.execute(
+                        f"delete from jobexecution where case_id='{case_folder}'"
+                    )
+                conn.commit()
+                logger.info(f"Placing Completed File for Case Folder - {case_folder}")
+                s3_client.put_object(
+                    Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
+                )
+        conn.close()
+        return {"statusCode": 200, "body": "Done"}
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -40,22 +60,3 @@ def lambda_handler(event, context):
         logger.error(err_msg)
         return {"statusCode": 500, "body": str(traceback.format_exc())}
         sys.exit()
-
-    with conn.cursor() as cur:
-        cur.execute(
-            "select * from jobexecution where total_triggers=processed_triggers"
-        )
-        for row in cur:
-            logger.info(f"Found completed entries in rds - {row}")
-            case_folder = row[0]
-            logger.info(f"Deleting Entry from RDS for - {case_folder}")
-            with conn.cursor() as cur_delete:
-                cur_delete.execute(
-                    f"delete from jobexecution where case_id='{case_folder}'"
-                )
-            conn.commit()
-            logger.info(f"Placing Completed File for Case Folder - {case_folder}")
-            s3_client.put_object(
-                Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
-            )
-    conn.close()
