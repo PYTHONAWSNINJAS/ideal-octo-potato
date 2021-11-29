@@ -112,12 +112,6 @@ def merge_pdf(pdfs, filename, batchsize):
 def upload_to_s3(pdf_file_name, s3_client, bucket_name):
     s3_path = pdf_file_name.replace(os.environ["lambda_write_path"], "")
     s3_client.upload_file(pdf_file_name, bucket_name, s3_path)
-    # with open(pdf_file_name, "rb") as merged_data:
-    #     s3_client.put_object(
-    #         Body=merged_data,
-    #         Bucket=bucket_name,
-    #         Key=s3_path,
-    #     )
 
 
 def process(
@@ -156,25 +150,11 @@ def process(
 
     pdfs = []
     for item in data["files"]:
-        try:
-            file_path = lambda_write_path + item[file_type]
-            logger.info(f"file_path: {file_path}")
-            logger.info(f"dir_path: {os.path.dirname(file_path)}")
-            if not os.path.exists(os.path.dirname(file_path)):
-                os.makedirs(name=os.path.dirname(file_path), exist_ok=True)
-        except Exception as _:
-            exception_type, exception_value, exception_traceback = sys.exc_info()
-            traceback_string = traceback.format_exception(
-                exception_type, exception_value, exception_traceback
-            )
-            err_msg = json.dumps(
-                {
-                    "errorType": exception_type.__name__,
-                    "errorMessage": str(exception_value),
-                    "stackTrace": traceback_string,
-                }
-            )
-            logger.error(err_msg)
+        file_path = lambda_write_path + item[file_type]
+        logger.info(f"file_path: {file_path}")
+        logger.info(f"dir_path: {os.path.dirname(file_path)}")
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(name=os.path.dirname(file_path), exist_ok=True)
 
         logger.info(f"Downloading: {item[file_type]}")
         if os.path.isdir(os.path.dirname(file_path)):
