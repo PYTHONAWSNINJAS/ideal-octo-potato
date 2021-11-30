@@ -219,6 +219,15 @@ def place_rds_entry(s3_folder, total_control_files):
     conn.close()
 
 
+def enable_cloudwatch_rule():
+    client = boto3.client('events') 
+    cwRulename = os.environ["cloudwatch_event_name"]
+    response = client.enable_rule(
+        Name=os.environ["cloudwatch_event_name"]
+    )
+    logger.info(f"Enabled {cwRulename}")
+
+
 @app.route("/", methods=["POST"])
 def index():
     """
@@ -260,9 +269,6 @@ def index():
                     )
                     args = []
                     for s3_document_folder in s3_document_folders:
-                        # add a code to list all control files and
-                        # in the next step check if folder and
-                        # control file both exists.
                         stuffs = []
                         stuffs.extend(
                             [
@@ -280,6 +286,7 @@ def index():
                     with concurrent.futures.ThreadPoolExecutor() as executer:
                         _ = executer.map(preprocess, args)
 
+        enable_cloudwatch_rule()
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
