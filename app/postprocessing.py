@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                 if row[0] == 0:
                     client = boto3.client('events')
                     cwRulename = os.environ["cloudwatch_event_name"]
-                    response = client.disable_rule(
+                    _ = client.disable_rule(
                         Name=cwRulename
                     )
                     logger.info(f"Disabled {cwRulename}")
