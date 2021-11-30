@@ -191,7 +191,7 @@ def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_ty
     logger.info(f"Deleted all files from: {metadata_folder_to_delete}")
 
 
-def update_rds_entry(s3_folder):
+def update_rds_entry(s3_folder, exhibit_id):
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -200,7 +200,7 @@ def update_rds_entry(s3_folder):
     conn = pymysql.connect(
         host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
     )
-    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+    logger.info(f"SUCCESS: Connection to RDS MySQL for {exhibit_id} succeeded")
 
     with conn.cursor() as cur:
         cur.execute(
@@ -244,8 +244,8 @@ def lambda_handler(event, context):
 
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
-        exhibit_id = data["s3_sub_folder"]
-        folder_type = data["type"]
+        exhibit_id = data["s3_sub_folder"] #redundant
+        folder_type = data["type"] #redundant
 
         if not data["files"]:
             logger.info("Empty Control File.")
@@ -262,7 +262,7 @@ def lambda_handler(event, context):
                     pdf_file_suffix,
                     s3_folder,
                 )
-        update_rds_entry(s3_folder)
+        update_rds_entry(s3_folder, exhibit_id)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
