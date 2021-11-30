@@ -220,11 +220,9 @@ def place_rds_entry(s3_folder, total_control_files):
 
 
 def enable_cloudwatch_rule():
-    client = boto3.client('events') 
+    client = boto3.client("events")
     cwRulename = os.environ["cloudwatch_event_name"]
-    _ = client.enable_rule(
-        Name=os.environ["cloudwatch_event_name"]
-    )
+    _ = client.enable_rule(Name=os.environ["cloudwatch_event_name"])
     logger.info(f"Enabled {cwRulename}")
 
 

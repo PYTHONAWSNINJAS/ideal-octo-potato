@@ -25,7 +25,7 @@ def lambda_handler(event, context):
             host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-        
+
         with conn.cursor() as cur:
             logger.info("Checking for completed runs to place completed file in S3.")
             cur.execute(
@@ -44,20 +44,16 @@ def lambda_handler(event, context):
                 s3_client.put_object(
                     Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
                 )
-            
+
             logger.info("Checking for empty table to disable cloudwatch.")
-            cur.execute(
-                "select exists (select 1 from jobexecution);"
-            )
+            cur.execute("select exists (select 1 from jobexecution);")
             for row in cur:
                 if row[0] == 0:
-                    client = boto3.client('events')
+                    client = boto3.client("events")
                     cwRulename = os.environ["cloudwatch_event_name"]
-                    _ = client.disable_rule(
-                        Name=cwRulename
-                    )
+                    _ = client.disable_rule(Name=cwRulename)
                     logger.info(f"Disabled {cwRulename}")
-            
+
         conn.close()
         return {"statusCode": 200, "body": "Done"}
     except Exception as _:
