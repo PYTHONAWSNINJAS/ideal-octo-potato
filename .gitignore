@@ -3,7 +3,6 @@ app/Tesseract-OCR
 app/case_number
 .aws_credentials
 .DS_Store
-supported docs/picture
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
