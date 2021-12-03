@@ -852,8 +852,6 @@ def lambda_handler(event, context):
         s3_document_folder = folder_path.split("/")[2]
         trigger_folder = folder_path.split("/")[3]
 
-        upsert_logs(folder_path)
-
         (
             s3_client,
             bucket_name,
@@ -864,6 +862,8 @@ def lambda_handler(event, context):
             merge_trigger_bucket,
         ) = init()
 
+        upsert_logs(folder_path)
+        
         download_dir(
             prefix=folder_path,
             local=lambda_write_path,
