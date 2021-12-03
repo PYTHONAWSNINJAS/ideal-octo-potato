@@ -183,8 +183,9 @@ def preprocess(args):
         bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
     )
     place_trigger_files(
-        bucket=trigger_s3_bucket, folders=filtered_trigger_folders, client=s3_client
+        bucket=trigger_s3_bucket, folders=filtered_trigger_folders[0:-1], client=s3_client
     )
+    return filtered_trigger_folders[-1]
 
 
 def folder_exists_and_not_empty(bucket, path):
@@ -313,9 +314,14 @@ def index():
                         )
                         args.append(stuffs)
 
+                    last_pages = []
                     with concurrent.futures.ThreadPoolExecutor() as executer:
-                        _ = executer.map(preprocess, args)
+                        results_map = executer.map(preprocess, args)
+                        for res in results_map:
+                            last_pages.append(res)
 
+        print(last_pages)
+        exit()
         enable_cloudwatch_rule()
         upsert_logs(s3_folder)
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
