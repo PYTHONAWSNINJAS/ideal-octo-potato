@@ -183,9 +183,9 @@ def preprocess(args):
         bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
     )
     place_trigger_files(
-        bucket=trigger_s3_bucket, folders=filtered_trigger_folders[0:-1], client=s3_client
+        bucket=trigger_s3_bucket, folders=list(filtered_trigger_folders)[0:-1], client=s3_client
     )
-    return filtered_trigger_folders[-1]
+    return list(filtered_trigger_folders)[-1]
 
 
 def folder_exists_and_not_empty(bucket, path):
@@ -320,10 +320,12 @@ def index():
                         for res in results_map:
                             last_pages.append(res)
 
-        print(last_pages)
-        exit()
         enable_cloudwatch_rule()
         upsert_logs(s3_folder)
+        
+        place_trigger_files(
+            bucket=trigger_s3_bucket, folders=last_pages, client=s3_client
+        )
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
