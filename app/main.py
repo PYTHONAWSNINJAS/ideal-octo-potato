@@ -814,6 +814,27 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
+def upsert_logs(identifier):
+    rds_host = os.environ["db_endpoint"]
+    name = os.environ["db_username"]
+    password = os.environ["db_password"]
+    db_name = os.environ["db_name"]
+
+    conn = pymysql.connect(
+        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+    )
+    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+
+    with conn.cursor() as cur:
+        cur.execute(
+            f"insert into logs (function_name, identifier, start_time, end_time) \
+            values('PREPROCESS', '{identifier}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+            ON DUPLICATE KEY UPDATE end_time=CURRENT_TIMESTAMP"
+        )
+        conn.commit()
+    conn.close()
+
+
 def lambda_handler(event, context):
     """
 
@@ -830,7 +851,9 @@ def lambda_handler(event, context):
         s3_sub_folder = folder_path.split("/")[1]
         s3_document_folder = folder_path.split("/")[2]
         trigger_folder = folder_path.split("/")[3]
-
+        
+        upsert_logs(folder_path)
+        
         (
             s3_client,
             bucket_name,
@@ -903,6 +926,9 @@ def lambda_handler(event, context):
                 create_merge_trigger_file(
                     s3_client, merge_trigger_bucket, merge_trigger_file
                 )
+        
+        upsert_logs(folder_path)
+    
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(

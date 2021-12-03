@@ -215,6 +215,27 @@ def update_rds_entry(s3_folder, exhibit_id):
     conn.close()
 
 
+def upsert_logs(identifier):
+    rds_host = os.environ["db_endpoint"]
+    name = os.environ["db_username"]
+    password = os.environ["db_password"]
+    db_name = os.environ["db_name"]
+
+    conn = pymysql.connect(
+        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+    )
+    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+
+    with conn.cursor() as cur:
+        cur.execute(
+            f"insert into logs (function_name, identifier, start_time, end_time) \
+            values('PREPROCESS', '{identifier}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+            ON DUPLICATE KEY UPDATE end_time=CURRENT_TIMESTAMP"
+        )
+        conn.commit()
+    conn.close()
+    
+
 def lambda_handler(event, context):
     """
 
@@ -230,6 +251,8 @@ def lambda_handler(event, context):
         s3_folder = control_file.split("/")[0]
         exhibit_id = control_file.split("/")[3].split(".")[0]
 
+        upsert_logs(control_file)
+        
         if exhibit_id.startswith("document"):
             folder_type = "wire"
         else:
@@ -264,6 +287,7 @@ def lambda_handler(event, context):
                     s3_folder,
                 )
         update_rds_entry(s3_folder, exhibit_id)
+        upsert_logs(control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
