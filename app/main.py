@@ -863,7 +863,7 @@ def lambda_handler(event, context):
         ) = init()
 
         upsert_logs(folder_path)
-        
+
         download_dir(
             prefix=folder_path,
             local=lambda_write_path,
