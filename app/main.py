@@ -851,9 +851,9 @@ def lambda_handler(event, context):
         s3_sub_folder = folder_path.split("/")[1]
         s3_document_folder = folder_path.split("/")[2]
         trigger_folder = folder_path.split("/")[3]
-        
+
         upsert_logs(folder_path)
-        
+
         (
             s3_client,
             bucket_name,
@@ -926,9 +926,9 @@ def lambda_handler(event, context):
                 create_merge_trigger_file(
                     s3_client, merge_trigger_bucket, merge_trigger_file
                 )
-        
+
         upsert_logs(folder_path)
-    
+
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
