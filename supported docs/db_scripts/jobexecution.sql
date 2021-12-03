@@ -14,8 +14,13 @@ create table docviewer.jobexecution(
 );
 
 -- Examples
--- insert into docviewer.jobexecution (jobexecution.case_id, jobexecution.total_triggers, jobexecution.processed_triggers) values ("case_1",10,0);
--- update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='case_1';
+insert into docviewer.jobexecution (jobexecution.case_id, jobexecution.total_triggers, jobexecution.processed_triggers) values ("case_1",10,0);
+update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='case_1';
 
 -- check if the table is empty
--- SELECT EXISTS (SELECT 1 FROM docviewer.jobexecution);
+SELECT EXISTS (SELECT 1 FROM docviewer.jobexecution);
+
+-- To increase max connection
+Open terminal
+sudo mysql 
+set global max_connections = 3000;
