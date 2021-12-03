@@ -234,7 +234,7 @@ def upsert_logs(identifier):
         )
         conn.commit()
     conn.close()
-    
+
 
 def lambda_handler(event, context):
     """
@@ -252,7 +252,7 @@ def lambda_handler(event, context):
         exhibit_id = control_file.split("/")[3].split(".")[0]
 
         upsert_logs(control_file)
-        
+
         if exhibit_id.startswith("document"):
             folder_type = "wire"
         else:
