@@ -8,7 +8,8 @@ create table docviewer.jobexecution(
    case_id varchar(20) NOT NULL,
    total_triggers int NOT NULL,
    processed_triggers int NOT NULL,
-   insert_date datetime DEFAULT CURRENT_TIMESTAMP,
+   insert_datetime datetime DEFAULT CURRENT_TIMESTAMP,
+   last_update_datetime datetime DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY ( case_id )
 );
 
