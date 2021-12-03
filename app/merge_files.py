@@ -229,7 +229,7 @@ def upsert_logs(identifier):
     with conn.cursor() as cur:
         cur.execute(
             f"insert into logs (function_name, identifier, start_time, end_time) \
-            values('PREPROCESS', '{identifier}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+            values('MERGE', '{identifier}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
             ON DUPLICATE KEY UPDATE end_time=CURRENT_TIMESTAMP"
         )
         conn.commit()
