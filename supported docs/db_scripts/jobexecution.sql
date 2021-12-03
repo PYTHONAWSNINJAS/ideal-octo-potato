@@ -16,7 +16,7 @@ create table docviewer.jobexecution(
 DROP TABLE IF EXISTS docviewer.logs;
 create table docviewer.logs(
    function_name varchar(20) NOT NULL,
-   identifier varchar(200) NOT NULL,
+   identifier varchar(255) NOT NULL,
    start_time datetime DEFAULT CURRENT_TIMESTAMP,
    end_time datetime,
    PRIMARY KEY ( function_name, identifier )
