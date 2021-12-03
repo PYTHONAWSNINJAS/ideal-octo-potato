@@ -246,9 +246,10 @@ def index():
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
 
-        total_control_files = len(
-            list_dir(s3_folder + "/doc_pdf/control_files/", main_s3_bucket, s3_client)
-        )
+        control_files = list_dir(s3_folder + "/doc_pdf/control_files/", main_s3_bucket, s3_client)
+        control_files_documents_set = set([x.split('/')[-1].split('.')[0] for x in control_files])
+        total_control_files = len(control_files)
+
         place_rds_entry(s3_folder, total_control_files)
 
         if processing_type == "case_level":
@@ -262,11 +263,10 @@ def index():
                         prefix=case_prefix, bucket=main_s3_bucket, client=s3_client
                     )
                     case_trigger_folders = extract_folder_paths(case_files)
-                    s3_document_folders = list(
-                        {item.split("/")[2] for item in case_trigger_folders}
-                    )
+                    s3_document_folders_set = {item.split("/")[2] for item in case_trigger_folders}
+                    s3_document_folders_filtered = control_files_documents_set.intersection(s3_document_folders_set)
                     args = []
-                    for s3_document_folder in s3_document_folders:
+                    for s3_document_folder in s3_document_folders_filtered:
                         stuffs = []
                         stuffs.extend(
                             [
