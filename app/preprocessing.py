@@ -271,9 +271,9 @@ def index():
         control_files = list_dir(
             s3_folder + "/doc_pdf/control_files/", main_s3_bucket, s3_client
         )
-        control_files_documents_set = set(
-            [x.split("/")[-1].split(".")[0] for x in control_files]
-        )
+        control_files_documents_set = {
+            x.split("/")[-1].split(".")[0] for x in control_files
+        }
         total_control_files = len(control_files)
 
         place_rds_entry(s3_folder, total_control_files)
