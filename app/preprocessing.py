@@ -183,7 +183,9 @@ def preprocess(args):
         bucket=metadata_s3_bucket, file=doc_metadata_file_path, client=s3_client
     )
     place_trigger_files(
-        bucket=trigger_s3_bucket, folders=list(filtered_trigger_folders)[0:-1], client=s3_client
+        bucket=trigger_s3_bucket,
+        folders=list(filtered_trigger_folders)[0:-1],
+        client=s3_client,
     )
     return list(filtered_trigger_folders)[-1]
 
@@ -322,7 +324,7 @@ def index():
 
         enable_cloudwatch_rule()
         upsert_logs(s3_folder)
-        
+
         place_trigger_files(
             bucket=trigger_s3_bucket, folders=last_pages, client=s3_client
         )
