@@ -7,6 +7,8 @@ WORKDIR /usr/app
 
 ADD './app/preprocessing.py' '/usr/app'
 
+RUN pip install --upgrade pip 
+RUN pip install wheel
 RUN pip install flask
 RUN pip install boto3
 RUN pip install PyMySQL
