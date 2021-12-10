@@ -280,7 +280,7 @@ def index():
         total_control_files = len(control_files)
 
         place_rds_entry(s3_folder, total_control_files)
-
+        last_pages = []
         if processing_type == "case_level":
             for item in [s3_exhibits_folder, s3_wire_folder]:
                 folder_exists = folder_exists_and_not_empty(
@@ -316,7 +316,6 @@ def index():
                         )
                         args.append(stuffs)
 
-                    last_pages = []
                     with concurrent.futures.ThreadPoolExecutor() as executer:
                         results_map = executer.map(preprocess, args)
                         for res in results_map:
