@@ -30,6 +30,6 @@ update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.p
 SELECT EXISTS (SELECT 1 FROM docviewer.jobexecution);
 
 -- To increase max connection
-Open terminal
-sudo mysql 
-set global max_connections = 3000;
+show variables like "max_connections";
+GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO admin;
+SET GLOBAL max_connections = 100000;
