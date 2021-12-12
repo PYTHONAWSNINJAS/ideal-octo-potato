@@ -22,9 +22,9 @@ import sys
 
 import pymysql
 
-app = Flask(__name__, template_folder=".")
-
 from waitress import serve
+
+app = Flask(__name__, template_folder=".")
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
