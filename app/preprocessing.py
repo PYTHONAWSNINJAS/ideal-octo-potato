@@ -24,6 +24,8 @@ import pymysql
 
 app = Flask(__name__, template_folder=".")
 
+from waitress import serve
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -338,4 +340,4 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False, port=5000)
+    serve(app, host="0.0.0.0", port=5000)

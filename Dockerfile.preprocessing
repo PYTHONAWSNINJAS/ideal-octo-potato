@@ -12,6 +12,7 @@ RUN pip install wheel
 RUN pip install flask
 RUN pip install boto3
 RUN pip install PyMySQL
+RUN pip install waitress
 
 EXPOSE 5000
 
