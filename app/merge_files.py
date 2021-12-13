@@ -241,7 +241,9 @@ def find_latest_versionid(bucket, key):
     versions = s3.list_object_versions(Bucket=bucket, Prefix=key)
     for item in versions.get("Versions"):
         if item["IsLatest"]:
-            return item["VersionId"]
+            version_id = item["VersionId"]
+            break
+    return version_id
 
 
 def lambda_handler(event, context):
