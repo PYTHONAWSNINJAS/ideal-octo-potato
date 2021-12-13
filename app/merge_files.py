@@ -236,6 +236,14 @@ def upsert_logs(identifier):
     conn.close()
 
 
+def find_latest_versionid(bucket, key):
+    s3 = boto3.client('s3')
+    versions = s3.list_object_versions(Bucket = bucket, Prefix = key)
+    for item in versions.get('Versions'):
+        if item['IsLatest']:
+            return item["VersionId"]
+
+
 def lambda_handler(event, context):
     """
 
@@ -250,7 +258,13 @@ def lambda_handler(event, context):
         control_file = event["Records"][0]["s3"]["object"]["key"]
         s3_folder = control_file.split("/")[0]
         exhibit_id = control_file.split("/")[3].split(".")[0]
-
+        
+        versionId = event["Records"][0]["s3"]["object"]["versionId"]
+        lastestVersionId = find_latest_versionid(bucket=trigger_bucket_name, key=control_file)
+        
+        if versionId!=lastestVersionId:   
+            return
+        
         if exhibit_id.startswith("document"):
             folder_type = "wire"
         else:
