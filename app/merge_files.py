@@ -266,8 +266,9 @@ def lambda_handler(event, context):
             bucket=trigger_bucket_name, key=control_file
         )
 
+        logger.info(f"lastestVersionId - {lastestVersionId} eventVersionId - {versionId}")
         if versionId != lastestVersionId:
-            logger.info(f"Not the latest versionId. Exiting from here. lastestVersionId - {lastestVersionId} eventVersionId - {versionId}")
+            logger.info(f"Not the latest versionId. Exiting from here.")
             return
 
         if exhibit_id.startswith("document"):
