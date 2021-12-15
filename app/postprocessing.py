@@ -22,7 +22,7 @@ def lambda_handler(event, context):
 
     try:
         conn = pymysql.connect(
-            host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+            host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
 

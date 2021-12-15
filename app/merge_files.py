@@ -197,10 +197,11 @@ def update_rds_entry(s3_folder, exhibit_id):
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
 
+    logger.info(f"Updating RDS entry for {exhibit_id}")
+    
     conn = pymysql.connect(
-        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
     )
-    logger.info(f"SUCCESS: Connection to RDS MySQL for {exhibit_id} succeeded")
 
     with conn.cursor() as cur:
         cur.execute(
@@ -221,10 +222,12 @@ def upsert_logs(identifier):
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
 
+    logger.info("Updating or Inserting Logs.")
+    
     conn = pymysql.connect(
-        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=5
+        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
     )
-    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
+    
 
     with conn.cursor() as cur:
         cur.execute(
