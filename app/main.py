@@ -862,7 +862,7 @@ def lambda_handler(event, context):
             merge_trigger_bucket,
         ) = init()
 
-        upsert_logs(folder_path)
+        # upsert_logs(folder_path)
 
         download_dir(
             prefix=folder_path,
@@ -924,7 +924,7 @@ def lambda_handler(event, context):
                     s3_client, merge_trigger_bucket, merge_trigger_file
                 )
 
-        upsert_logs(folder_path)
+        # upsert_logs(folder_path)
 
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()

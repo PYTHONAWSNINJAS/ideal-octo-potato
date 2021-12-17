@@ -268,7 +268,7 @@ def index():
         trigger_s3_bucket = os.environ["trigger_s3_bucket"]
         processing_type = body["processing_type"]
         s3_folder = body["s3_folder"]
-        upsert_logs(s3_folder)
+        # upsert_logs(s3_folder)
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
 
@@ -320,7 +320,7 @@ def index():
                         _ = executer.map(preprocess, args)
 
         enable_cloudwatch_rule()
-        upsert_logs(s3_folder)
+        # upsert_logs(s3_folder)
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:

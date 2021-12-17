@@ -289,7 +289,7 @@ def lambda_handler(event, context):
             pdf_file_suffix,
         ) = init()
 
-        upsert_logs(control_file)
+        # upsert_logs(control_file)
 
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
@@ -312,7 +312,7 @@ def lambda_handler(event, context):
                     s3_folder,
                 )
         update_rds_entry(s3_folder, exhibit_id)
-        upsert_logs(control_file)
+        # upsert_logs(control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
