@@ -272,7 +272,7 @@ def lambda_handler(event, context):
             f"lastestVersionId - {lastestVersionId} eventVersionId - {versionId}"
         )
         if versionId != lastestVersionId:
-            logger.info(f"Not the latest versionId. Exiting from here.")
+            logger.info("Not the latest versionId. Exiting from here.")
             return
 
         if exhibit_id.startswith("document"):
