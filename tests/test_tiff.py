@@ -145,7 +145,6 @@ def tiff_to_pdf2(file_path, lambda_write_path, pdf_file_name):
     Args:
         file_path: path to tiff file
     """
-
     image = Image.open(file_path)
     pdfs = []
     args = []
