@@ -198,7 +198,7 @@ def update_rds_entry(s3_folder, exhibit_id):
     db_name = os.environ["db_name"]
 
     logger.info(f"Updating RDS entry for {exhibit_id}")
-    
+
     conn = pymysql.connect(
         host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
     )
@@ -223,11 +223,10 @@ def upsert_logs(identifier):
     db_name = os.environ["db_name"]
 
     logger.info("Updating or Inserting Logs.")
-    
+
     conn = pymysql.connect(
         host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
     )
-    
 
     with conn.cursor() as cur:
         cur.execute(
