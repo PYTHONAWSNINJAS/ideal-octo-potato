@@ -22,7 +22,6 @@ def merge_pdf(pdfs, filename, batchsize):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-
     pdfs.sort(reverse=False)
     print(f"Number of pdfs to Merge: {str(len(pdfs))}")
     if len(pdfs) < batchsize:
