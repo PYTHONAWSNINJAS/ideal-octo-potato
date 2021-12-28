@@ -98,6 +98,7 @@ def place_trigger_files(bucket, folders, client):
         while delay < max_delay:
             try:
                 client.put_object(Body="", Bucket=bucket, Key=trigger_folder)
+                time.sleep(1)
                 break
             except ClientError:
                 time.sleep(delay)
