@@ -17,8 +17,8 @@ DROP TABLE IF EXISTS docviewer.logs;
 create table docviewer.logs(
    function_name varchar(20) NOT NULL,
    identifier varchar(255) NOT NULL,
-   start_time datetime DEFAULT CURRENT_TIMESTAMP,
-   end_time datetime,
+   time_stamp datetime DEFAULT CURRENT_TIMESTAMP,
+   error_msg TEXT,
    PRIMARY KEY ( function_name, identifier )
 );
 
