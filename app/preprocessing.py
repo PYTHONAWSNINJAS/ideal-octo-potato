@@ -316,8 +316,7 @@ def index():
                         )
                         args.append(stuffs)
 
-                    with concurrent.futures.ThreadPoolExecutor(
-                    ) as executer:
+                    with concurrent.futures.ThreadPoolExecutor() as executer:
                         _ = executer.map(preprocess, args)
 
         enable_cloudwatch_rule()
