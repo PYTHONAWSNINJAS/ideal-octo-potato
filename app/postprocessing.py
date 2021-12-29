@@ -5,6 +5,7 @@ import boto3
 import os
 import traceback
 import json
+from shutil import rmtree
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
