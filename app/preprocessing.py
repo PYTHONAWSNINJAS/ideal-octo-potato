@@ -318,7 +318,6 @@ def index():
                         args.append(stuffs)
 
                     with concurrent.futures.ThreadPoolExecutor(
-                        max_workers=10
                     ) as executer:
                         _ = executer.map(preprocess, args)
 
