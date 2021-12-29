@@ -224,7 +224,7 @@ def place_rds_entry(s3_folder, total_control_files):
     conn.close()
 
 
-def upsert_logs(s3_folder, err_msg):
+def upsert_logs(identifier, err_msg):
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
