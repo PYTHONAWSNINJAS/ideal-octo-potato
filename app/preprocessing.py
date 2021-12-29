@@ -224,7 +224,7 @@ def place_rds_entry(s3_folder, total_control_files):
     conn.close()
 
 
-def upsert_logs(s3_folder):
+def upsert_logs(s3_folder, err_msg):
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -237,9 +237,9 @@ def upsert_logs(s3_folder):
 
     with conn.cursor() as cur:
         cur.execute(
-            f"insert into logs (function_name, identifier, start_time, end_time) \
-            values('PREPROCESS', '{s3_folder}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
-            ON DUPLICATE KEY UPDATE end_time=CURRENT_TIMESTAMP"
+            f"insert into logs (function_name, identifier, time_stamp, error_msg) \
+            values('PREPROCESS', '{identifier}', CURRENT_TIMESTAMP, '{err_msg}') \
+            ON DUPLICATE KEY UPDATE time_stamp=CURRENT_TIMESTAMP"
         )
         conn.commit()
     conn.close()
@@ -269,7 +269,6 @@ def index():
         trigger_s3_bucket = os.environ["trigger_s3_bucket"]
         processing_type = body["processing_type"]
         s3_folder = body["s3_folder"]
-        # upsert_logs(s3_folder)
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
 
@@ -322,7 +321,6 @@ def index():
                         _ = executer.map(preprocess, args)
 
         enable_cloudwatch_rule()
-        # upsert_logs(s3_folder)
 
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:
@@ -338,6 +336,7 @@ def index():
             }
         )
         logger.error(err_msg)
+        upsert_logs(s3_folder, err_msg)
         return {"statusCode": 500, "body": str(traceback.format_exc())}
 
 

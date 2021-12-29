@@ -814,7 +814,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
-def upsert_logs(identifier):
+def upsert_logs(identifier, err_msg):
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -827,9 +827,9 @@ def upsert_logs(identifier):
 
     with conn.cursor() as cur:
         cur.execute(
-            f"insert into logs (function_name, identifier, start_time, end_time) \
-            values('MAIN', '{identifier}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
-            ON DUPLICATE KEY UPDATE end_time=CURRENT_TIMESTAMP"
+            f"insert into logs (function_name, identifier, time_stamp, error_msg) \
+            values('MAIN', '{identifier}', CURRENT_TIMESTAMP, '{err_msg}') \
+            ON DUPLICATE KEY UPDATE time_stamp=CURRENT_TIMESTAMP"
         )
         conn.commit()
     conn.close()
@@ -861,8 +861,6 @@ def lambda_handler(event, context):
             metadata_s3_bucket,
             merge_trigger_bucket,
         ) = init()
-
-        # upsert_logs(folder_path)
 
         download_dir(
             prefix=folder_path,
@@ -924,8 +922,6 @@ def lambda_handler(event, context):
                     s3_client, merge_trigger_bucket, merge_trigger_file
                 )
 
-        # upsert_logs(folder_path)
-
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -939,6 +935,7 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
+        upsert_logs(folder_path, err_msg)
 
     if os.path.exists(lambda_write_path + folder_path):
         rmtree(lambda_write_path + folder_path, ignore_errors=True)

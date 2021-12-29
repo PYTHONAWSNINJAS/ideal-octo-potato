@@ -216,7 +216,7 @@ def update_rds_entry(s3_folder, exhibit_id):
     conn.close()
 
 
-def upsert_logs(identifier):
+def upsert_logs(identifier, err_msg):
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -230,9 +230,9 @@ def upsert_logs(identifier):
 
     with conn.cursor() as cur:
         cur.execute(
-            f"insert into logs (function_name, identifier, start_time, end_time) \
-            values('MERGE', '{identifier}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
-            ON DUPLICATE KEY UPDATE end_time=CURRENT_TIMESTAMP"
+            f"insert into logs (function_name, identifier, time_stamp, error_msg) \
+            values('MERGE', '{identifier}', CURRENT_TIMESTAMP, '{err_msg}') \
+            ON DUPLICATE KEY UPDATE time_stamp=CURRENT_TIMESTAMP"
         )
         conn.commit()
     conn.close()
@@ -288,17 +288,12 @@ def lambda_handler(event, context):
             pdf_file_suffix,
         ) = init()
 
-        # upsert_logs(control_file)
-
         s3_client_obj = s3_client.get_object(Bucket=main_s3_bucket, Key=control_file)
         data = json.loads(s3_client_obj["Body"].read().decode("utf-8"))
-        exhibit_id = data["s3_sub_folder"]  # redundant
-        folder_type = data["type"]  # redundant
 
         if not data["files"]:
             logger.info("Empty Control File.")
         else:
-            # loop two times in the data for source and current
             for file_type in ["source", "current"]:
                 process(
                     file_type,
@@ -311,7 +306,6 @@ def lambda_handler(event, context):
                     s3_folder,
                 )
         update_rds_entry(s3_folder, exhibit_id)
-        # upsert_logs(control_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -325,6 +319,7 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
+        upsert_logs(control_file, err_msg)
 
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
