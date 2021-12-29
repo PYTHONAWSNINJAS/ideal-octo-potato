@@ -14,6 +14,7 @@ s3_client = session.client(service_name="s3")
 
 
 def lambda_handler(event, context):
+    lambda_write_path = os.environ["lambda_write_path"]
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -44,6 +45,8 @@ def lambda_handler(event, context):
                 s3_client.put_object(
                     Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
                 )
+                if os.path.exists(lambda_write_path + case_folder):
+                    rmtree(lambda_write_path + case_folder, ignore_errors=True)
 
             logger.info("Checking for empty table to disable cloudwatch.")
             cur.execute("select exists (select 1 from jobexecution);")
