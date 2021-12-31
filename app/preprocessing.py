@@ -224,27 +224,6 @@ def place_rds_entry(s3_folder, total_control_files):
     conn.close()
 
 
-def upsert_logs(identifier, err_msg):
-    rds_host = os.environ["db_endpoint"]
-    name = os.environ["db_username"]
-    password = os.environ["db_password"]
-    db_name = os.environ["db_name"]
-
-    conn = pymysql.connect(
-        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
-    )
-    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-
-    with conn.cursor() as cur:
-        cur.execute(
-            f"insert into logs (function_name, identifier, time_stamp, error_msg) \
-            values('PREPROCESS', '{identifier}', CURRENT_TIMESTAMP, '{err_msg}') \
-            ON DUPLICATE KEY UPDATE time_stamp=CURRENT_TIMESTAMP"
-        )
-        conn.commit()
-    conn.close()
-
-
 def enable_cloudwatch_rule():
     client = boto3.client("events")
     cwRulename = os.environ["cloudwatch_event_name"]
@@ -320,7 +299,6 @@ def index():
                         _ = executer.map(preprocess, args)
 
         enable_cloudwatch_rule()
-
         return {"statusCode": 200, "body": "Triggered with " + str(body)}
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
@@ -335,7 +313,6 @@ def index():
             }
         )
         logger.error(err_msg)
-        upsert_logs(s3_folder, err_msg)
         return {"statusCode": 500, "body": str(traceback.format_exc())}
 
 

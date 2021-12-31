@@ -216,28 +216,6 @@ def update_rds_entry(s3_folder, exhibit_id):
     conn.close()
 
 
-def upsert_logs(identifier, err_msg):
-    rds_host = os.environ["db_endpoint"]
-    name = os.environ["db_username"]
-    password = os.environ["db_password"]
-    db_name = os.environ["db_name"]
-
-    logger.info("Updating or Inserting Logs.")
-
-    conn = pymysql.connect(
-        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
-    )
-
-    with conn.cursor() as cur:
-        cur.execute(
-            f"insert into logs (function_name, identifier, time_stamp, error_msg) \
-            values('MERGE', '{identifier}', CURRENT_TIMESTAMP, '{err_msg}') \
-            ON DUPLICATE KEY UPDATE time_stamp=CURRENT_TIMESTAMP"
-        )
-        conn.commit()
-    conn.close()
-
-
 def find_latest_versionid(bucket, key):
     s3 = boto3.client("s3")
     versions = s3.list_object_versions(Bucket=bucket, Prefix=key)
@@ -319,7 +297,6 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
-        upsert_logs(control_file, err_msg)
 
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)

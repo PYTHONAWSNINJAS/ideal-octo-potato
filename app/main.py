@@ -814,27 +814,6 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
-def upsert_logs(identifier, err_msg):
-    rds_host = os.environ["db_endpoint"]
-    name = os.environ["db_username"]
-    password = os.environ["db_password"]
-    db_name = os.environ["db_name"]
-
-    conn = pymysql.connect(
-        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
-    )
-    logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-
-    with conn.cursor() as cur:
-        cur.execute(
-            f"insert into logs (function_name, identifier, time_stamp, error_msg) \
-            values('MAIN', '{identifier}', CURRENT_TIMESTAMP, '{err_msg}') \
-            ON DUPLICATE KEY UPDATE time_stamp=CURRENT_TIMESTAMP"
-        )
-        conn.commit()
-    conn.close()
-
-
 def lambda_handler(event, context):
     """
 
@@ -935,7 +914,6 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
-        upsert_logs(folder_path, err_msg)
 
     if os.path.exists(lambda_write_path + folder_path):
         rmtree(lambda_write_path + folder_path, ignore_errors=True)

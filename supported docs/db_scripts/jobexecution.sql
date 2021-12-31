@@ -13,15 +13,6 @@ create table docviewer.jobexecution(
    PRIMARY KEY ( case_id )
 );
 
-DROP TABLE IF EXISTS docviewer.logs;
-create table docviewer.logs(
-   function_name varchar(20) NOT NULL,
-   identifier varchar(255) NOT NULL,
-   time_stamp datetime DEFAULT CURRENT_TIMESTAMP,
-   error_msg TEXT,
-   PRIMARY KEY ( function_name, identifier )
-);
-
 -- Examples
 insert into docviewer.jobexecution (jobexecution.case_id, jobexecution.total_triggers, jobexecution.processed_triggers) values ("case_1",10,0);
 update docviewer.jobexecution set jobexecution.processed_triggers=jobexecution.processed_triggers+1 where jobexecution.case_id='case_1';
