@@ -40,14 +40,14 @@ def lambda_handler(event, context):
                     cur_delete.execute(
                         "delete from jobexecution where case_id = %s;", (case_folder,)
                     )
-                logger.info(f"Deleted Entry from RDS for - {case_folder}")    
+                logger.info(f"Deleted Entry from RDS for - {case_folder}")
                 conn.commit()
-                
+
                 s3_client.put_object(
                     Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
                 )
                 logger.info(f"Placed Completed File for Case Folder - {case_folder}")
-                
+
                 if os.path.exists(lambda_write_path + case_folder):
                     rmtree(lambda_write_path + case_folder, ignore_errors=True)
                 logger.info(f"Deleted from EFS - {case_folder}")
