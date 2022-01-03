@@ -36,18 +36,21 @@ def lambda_handler(event, context):
             for row in cur:
                 logger.info(f"Found completed entries in rds - {row}")
                 case_folder = row[0]
-                logger.info(f"Deleting Entry from RDS for - {case_folder}")
                 with conn.cursor() as cur_delete:
                     cur_delete.execute(
                         "delete from jobexecution where case_id = %s;", (case_folder,)
                     )
+                logger.info(f"Deleted Entry from RDS for - {case_folder}")    
                 conn.commit()
-                logger.info(f"Placing Completed File for Case Folder - {case_folder}")
+                
                 s3_client.put_object(
                     Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
                 )
+                logger.info(f"Placed Completed File for Case Folder - {case_folder}")
+                
                 if os.path.exists(lambda_write_path + case_folder):
                     rmtree(lambda_write_path + case_folder, ignore_errors=True)
+                logger.info(f"Deleted from EFS - {case_folder}")
 
             logger.info("Checking for empty table to disable cloudwatch.")
             cur.execute("select exists (select 1 from jobexecution);")
