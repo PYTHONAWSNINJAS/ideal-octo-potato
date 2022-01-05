@@ -148,6 +148,9 @@ def merge_pdf(pdfs, filename):
 
         merger.write(filename)
         merger.close()
+        
+        for pdf_file in pdfs:
+            os.remove(pdf_file)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -784,7 +787,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         args = []
         for i, page in enumerate(ImageSequence.Iterator(image)):
             stuffs = []
-            stuffs.extend([lambda_write_path, file_path, i, page.convert("L")])
+            stuffs.extend([lambda_write_path, file_path, i, page.convert("RGB")])
             args.append(stuffs)
 
         with concurrent.futures.ThreadPoolExecutor() as executer:
