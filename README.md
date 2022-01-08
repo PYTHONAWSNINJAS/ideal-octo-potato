@@ -35,9 +35,17 @@ This stores information about the ongoing activity.
 
 
 ### Payload example
+```
+```
 
+### Process
+The process starts as soon as an external system requests the api with the above mentioned payload which contains the case number. The payload is accepted by the function running in fargate and it then starts listing the control files. It places an rds entry of the number of cotrol files found for that case. Next the function loops over wire and exhibits folder both and starts placing metadata file in metadata s3 bucket and 0 byte trigger files for each document folder using concurrently running threads in the processor. And just before ending this process, we enable the cloudwatch rule.
 
+As soon as the S3 trigger files are placed, the main lambda is triggered. This function starts by downloading the files in efs. It sequencially processes all the files in the folder and places them in doc_pdf location. Next after sucessfull processing, it deletes the trigger object from the s3 trigger bucket and creates a success object in metadata s3 bucket. Now when the function has done processing it counts the metadata object and the number of success files in the bucket. If the condition matches, it puts a control file object as merge lambda trigger in merge s3 trigger bucket. And before ending the execution it deletes all converted files from efs.
 
+The merge trigger file invokes the merge lambda where the control files is read to get all the list of files that are to be stitched into one single file. The converted pdf files are downloaded into efs and merged and uploaded back to main s3 as source and current. The metadata file and merge trigger bucket files are deleted once the process is completed. The process also updates the rds and increments the value. It clears the efs for any files present. 
+
+The post processing lambda keeps running in specific time intervals and keeps a check on the number of processed documents. Once total_triggers is equal to processed_triggers, it removeds the entry from RDS and places a COMPLETED file in the case folder marking it complete. Further if it sees the table is empty it also disables the cloudwatch rule.
 
 ## Docker Commands
 
