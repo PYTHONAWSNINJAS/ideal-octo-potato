@@ -11,7 +11,6 @@ import tarfile
 import boto3
 import subprocess
 import brotli
-from shutil import copyfile
 import logging
 import sys
 import traceback
