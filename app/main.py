@@ -7,7 +7,6 @@ A Success file is created in Merge Trigger Once the process is done.
 """
 
 import os
-import sqlite3
 from shutil import copyfile, rmtree
 
 import boto3
@@ -29,10 +28,6 @@ import json
 import concurrent.futures
 from itertools import islice
 import random
-import pymysql
-from io import BytesIO
-import tarfile
-import subprocess
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
