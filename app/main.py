@@ -27,7 +27,6 @@ import sys
 import json
 import concurrent.futures
 from itertools import islice
-import random
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
