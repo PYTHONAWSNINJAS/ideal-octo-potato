@@ -1,3 +1,10 @@
+"""
+This module is trigger based on cloudwatch event rule and
+checks in rds for any case completion. If numbers are equal,
+it removes the entry and places a completed file.
+If table is empty, it disables the cloudwatch event rule
+"""
+
 import sys
 import logging
 import pymysql
