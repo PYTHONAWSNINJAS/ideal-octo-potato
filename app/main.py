@@ -33,7 +33,6 @@ import pymysql
 from io import BytesIO
 import tarfile
 import subprocess
-import brotli
 
 FILE_PATTERN_TO_IGNORE = "_small"
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
