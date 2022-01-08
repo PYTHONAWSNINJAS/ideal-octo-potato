@@ -147,7 +147,7 @@ def merge_pdf(pdfs, filename):
 
         merger.write(filename)
         merger.close()
-        
+
         for pdf_file in pdfs:
             os.remove(pdf_file)
     except Exception as _:
