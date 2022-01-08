@@ -1,7 +1,7 @@
 """
-This module is called from main when it encounters 
-a doc/docx file to be processed. It loads libre office 
-in efs from its attached layer and converts doc/docx 
+This module is called from main when it encounters
+a doc/docx file to be processed. It loads libre office
+in efs from its attached layer and converts doc/docx
 into pdf and uploads in s3.
 """
 
