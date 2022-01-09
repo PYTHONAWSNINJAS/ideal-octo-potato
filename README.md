@@ -38,7 +38,7 @@ This stores information about the ongoing activity.
 ```
 ```
 
-### Process
+## Process
 The process starts as soon as an external system requests the api with the above mentioned payload which contains the case number. The payload is accepted by the function running in fargate and it then starts listing the control files. It places an rds entry of the number of cotrol files found for that case. Next the function loops over wire and exhibits folder both and starts placing metadata file in metadata s3 bucket and 0 byte trigger files for each document folder using concurrently running threads in the processor. And just before ending this process, we enable the cloudwatch rule.
 
 As soon as the S3 trigger files are placed, the main lambda is triggered. This function starts by downloading the files in efs. It sequencially processes all the files in the folder and places them in doc_pdf location. Next after sucessfull processing, it deletes the trigger object from the s3 trigger bucket and creates a success object in metadata s3 bucket. Now when the function has done processing it counts the metadata object and the number of success files in the bucket. If the condition matches, it puts a control file object as merge lambda trigger in merge s3 trigger bucket. And before ending the execution it deletes all converted files from efs.
