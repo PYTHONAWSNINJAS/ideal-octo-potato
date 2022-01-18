@@ -220,9 +220,7 @@ def find_latest_versionid(bucket, key):
     s3 = boto3.client("s3")
     versions = s3.list_object_versions(Bucket=bucket, Prefix=key)
     s3versions = versions.get("Versions")
-    logger.info(
-        f"versions - {s3versions}"
-    )
+    logger.info(f"versions - {s3versions}")
     for item in s3versions:
         if item["IsLatest"]:
             version_id = item["VersionId"]
