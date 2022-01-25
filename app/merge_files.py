@@ -223,6 +223,7 @@ def find_latest_versionid(bucket, key):
     logger.info(
         f"versions - {s3versions}"
     )
+    version_id = ""
     for item in s3versions:
         if item["IsLatest"]:
             version_id = item["VersionId"]
