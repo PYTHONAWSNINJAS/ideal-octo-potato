@@ -220,9 +220,7 @@ def find_latest_versionid(bucket, key):
     s3 = boto3.client("s3")
     versions = s3.list_object_versions(Bucket=bucket, Prefix=key)
     s3versions = versions.get("Versions")
-    logger.info(
-        f"versions - {s3versions}"
-    )
+    logger.info(f"versions - {s3versions}")
     version_id = ""
     for item in s3versions:
         if item["IsLatest"]:
@@ -232,7 +230,9 @@ def find_latest_versionid(bucket, key):
 
 
 def place_processed_control_files(s3_folder, exhibit_id, s3_client, bucket_name):
-    processed_control_files_path = s3_folder + "/doc_pdf/processed_control_files/"+exhibit_id+".json"
+    processed_control_files_path = (
+        s3_folder + "/doc_pdf/processed_control_files/" + exhibit_id + ".json"
+    )
     s3_client.put_object(Body="", Bucket=bucket_name, Key=processed_control_files_path)
 
 
