@@ -231,6 +231,11 @@ def find_latest_versionid(bucket, key):
     return version_id
 
 
+def place_processed_control_files(s3_folder, exhibit_id, s3_client, bucket_name):
+    processed_control_files_path = s3_folder + "/doc_pdf/processed_control_files/"+exhibit_id+".json"
+    s3_client.put_object(Body="", Bucket=bucket_name, Key=processed_control_files_path)
+
+
 def lambda_handler(event, context):
     """
 
@@ -289,6 +294,7 @@ def lambda_handler(event, context):
                     s3_folder,
                 )
         update_rds_entry(s3_folder, exhibit_id)
+        place_processed_control_files(s3_folder, exhibit_id, s3_client, main_s3_bucket)
     except Exception as _:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
