@@ -811,11 +811,11 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
 
 
 def read_control_file(control_file_path, bucket, client):
-    result = client.get_object(Bucket=bucket, Key=control_file_path) 
+    result = client.get_object(Bucket=bucket, Key=control_file_path)
     text = result["Body"].read().decode()
-    file_list = (json.loads(text)['files'])
-    source_imgs = [item['source_img'] for item in file_list]
-    current_imgs = [item['current_img'] for item in file_list]
+    file_list = json.loads(text)["files"]
+    source_imgs = [item["source_img"] for item in file_list]
+    current_imgs = [item["current_img"] for item in file_list]
     keys_to_download = source_imgs + current_imgs
     return keys_to_download
 
@@ -836,7 +836,9 @@ def lambda_handler(event, context):
         s3_sub_folder = folder_path.split("/")[1]
         s3_document_folder = folder_path.split("/")[2]
         trigger_folder = folder_path.split("/")[3]
-        control_file_path = "/".join([s3_folder, 'doc_pdf','control_files', s3_document_folder+'.json'])
+        control_file_path = "/".join(
+            [s3_folder, "doc_pdf", "control_files", s3_document_folder + ".json"]
+        )
         (
             s3_client,
             bucket_name,
@@ -848,8 +850,8 @@ def lambda_handler(event, context):
         ) = init()
 
         keys_to_download = read_control_file(
-            control_file_path=control_file_path, 
-            bucket=bucket_name, 
+            control_file_path=control_file_path,
+            bucket=bucket_name,
             client=s3_client,
         )
 
@@ -858,7 +860,7 @@ def lambda_handler(event, context):
             local=lambda_write_path,
             bucket=bucket_name,
             client=s3_client,
-            keys_to_download = keys_to_download,
+            keys_to_download=keys_to_download,
         )
 
         process_document_folders(
