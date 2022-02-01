@@ -35,7 +35,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def download_dir(prefix, local, bucket, client):
+def download_dir(prefix, local, bucket, client, keys_to_download):
     """
 
     Parameters
@@ -63,7 +63,7 @@ def download_dir(prefix, local, bucket, client):
             contents = results.get("Contents")
             for i in contents:
                 k = i.get("Key")
-                if k[-1] != "/":
+                if k[-1] != "/" and k in keys_to_download:
                     keys.append(k)
                 else:
                     dirs.append(k)
@@ -810,6 +810,16 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
+def read_control_file(control_file_path, bucket, client):
+    result = client.get_object(Bucket=bucket, Key=control_file_path) 
+    text = result["Body"].read().decode()
+    file_list = (json.loads(text)['files'])
+    source_imgs = [item['source_img'] for item in file_list]
+    current_imgs = [item['current_img'] for item in file_list]
+    keys_to_download = source_imgs + current_imgs
+    return keys_to_download
+
+
 def lambda_handler(event, context):
     """
 
@@ -826,7 +836,7 @@ def lambda_handler(event, context):
         s3_sub_folder = folder_path.split("/")[1]
         s3_document_folder = folder_path.split("/")[2]
         trigger_folder = folder_path.split("/")[3]
-
+        control_file_path = "/".join([s3_folder, 'doc_pdf','control_files', s3_document_folder+'.json'])
         (
             s3_client,
             bucket_name,
@@ -837,11 +847,18 @@ def lambda_handler(event, context):
             merge_trigger_bucket,
         ) = init()
 
+        keys_to_download = read_control_file(
+            control_file_path=control_file_path, 
+            bucket=bucket_name, 
+            client=s3_client,
+        )
+
         download_dir(
             prefix=folder_path,
             local=lambda_write_path,
             bucket=bucket_name,
             client=s3_client,
+            keys_to_download = keys_to_download,
         )
 
         process_document_folders(
