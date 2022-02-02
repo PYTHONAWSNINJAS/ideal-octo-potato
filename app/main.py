@@ -44,6 +44,7 @@ def download_dir(prefix, local, bucket, client, keys_to_download):
     local: local path to folder in which to place files
     bucket: s3 bucket with target contents
     client: initialized s3 client object
+    keys_to_download: The keys to dowload is list of files from control_files 
     -------
 
     """
