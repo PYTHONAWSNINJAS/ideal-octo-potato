@@ -32,101 +32,23 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def download_dir(prefix, local, bucket, client, keys_to_download):
+def download_file(prefix, destination_pathname, bucket, client):
     """
     Parameters
     ----------
     prefix: pattern to match in s3
-    local: local path to folder in which to place files
+    destination_pathname: local path to folder in which to place files
     bucket: s3 bucket with target contents
     client: initialized s3 client object
-    keys_to_download: The keys to dowload is list of files from control_files
-
     -------
 
     """
 
-    try:
+    if not os.path.exists(os.path.dirname(destination_pathname)):
+        os.makedirs(os.path.dirname(
+            destination_pathname), exist_ok=True)
 
-        keys = []
-
-        dirs = []
-
-        next_token = ""
-
-        base_kwargs = {
-
-            "Bucket": bucket,
-
-            "Prefix": prefix,
-
-        }
-
-        while next_token is not None:
-
-            kwargs = base_kwargs.copy()
-
-            if next_token != "":
-                kwargs.update({"ContinuationToken": next_token})
-
-            results = client.list_objects_v2(**kwargs)
-
-            contents = results.get("Contents")
-
-            for i in contents:
-
-                k = i.get("Key")
-
-                if k[-1] != "/" and k in keys_to_download:
-
-                    keys.append(k)
-
-                else:
-
-                    dirs.append(k)
-
-            next_token = results.get("NextContinuationToken")
-
-        for d in dirs:
-
-            destination_pathname = os.path.join(local, d)
-
-            if not os.path.exists(os.path.dirname(destination_pathname)):
-                os.makedirs(os.path.dirname(
-                    destination_pathname), exist_ok=True)
-
-        for k in keys:
-
-            destination_pathname = os.path.join(local, k)
-
-            if not os.path.exists(os.path.dirname(destination_pathname)):
-                os.makedirs(os.path.dirname(
-                    destination_pathname), exist_ok=True)
-
-            client.download_file(bucket, k, destination_pathname)
-
-    except Exception as _:
-
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-
-        traceback_string = traceback.format_exception(
-
-            exception_type, exception_value, exception_traceback
-        )
-
-        err_msg = json.dumps(
-
-            {
-
-                "errorType": exception_type.__name__,
-
-                "errorMessage": str(exception_value),
-
-                "stackTrace": traceback_string,
-
-            }
-        )
-        logger.error(err_msg)
+    client.download_file(bucket, prefix, destination_pathname)
 
 
 def create_pdf(file_path, lambda_write_path, pdf_file_name):
@@ -237,10 +159,12 @@ def get_pdf_object(font_size=10):
 
 def process_document_folders(
         s3_client,
+        s3_input_file,
         input_file,
         pdf_file_name,
+        s3_output_file,
         lambda_write_path,
-        trigger_folder,
+        bucket_name
 ):
     """
     This will process all files in the Trigger folder
@@ -254,35 +178,37 @@ def process_document_folders(
     converted = False
     s3_location = ""
     s3_object = ""
-
+    
+    download_file(prefix=s3_input_file, destination_pathname=input_file, bucket=bucket_name, client=s3_client)
+    
     try:
         logger.info(f"Processing:{input_file}")
 
         if input_file.endswith(".pdf"):
-            copyfile(file_path, pdf_file_name)
+            copyfile(input_file, pdf_file_name)
             converted = True
-        elif file_path.endswith(".mif"):
-            copyfile(file_path, temp_mif_file := "".join([filename, ".txt"]))
+        elif input_file.endswith(".mif"):
+            copyfile(input_file, temp_mif_file := "".join([filename, ".txt"]))
             pdfkit.from_file(
                 temp_mif_file,
-                os.path.join(lambda_write_path, pdf_file_name),
+                pdf_file_name,
                 options={"quiet": ""},
             )
 
             converted = True
-        elif file_path.endswith(".txt"):
+        elif input_file.endswith(".txt"):
             pdf_txt = get_pdf_object(11)
-            with open(file_path, "rb") as f:
+            with open(input_file, "rb") as f:
                 lines = f.readlines()
             for line in lines:
                 pdf_txt.write(5, str(line))
-            pdf_txt.output(os.path.join(lambda_write_path, pdf_file_name))
+            pdf_txt.output(pdf_file_name)
             converted = True
-        elif file_path.lower().endswith(
+        elif input_file.lower().endswith(
                 "".join([".png", FILE_PATTERN_TO_INCLUDE])
         ):
             copyfile(
-                file_path,
+                input_file,
                 temp_unredacted_file := "".join(
                     [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".png"]
                 ),
@@ -296,28 +222,28 @@ def process_document_folders(
                 temp_unredacted_file, lambda_write_path, pdf_file_name
             )
 
-        elif file_path.lower().endswith((".png", ".jpg", ".gif")):
-            converted = create_pdf(file_path, lambda_write_path, pdf_file_name)
-        elif file_path.lower().endswith((".tif", ".TIF", ".tiff")):
+        elif input_file.lower().endswith((".png", ".jpg", ".gif")):
+            converted = create_pdf(input_file, lambda_write_path, pdf_file_name)
+        elif input_file.lower().endswith((".tif", ".TIF", ".tiff")):
             converted = tiff_to_pdf(
-                file_path, lambda_write_path, pdf_file_name)
-        elif file_path.endswith((".bmp")):
-            Image.open(file_path).save(
+                input_file, lambda_write_path, pdf_file_name)
+        elif input_file.endswith((".bmp")):
+            Image.open(input_file).save(
                 os.path.join(lambda_write_path, pdf_file_name), "pdf"
             )
             converted = True
-        elif file_path.endswith(".svg"):
-            drawing = svg2rlg(file_path, resolve_entities=True)
+        elif input_file.endswith(".svg"):
+            drawing = svg2rlg(input_file, resolve_entities=True)
             renderPM.drawToFile(
                 drawing, temp_file := "".join([filename, ".png"]), fmt="PNG"
             )
             converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
-        elif file_path.endswith(
+        elif input_file.endswith(
                 (".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")
 
         ):
-            if file_path.endswith("mht"):
-                copyfile(file_path, temp_file := "".join([filename, ".html"]))
+            if input_file.endswith("mht"):
+                copyfile(input_file, temp_file := "".join([filename, ".html"]))
                 pdfkit.from_file(
                     temp_file,
                     os.path.join(lambda_write_path, pdf_file_name),
@@ -327,8 +253,8 @@ def process_document_folders(
                     },
                 )
                 converted = True
-            elif file_path.endswith(".csv"):
-                df = pd.read_csv(file_path)
+            elif input_file.endswith(".csv"):
+                df = pd.read_csv(input_file)
                 df.to_html(temp_file := "".join([filename, ".html"]))
                 pdfkit.from_file(
                     temp_file,
@@ -337,11 +263,11 @@ def process_document_folders(
                 )
                 converted = True
 
-            elif file_path.endswith((".xls", ".xlsx")):
+            elif input_file.endswith((".xls", ".xlsx")):
                 temp_pdfs = []
-                xls = pd.ExcelFile(file_path)
+                xls = pd.ExcelFile(input_file)
                 for sheet_name in xls.sheet_names:
-                    df = pd.read_excel(file_path, sheet_name=sheet_name)
+                    df = pd.read_excel(input_file, sheet_name=sheet_name)
                     df.to_html(
                         temp_file := "".join(
                             [filename, "_", str(sheet_name), ".html"]
@@ -360,8 +286,8 @@ def process_document_folders(
                 )
                 converted = True
 
-            elif file_path.endswith((".eml")):
-                copyfile(file_path, temp_file := "".join([filename, ".txt"]))
+            elif input_file.endswith((".eml")):
+                copyfile(input_file, temp_file := "".join([filename, ".txt"]))
                 with open(temp_file, "rb") as myfile:
                     head = list(islice(myfile, 1000))
                 with open(temp_file, mode="wb") as f2:
@@ -377,7 +303,7 @@ def process_document_folders(
             else:
                 try:
                     pdfkit.from_file(
-                        file_path,
+                        input_file,
                         os.path.join(lambda_write_path, pdf_file_name),
                         options={"enable-local-file-access": "", "quiet": ""},
                     )
@@ -385,7 +311,7 @@ def process_document_folders(
                 except Exception as _:
                     logger.info(f"Trying again: {filename}")
                     copyfile(
-                        file_path, temp_file := "".join([filename, ".txt"])
+                        input_file, temp_file := "".join([filename, ".txt"])
                     )
                     pdfkit.from_file(
                         temp_file,
@@ -393,9 +319,9 @@ def process_document_folders(
                         options={"quiet": ""},
                     )
 
-        elif file_path.endswith(".msg"):
+        elif input_file.endswith(".msg"):
             msg_properties = []
-            msg = extract_msg.Message(file_path)
+            msg = extract_msg.Message(input_file)
             try:
                 msg_properties.extend(
                     [
@@ -429,8 +355,8 @@ def process_document_folders(
 
             pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
             converted = True
-        # elif file_path.endswith(".db"):
-        #     con = sqlite3.connect(file_path)
+        # elif input_file.endswith(".db"):
+        #     con = sqlite3.connect(input_file)
         #     df = pd.read_sql_query("select * from <table_name>", con)
         #     df.to_html(temp_file := "".join([filename, ".html"]))
         #     pdfkit.from_file(
@@ -438,11 +364,10 @@ def process_document_folders(
         #     )
         #     converted = True
 
-        elif file_path.endswith((".doc", ".docx")):
+        elif input_file.endswith((".doc", ".docx")):
 
             lambda_client = boto3.client("lambda")
-            input_file = file_path.replace(lambda_write_path, "")
-            payload = json.dumps({"file_path": input_file})
+            payload = json.dumps({"input_file": input_file})
             logger.info("Invoking Doc Processing Lambda")
             response = lambda_client.invoke(
                 FunctionName=os.environ["doc_to_pdf_arn"],
@@ -480,21 +405,14 @@ def process_document_folders(
         try:
             if converted:
                 logger.info(
-                    f"Created: {os.path.join(lambda_write_path, pdf_file_name)}"
+                    f"Created: {pdf_file_name}"
                 )
 
-                with open(os.path.join(lambda_write_path, pdf_file_name), "rb") as data:
+                with open(pdf_file_name, "rb") as data:
                     s3_client.upload_fileobj(
                         data,
                         bucket_name,
-                        "".join(
-                            [
-                                s3_location.replace(
-                                    s3_sub_folder, s3_output_folder),
-                                "/",
-                                s3_object,
-                            ]
-                        ),
+                        s3_output_file
                     )
             else:
                 logger.info(f"PDF not created for: {current_item}")
@@ -782,7 +700,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         return False
 
 
-def read_control_file(control_file_path, bucket, client, folder_path):
+def read_control_file(control_file_path, bucket, client, folder_path, lambda_write_path):
     result = client.get_object(Bucket=bucket, Key=control_file_path) 
     text = result["Body"].read().decode()
     file_list = json.loads(text)['files']
@@ -793,16 +711,20 @@ def read_control_file(control_file_path, bucket, client, folder_path):
         current_temp_item = {}
         
         if folder_path in item['source_img']:
-            source_temp_item['info'] = 'source'
-            source_temp_item['input'] = item['source_img']
-            source_temp_item['output'] = item['source']
+            source_temp_item['info'] = 'Source'
+            source_temp_item['s3_input'] = item['source_img']
+            source_temp_item['efs_input'] = os.path.join(lambda_write_path,item['source_img'])
+            source_temp_item['efs_output'] = os.path.join(lambda_write_path,item['source'])
+            source_temp_item['s3_output'] = item['source']
             control_file_data.append(source_temp_item)
         
         if folder_path in item['current_img']:
-            current_temp_item['info'] = 'current'
-            current_temp_item['input'] = item['current_img']
-            current_temp_item['output'] = item['current']
-            control_file_data.append(current_temp_item)    
+            current_temp_item['info'] = 'Current'
+            current_temp_item['s3_input'] = item['current_img']
+            current_temp_item['efs_input'] = os.path.join(lambda_write_path,item['current_img'])
+            current_temp_item['efs_output'] = os.path.join(lambda_write_path,item['current'])
+            current_temp_item['s3_output'] = item['current']
+            control_file_data.append(current_temp_item)
         
     return control_file_data
 
@@ -834,15 +756,18 @@ def lambda_handler(event, context):
             bucket=bucket_name,
             client=s3_client,
             folder_path=folder_path,
+            lambda_write_path=lambda_write_path,
         )
 
         for item in filtered_control_file:
             process_document_folders(
                 s3_client,
-                item['input'],
-                item['output'],
+                item['s3_input'],
+                item['efs_input'],
+                item['efs_output'],
+                item['s3_output'],
                 lambda_write_path,
-                trigger_folder,
+                bucket_name,
             )
 
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
