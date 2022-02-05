@@ -28,6 +28,9 @@ from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 
+
+FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -51,12 +54,11 @@ def download_file(prefix, destination_pathname, bucket, client):
     client.download_file(bucket, prefix, destination_pathname)
 
 
-def create_pdf(file_path, lambda_write_path, pdf_file_name):
+def create_pdf(file_path, pdf_file_name):
     """
     Parameters
     ----------
     file_path: file path of the image
-    lambda_write_path: output path of the pdf file
     pdf_file_name: name of the output pdf file
     Returns True if the pdf file is created
     -------
@@ -64,7 +66,7 @@ def create_pdf(file_path, lambda_write_path, pdf_file_name):
     """
     try:
         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path)
-        with open(os.path.join(lambda_write_path, pdf_file_name), "w+b") as f:
+        with open(pdf_file_name, "w+b") as f:
             f.write(pdf_png)
 
         return True
@@ -163,7 +165,6 @@ def process_document_folders(
         input_file,
         pdf_file_name,
         s3_output_file,
-        lambda_write_path,
         bucket_name
 ):
     """
@@ -171,22 +172,20 @@ def process_document_folders(
     in a loop and put into Main S3.
     Args:
         s3_client boto3 object: S3 Session Client Object
-        lambda_write_path str: lambda_write_path i.e /tmp
         trigger_folder str: the trigger folder in main S3 for
         which the process will be executed.
     """
-    converted = False
-    s3_location = ""
-    s3_object = ""
-    
+        
     download_file(prefix=s3_input_file, destination_pathname=input_file, bucket=bucket_name, client=s3_client)
     
     try:
         logger.info(f"Processing:{input_file}")
-
+        filename, _ = os.path.splitext(input_file)
+        
         if input_file.endswith(".pdf"):
             copyfile(input_file, pdf_file_name)
             converted = True
+        
         elif input_file.endswith(".mif"):
             copyfile(input_file, temp_mif_file := "".join([filename, ".txt"]))
             pdfkit.from_file(
@@ -194,8 +193,8 @@ def process_document_folders(
                 pdf_file_name,
                 options={"quiet": ""},
             )
-
             converted = True
+        
         elif input_file.endswith(".txt"):
             pdf_txt = get_pdf_object(11)
             with open(input_file, "rb") as f:
@@ -204,40 +203,39 @@ def process_document_folders(
                 pdf_txt.write(5, str(line))
             pdf_txt.output(pdf_file_name)
             converted = True
+        
         elif input_file.lower().endswith(
                 "".join([".png", FILE_PATTERN_TO_INCLUDE])
         ):
             copyfile(
                 input_file,
                 temp_unredacted_file := "".join(
-                    [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".png"]
+                    [filename, FILE_PATTERN_TO_INCLUDE, ".png"]
                 ),
             )
-            pdf_file_name = "".join(
-                [filename, FILE_PATTERN_TO_INCLUDE, pdf_file_suffix, ".pdf"]
-            )
 
-            s3_object = pdf_file_name.split(os.sep)[-1]
             converted = create_pdf(
-                temp_unredacted_file, lambda_write_path, pdf_file_name
+                temp_unredacted_file, pdf_file_name
             )
 
         elif input_file.lower().endswith((".png", ".jpg", ".gif")):
-            converted = create_pdf(input_file, lambda_write_path, pdf_file_name)
+            converted = create_pdf(input_file, pdf_file_name)
+        
         elif input_file.lower().endswith((".tif", ".TIF", ".tiff")):
             converted = tiff_to_pdf(
-                input_file, lambda_write_path, pdf_file_name)
+                input_file, pdf_file_name)
+        
         elif input_file.endswith((".bmp")):
-            Image.open(input_file).save(
-                os.path.join(lambda_write_path, pdf_file_name), "pdf"
-            )
+            Image.open(input_file).save(pdf_file_name)
             converted = True
+        
         elif input_file.endswith(".svg"):
             drawing = svg2rlg(input_file, resolve_entities=True)
             renderPM.drawToFile(
                 drawing, temp_file := "".join([filename, ".png"]), fmt="PNG"
             )
-            converted = create_pdf(temp_file, lambda_write_path, pdf_file_name)
+            converted = create_pdf(temp_file, pdf_file_name)
+         
         elif input_file.endswith(
                 (".html", ".htm", ".xml", ".mht", ".mhtml", ".csv", ".eml")
 
@@ -246,19 +244,20 @@ def process_document_folders(
                 copyfile(input_file, temp_file := "".join([filename, ".html"]))
                 pdfkit.from_file(
                     temp_file,
-                    os.path.join(lambda_write_path, pdf_file_name),
+                    pdf_file_name,
                     options={
                         "enable-local-file-access": "",
                         "load-error-handling": "ignore",
                     },
                 )
                 converted = True
+            
             elif input_file.endswith(".csv"):
                 df = pd.read_csv(input_file)
                 df.to_html(temp_file := "".join([filename, ".html"]))
                 pdfkit.from_file(
                     temp_file,
-                    os.path.join(lambda_write_path, pdf_file_name),
+                    pdf_file_name,
                     options={"enable-local-file-access": "", "quiet": ""},
                 )
                 converted = True
@@ -282,7 +281,7 @@ def process_document_folders(
                     )
                     temp_pdfs.append(temp_pdf)
                 merge_pdf(
-                    temp_pdfs, os.path.join(lambda_write_path, pdf_file_name)
+                    temp_pdfs, pdf_file_name
                 )
                 converted = True
 
@@ -297,14 +296,14 @@ def process_document_folders(
                         f2.write(item)
                 pdfkit.from_file(
                     temp_file,
-                    os.path.join(lambda_write_path, pdf_file_name),
+                    pdf_file_name,
                 )
                 converted = True
             else:
                 try:
                     pdfkit.from_file(
                         input_file,
-                        os.path.join(lambda_write_path, pdf_file_name),
+                        pdf_file_name,
                         options={"enable-local-file-access": "", "quiet": ""},
                     )
                     converted = True
@@ -315,7 +314,7 @@ def process_document_folders(
                     )
                     pdfkit.from_file(
                         temp_file,
-                        os.path.join(lambda_write_path, pdf_file_name),
+                        pdf_file_name,
                         options={"quiet": ""},
                     )
 
@@ -353,14 +352,14 @@ def process_document_folders(
                 pdf_email.write(5, str(i))
                 pdf_email.ln()
 
-            pdf_email.output(os.path.join(lambda_write_path, pdf_file_name))
+            pdf_email.output(pdf_file_name)
             converted = True
         # elif input_file.endswith(".db"):
         #     con = sqlite3.connect(input_file)
         #     df = pd.read_sql_query("select * from <table_name>", con)
         #     df.to_html(temp_file := "".join([filename, ".html"]))
         #     pdfkit.from_file(
-        #         temp_file, os.path.join(lambda_write_path, pdf_file_name)
+        #         temp_file, pdf_file_name
         #     )
         #     converted = True
 
@@ -633,7 +632,7 @@ def remove_files_from_metadata_bucket(
 
 
 def process_tiff(args):
-    lambda_write_path, file_path, i, page = args
+    file_path, i, page = args
     tmp_image_path = os.path.join(
         file_path.replace(file_path.split(
             "/")[-1], ""), "temp_image_" + str(i) + ".png"
@@ -644,17 +643,16 @@ def process_tiff(args):
     page = page.resize((int(x - x * 0.25), int(y - y * 0.25)), Image.ANTIALIAS)
     page.save(tmp_image_path)
     tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
-    _ = create_pdf(tmp_image_path, lambda_write_path, tmp_pdf_file_name)
+    _ = create_pdf(tmp_image_path, tmp_pdf_file_name)
     logger.info(f"Created tmp pdf: {tmp_pdf_file_name}")
-    return os.path.join(lambda_write_path, tmp_pdf_file_name)
+    return tmp_pdf_file_name
 
 
-def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
+def tiff_to_pdf(file_path, pdf_file_name):
     """
     Parameters
     ----------
     file_path: file path of the image
-    lambda_write_path: output path of the pdf file
     pdf_file_name: name of the output pdf file
 
     Returns True if the pdf file is created
@@ -667,7 +665,7 @@ def tiff_to_pdf(file_path, lambda_write_path, pdf_file_name):
         for i, page in enumerate(ImageSequence.Iterator(image)):
             stuffs = []
             stuffs.extend(
-                [lambda_write_path, file_path, i, page.convert("RGB")])
+                [file_path, i, page.convert("RGB")])
             args.append(stuffs)
 
         with concurrent.futures.ThreadPoolExecutor() as executer:
@@ -766,7 +764,6 @@ def lambda_handler(event, context):
                 item['efs_input'],
                 item['efs_output'],
                 item['s3_output'],
-                lambda_write_path,
                 bucket_name,
             )
 
