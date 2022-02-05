@@ -790,29 +790,17 @@ def lambda_handler(event, context):
         )
 
         if no_of_success_files == total_no_of_trigger_files:
-            merge_trigger_file = "".join(
-                [
-                    s3_folder,
-                    "/",
-                    # s3_output_folder,
-                    "/",
-                    "control_files",
-                    "/",
-                    s3_document_folder,
-                    ".json",
-                ]
-            )
 
-            logger.info(f"merge_trigger_file: {merge_trigger_file}")
+            logger.info(f"merge_trigger_file: {control_file_path}")
 
             try:
                 s3_client.head_object(
-                    Bucket=merge_trigger_bucket, Key=merge_trigger_file
+                    Bucket=merge_trigger_bucket, Key=control_file_path
                 )
 
             except ClientError as _:
                 create_merge_trigger_file(
-                    s3_client, merge_trigger_bucket, merge_trigger_file
+                    s3_client, merge_trigger_bucket, control_file_path
                 )
 
     except Exception as _:
