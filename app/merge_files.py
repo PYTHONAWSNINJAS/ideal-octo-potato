@@ -7,18 +7,15 @@ The control file has paths to the converted pdfs that needs to be merged.
 import json
 import os
 
-from shutil import copyfile, rmtree
+from shutil import rmtree
 
 import boto3
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
 import traceback
-import tempfile
 
 import logging
 import sys
-
-import time
 
 import pymysql
 
