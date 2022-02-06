@@ -82,12 +82,12 @@ def lambda_handler(event, context):
     pdf_file_suffix = os.environ["pdf_file_suffix"]
     s3_output_folder = os.environ["s3_output_folder"]
     lambda_write_path = os.environ["lambda_write_path"]
-    key = event["file_path"]
-    key_prefix, base_name = os.path.split(key)
+    s3_input_file = event["s3_input_file"]
+    key_prefix, base_name = os.path.split(s3_input_file)
     filename, _ = os.path.splitext(base_name)
-    download_path = f"{lambda_write_path}/{key}"
-    doc_pdf_path = key_prefix.replace(key_prefix.split("/")[1], s3_output_folder)
-    output_dir = f"{lambda_write_path}/{doc_pdf_path}"
+    download_path = f"{lambda_write_path}/{s3_input_file}"
+    s3_output_file = event["s3_output_file"]
+    output_dir = f"{lambda_write_path}/{s3_output_file}"
 
     logger.info(
         f"key_prefix- {key_prefix},\
@@ -95,16 +95,16 @@ def lambda_handler(event, context):
         filename - {filename},\
         _ - {_},\
         download_path - {download_path},\
-        doc_pdf_path - {doc_pdf_path},\
+        s3_output_file - {s3_output_file},\
         output_dir - {output_dir}"
     )
-    download_from_s3(bucket_name, key, download_path)
-
+    
+    download_from_s3(bucket_name, s3_input_file, download_path)
     soffice_path = load_libre_office()
-
     converted = convert_word_to_pdf(soffice_path, download_path, output_dir)
+    
     if converted:
-        logger.info(f"Converted to: {filename}.pdf")
+        logger.info(f"Converted to: {s3_output_file}")
         try:
             session = boto3.Session()
             s3_client = session.client(service_name="s3")
@@ -112,7 +112,7 @@ def lambda_handler(event, context):
                 s3_client.upload_fileobj(
                     data,
                     bucket_name,
-                    f"{doc_pdf_path}/{filename}{pdf_file_suffix}.pdf",
+                    s3_output_file,
                 )
             uploaded = True
         except Exception as _:
