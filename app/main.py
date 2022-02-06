@@ -46,7 +46,6 @@ def download_file(prefix, destination_pathname, bucket, client):
     -------
 
     """
-
     if not os.path.exists(os.path.dirname(destination_pathname)):
         os.makedirs(os.path.dirname(destination_pathname), exist_ok=True)
 
@@ -94,7 +93,6 @@ def merge_pdf(pdfs, filename):
     pdfs: pdf files to be merged
     filename: filename of the consolidated file
     """
-
     try:
         merger = PdfFileMerger()
         for pdf_file in pdfs:
@@ -151,7 +149,6 @@ def get_pdf_object(font_size=10):
     Returns
     -------
     """
-
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=font_size)
@@ -169,7 +166,6 @@ def process_document_folders(
         trigger_folder str: the trigger folder in main S3 for
         which the process will be executed.
     """
-
     download_file(
         prefix=s3_input_file,
         destination_pathname=input_file,
@@ -461,7 +457,6 @@ def fetch_metadata_file(s3_client, meta_data_object_folder, metadata_s3_bucket):
     -------
     total_no_of_trigger_files: no of trigger files
     """
-
     total_no_of_trigger_files = 0
 
     try:
@@ -504,7 +499,6 @@ def create_success_file(s3_client, bucket, file):
     bucket: Bucket Name
     file: File Name
     """
-
     logger.info("Creating Success Files")
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
@@ -553,7 +547,6 @@ def create_merge_trigger_file(s3_client, bucket, file):
     bucket
     file
     """
-
     logger.info("Creating Merge Trigger File")
     delay = 1  # initial delay
     delay_incr = 1  # additional delay in each loop
