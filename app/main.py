@@ -44,7 +44,6 @@ def download_file(prefix, destination_pathname, bucket, client):
     bucket: s3 bucket with target contents
     client: initialized s3 client object
     -------
-
     """
     if not os.path.exists(os.path.dirname(destination_pathname)):
         os.makedirs(os.path.dirname(destination_pathname), exist_ok=True)
@@ -60,7 +59,6 @@ def create_pdf(file_path, pdf_file_name):
     pdf_file_name: name of the output pdf file
     Returns True if the pdf file is created
     -------
-
     """
     try:
         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path)
