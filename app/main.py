@@ -721,7 +721,6 @@ def lambda_handler(event, context):
             s3_client,
             bucket_name,
             lambda_write_path,
-            s3_output_folder,
             metadata_s3_bucket,
             merge_trigger_bucket,
         ) = init()
