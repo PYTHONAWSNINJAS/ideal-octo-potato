@@ -339,14 +339,6 @@ def process_document_folders(
 
             pdf_email.output(pdf_file_name)
             converted = True
-        # elif input_file.endswith(".db"):
-        #     con = sqlite3.connect(input_file)
-        #     df = pd.read_sql_query("select * from <table_name>", con)
-        #     df.to_html(temp_file := "".join([filename, ".html"]))
-        #     pdfkit.from_file(
-        #         temp_file, pdf_file_name
-        #     )
-        #     converted = True
 
         elif input_file.endswith((".doc", ".docx")):
 
