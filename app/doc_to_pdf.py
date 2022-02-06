@@ -79,8 +79,6 @@ def convert_word_to_pdf(soffice_path, word_file_path, output_dir):
 
 def lambda_handler(event, context):
     bucket_name = os.environ["main_s3_bucket"]
-    pdf_file_suffix = os.environ["pdf_file_suffix"]
-    s3_output_folder = os.environ["s3_output_folder"]
     lambda_write_path = os.environ["lambda_write_path"]
     s3_input_file = event["s3_input_file"]
     key_prefix, base_name = os.path.split(s3_input_file)
