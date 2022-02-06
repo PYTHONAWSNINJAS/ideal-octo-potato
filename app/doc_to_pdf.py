@@ -98,11 +98,11 @@ def lambda_handler(event, context):
         s3_output_file - {s3_output_file},\
         output_dir - {output_dir}"
     )
-    
+
     download_from_s3(bucket_name, s3_input_file, download_path)
     soffice_path = load_libre_office()
     converted = convert_word_to_pdf(soffice_path, download_path, output_dir)
-    
+
     if converted:
         logger.info(f"Converted to: {s3_output_file}")
         try:
