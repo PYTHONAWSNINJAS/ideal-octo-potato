@@ -11,9 +11,15 @@
     },
     {
       "source_img": "case_number/exhibits/folder1/3/Microsoft_Outlook_Test_Message.msg",
-      "source": "case_number/doc_pdf/folder1/3/Microsoft_Outlook_Test_Message_source_dv.pdf",
+      "source": "case_number/doc_pdf/folder1/3/ChangedThisName_source_dv.pdf",
       "current_img": "case_number/exhibits/folder1/3/input.txt.final.JPG",
       "current": "case_number/doc_pdf/folder1/3/input.txt.final_current_dv.pdf"
+    },
+    {
+      "source_img": "case_number/exhibits/folder1/4/1.msg",
+      "source": "case_number/doc_pdf/folder1/4/2dsf.pdf",
+      "current_img": "case_number/exhibits/folder1/4/fginal.JPG",
+      "current": "case_number/doc_pdf/folder1/4/dsf_dv.pdf"
     }
   ]
 }
