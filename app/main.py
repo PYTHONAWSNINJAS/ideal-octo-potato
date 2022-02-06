@@ -385,7 +385,7 @@ def process_document_folders(
                 with open(pdf_file_name, "rb") as data:
                     s3_client.upload_fileobj(data, bucket_name, s3_output_file)
             else:
-                logger.info(f"PDF not created for: {current_item}")
+                logger.info(f"PDF not created for: {input_file}")
 
         except Exception as _:
             (
