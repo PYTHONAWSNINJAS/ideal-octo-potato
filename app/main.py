@@ -62,6 +62,10 @@ def create_pdf(file_path, pdf_file_name):
     """
     try:
         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path)
+        
+        if not os.path.exists(os.path.dirname(pdf_file_name)):
+            os.makedirs(os.path.dirname(pdf_file_name), exist_ok=True)
+        
         with open(pdf_file_name, "w+b") as f:
             f.write(pdf_png)
 
