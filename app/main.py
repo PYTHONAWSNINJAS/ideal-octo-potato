@@ -377,32 +377,32 @@ def process_document_folders(
                 logger.error(err_msg)
         else:
             converted = True
-        try:
-            if converted:
-                logger.info(f"Created: {pdf_file_name}")
+    try:
+        if converted:
+            logger.info(f"Created: {pdf_file_name}")
 
-                with open(pdf_file_name, "rb") as data:
-                    s3_client.upload_fileobj(data, bucket_name, s3_output_file)
-            else:
-                logger.info(f"PDF not created for: {input_file}")
+            with open(pdf_file_name, "rb") as data:
+                s3_client.upload_fileobj(data, bucket_name, s3_output_file)
+        else:
+            logger.info(f"PDF not created for: {input_file}")
 
-        except Exception as _:
-            (
-                exception_type,
-                exception_value,
-                exception_traceback,
-            ) = sys.exc_info()
-            traceback_string = traceback.format_exception(
-                exception_type, exception_value, exception_traceback
-            )
-            err_msg = json.dumps(
-                {
-                    "errorType": exception_type.__name__,
-                    "errorMessage": str(exception_value),
-                    "stackTrace": traceback_string,
-                }
-            )
-            logger.error(err_msg)
+    except Exception as _:
+        (
+            exception_type,
+            exception_value,
+            exception_traceback,
+        ) = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type, exception_value, exception_traceback
+        )
+        err_msg = json.dumps(
+            {
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+            }
+        )
+        logger.error(err_msg)
 
 
 def list_dir(prefix, bucket, client):
