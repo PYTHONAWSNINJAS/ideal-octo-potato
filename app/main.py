@@ -605,6 +605,7 @@ def process_tiff(args):
 
     logger.info(f"temp image path: {tmp_image_path}")
     x, y = page.size
+    logger.info(f"x, y: {x, y}")
     page = page.resize((int(x - x * 0.25), int(y - y * 0.25)), Image.ANTIALIAS)
     page.save(tmp_image_path)
     tmp_pdf_file_name = tmp_image_path.replace(".png", ".pdf")
