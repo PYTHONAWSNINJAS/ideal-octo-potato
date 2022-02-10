@@ -157,6 +157,12 @@ def get_pdf_object(font_size=10):
     return pdf
 
 
+def update_image_dpi(image_file):
+    logger.info(f"Changing Image dpi of:{image_file}")
+    temp_image = Image.open(image_file)
+    temp_image.save(image_file, dpi=(300,300))
+
+
 def process_document_folders(
     s3_client, s3_input_file, input_file, pdf_file_name, s3_output_file, bucket_name
 ):
@@ -209,19 +215,23 @@ def process_document_folders(
                 ),
             )
 
+            update_image_dpi(temp_unredacted_file)
             converted = create_pdf(temp_unredacted_file, pdf_file_name)
 
         elif input_file.lower().endswith((".png", ".jpg", ".gif")):
+            update_image_dpi(input_file)
             converted = create_pdf(input_file, pdf_file_name)
 
         elif input_file.lower().endswith((".tif", ".TIF", ".tiff")):
             converted = tiff_to_pdf(input_file, pdf_file_name)
 
         elif input_file.endswith((".bmp")):
+            update_image_dpi(input_file)
             Image.open(input_file).save(pdf_file_name)
             converted = True
 
         elif input_file.endswith(".svg"):
+            update_image_dpi(input_file)
             drawing = svg2rlg(input_file, resolve_entities=True)
             renderPM.drawToFile(
                 drawing, temp_file := "".join([filename, ".png"]), fmt="PNG"
