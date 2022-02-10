@@ -160,7 +160,7 @@ def get_pdf_object(font_size=10):
 def update_image_dpi(image_file):
     logger.info(f"Changing Image dpi of:{image_file}")
     temp_image = Image.open(image_file)
-    temp_image.save(image_file, dpi=(300,300))
+    temp_image.save(image_file, dpi=(300, 300))
 
 
 def process_document_folders(
