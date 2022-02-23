@@ -138,7 +138,7 @@ def process(
         lambda_write_path
         + s3_folder
         + "/doc_pdf/"
-        + exhibit_id.replace("document_","")
+        + exhibit_id.replace("document_", "")
         + "/"
         + file_type
         + pdf_file_suffix
