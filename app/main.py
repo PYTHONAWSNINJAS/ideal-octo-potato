@@ -27,13 +27,15 @@ from botocore.exceptions import ClientError
 from fpdf import FPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
-
+import signal
 
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+unprocess_file = None
+unprocess_bucket = None
 
 def download_file(prefix, destination_pathname, bucket, client):
     """
@@ -61,6 +63,7 @@ def create_pdf(file_path, pdf_file_name):
     -------
     """
     try:
+        logger.info(f"Creating PDF for: {file_path}")
         pdf_png = pytesseract.image_to_pdf_or_hocr(file_path)
 
         if not os.path.exists(os.path.dirname(pdf_file_name)):
@@ -174,6 +177,12 @@ def process_document_folders(
         trigger_folder str: the trigger folder in main S3 for
         which the process will be executed.
     """
+    global unprocess_file
+    global unprocess_bucket
+    
+    unprocess_file = s3_input_file
+    unprocess_bucket = bucket_name
+    
     download_file(
         prefix=s3_input_file,
         destination_pathname=input_file,
@@ -712,8 +721,23 @@ def read_control_file(
     return control_file_data
 
 
+def timeout_handler(_signal, _frame):
+    global unprocess_bucket
+    global unprocess_file
+    
+    logger.info('Time exceeded! Creating Unprocessed File.')
+    
+    session = boto3.Session()
+    s3_client = session.client(service_name="s3")
+    s3_client.put_object(Body="", Bucket=unprocess_bucket, Key=unprocess_file.replace(unprocess_file.split("/")[1],"doc_pdf/unprocessed_files"))
+
+    
+signal.signal(signal.SIGALRM, timeout_handler)   
+
+
 def lambda_handler(event, context):
     try:
+        signal.alarm(int(context.get_remaining_time_in_millis() / 1000) - 15)
         logger.info(f"event: {event}")
         trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
         folder_path = event["Records"][0]["s3"]["object"]["key"]
