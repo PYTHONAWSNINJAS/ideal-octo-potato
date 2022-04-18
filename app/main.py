@@ -37,6 +37,7 @@ logger.setLevel(logging.INFO)
 unprocess_file = None
 unprocess_bucket = None
 
+
 def download_file(prefix, destination_pathname, bucket, client):
     """
     Parameters
@@ -179,10 +180,10 @@ def process_document_folders(
     """
     global unprocess_file
     global unprocess_bucket
-    
+
     unprocess_file = s3_input_file
     unprocess_bucket = bucket_name
-    
+
     download_file(
         prefix=s3_input_file,
         destination_pathname=input_file,
@@ -724,15 +725,21 @@ def read_control_file(
 def timeout_handler(_signal, _frame):
     global unprocess_bucket
     global unprocess_file
-    
-    logger.info('Time exceeded! Creating Unprocessed File.')
-    
+
+    logger.info("Time exceeded! Creating Unprocessed File.")
+
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
-    s3_client.put_object(Body="", Bucket=unprocess_bucket, Key=unprocess_file.replace(unprocess_file.split("/")[1],"doc_pdf/unprocessed_files"))
+    s3_client.put_object(
+        Body="",
+        Bucket=unprocess_bucket,
+        Key=unprocess_file.replace(
+            unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
+        ),
+    )
 
-    
-signal.signal(signal.SIGALRM, timeout_handler)   
+
+signal.signal(signal.SIGALRM, timeout_handler)
 
 
 def lambda_handler(event, context):
