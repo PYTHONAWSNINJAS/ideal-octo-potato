@@ -204,8 +204,33 @@ def update_rds_entry(s3_folder, exhibit_id):
 
     with conn.cursor() as cur:
         cur.execute(
-            "update docviewer.jobexecution set jobexecution.processed_triggers\
-            =jobexecution.processed_triggers+1 , jobexecution.last_update_datetime\
+            "update docviewer.jobexecution set jobexecution.processed_control_files\
+            =jobexecution.processed_control_files+1 , jobexecution.last_update_datetime\
+            =CURRENT_TIMESTAMP where jobexecution.case_id= %s;",
+            (s3_folder,),
+        )
+        conn.commit()
+        for row in cur:
+            logger.info(row)
+    conn.close()
+
+
+def update_rds_entry_on_unmerged(s3_folder, exhibit_id):
+    rds_host = os.environ["db_endpoint"]
+    name = os.environ["db_username"]
+    password = os.environ["db_password"]
+    db_name = os.environ["db_name"]
+
+    logger.info(f"Updating RDS entry for unmerged control files{exhibit_id}")
+
+    conn = pymysql.connect(
+        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
+    )
+
+    with conn.cursor() as cur:
+        cur.execute(
+            "update docviewer.jobexecution set jobexecution.unmerged_control_files\
+            =jobexecution.unmerged_control_files+1 , jobexecution.last_update_datetime\
             =CURRENT_TIMESTAMP where jobexecution.case_id= %s;",
             (s3_folder,),
         )
@@ -320,19 +345,11 @@ def lambda_handler(event, context):
             Key=control_file.replace("control_files", "unmerged_control_files"),
         )
 
+        update_rds_entry_on_unmerged(s3_folder, exhibit_id)
+
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
+    
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
 
-    if os.path.exists(lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/"):
-        rmtree(
-            lambda_write_path + s3_folder + "/doc_pdf/" + exhibit_id + "/",
-            ignore_errors=True,
-        )
-
-    if os.path.exists(
-        lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
-    ):
-        rmtree(
-            lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/",
-            ignore_errors=True,
-        )
+    if os.path.exists(lambda_write_path):
+        rmtree(lambda_write_path, ignore_errors=True)

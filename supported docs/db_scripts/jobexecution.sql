@@ -6,8 +6,10 @@ DROP TABLE IF EXISTS docviewer.jobexecution;
 
 create table docviewer.jobexecution(
    case_id varchar(20) NOT NULL,
-   total_triggers int NOT NULL,
-   processed_triggers int NOT NULL,
+   total_control_files int NOT NULL,
+   processed_control_files int NOT NULL,
+   unmerged_control_files int NOT NULL,
+   unprocessed_files_from_main int NOT NULL,
    insert_datetime datetime DEFAULT CURRENT_TIMESTAMP,
    last_update_datetime datetime DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY ( case_id )
