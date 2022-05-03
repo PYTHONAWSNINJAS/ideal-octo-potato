@@ -317,7 +317,7 @@ def lambda_handler(event, context):
         s3_client.put_object(
             Body="",
             Bucket=main_s3_bucket,
-            Key=control_file.replace("control_files","unmerged_control_files")
+            Key=control_file.replace("control_files", "unmerged_control_files"),
         )
 
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
