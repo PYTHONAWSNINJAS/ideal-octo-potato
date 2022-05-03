@@ -739,11 +739,10 @@ def timeout_handler(_signal, _frame):
             unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
         ),
     )
-    raise ValueError('Time exceeded!')
+    raise ValueError("Time exceeded!")
 
 
 signal.signal(signal.SIGALRM, timeout_handler)
-
 
 
 def update_rds_entry_on_unprocessed_files(s3_folder, exhibit_id):
