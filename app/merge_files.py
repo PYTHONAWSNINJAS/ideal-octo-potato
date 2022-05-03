@@ -348,7 +348,7 @@ def lambda_handler(event, context):
         update_rds_entry_on_unmerged(s3_folder, exhibit_id)
 
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
-    
+
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
 
     if os.path.exists(lambda_write_path):
