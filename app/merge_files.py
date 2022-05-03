@@ -311,6 +311,15 @@ def lambda_handler(event, context):
         )
         logger.error(err_msg)
 
+        # Add unmerged files for Errors
+        session = boto3.Session()
+        s3_client = session.client(service_name="s3")
+        s3_client.put_object(
+            Body="",
+            Bucket=main_s3_bucket,
+            Key=control_file.replace("control_files","unmerged_control_files")
+        )
+
     delete_metadata_folder(control_file, metadata_s3_bucket, folder_type)
     s3_client.delete_object(Bucket=trigger_bucket_name, Key=control_file)
 
