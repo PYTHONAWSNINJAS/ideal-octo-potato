@@ -292,11 +292,9 @@ def lambda_handler(event, context):
                     pdf_file_suffix,
                     s3_folder,
                 )
-                
+
                 if os.path.exists(lambda_write_path):
-                    rmtree(
-                        lambda_write_path, ignore_errors=True
-                    )
+                    rmtree(lambda_write_path, ignore_errors=True)
         update_rds_entry(s3_folder, exhibit_id)
         place_processed_control_files(s3_folder, exhibit_id, s3_client, main_s3_bucket)
     except Exception as _:
