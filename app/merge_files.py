@@ -263,6 +263,7 @@ def place_processed_control_files(s3_folder, exhibit_id, s3_client, bucket_name)
 def timeout_handler(_signal, _frame):
     raise ValueError("Time exceeded!")
 
+
 signal.signal(signal.SIGALRM, timeout_handler)
 
 

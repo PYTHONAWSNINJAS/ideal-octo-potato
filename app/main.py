@@ -724,7 +724,7 @@ def read_control_file(
     return control_file_data
 
 
-def timeout_handler(_signal, _frame):    
+def timeout_handler(_signal, _frame):
     raise ValueError("Time exceeded!")
 
 
@@ -845,11 +845,11 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
-        
+
         logger.info("Creating unprocess File.")
         global unprocess_bucket
         global unprocess_file
-        
+
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
         s3_client.put_object(
