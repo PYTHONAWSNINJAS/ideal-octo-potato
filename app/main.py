@@ -722,21 +722,8 @@ def read_control_file(
     return control_file_data
 
 
-def timeout_handler(_signal, _frame):
-    global unprocess_bucket
-    global unprocess_file
-
-    logger.info("Time exceeded! Creating Unprocessed File.")
-
-    session = boto3.Session()
-    s3_client = session.client(service_name="s3")
-    s3_client.put_object(
-        Body="",
-        Bucket=unprocess_bucket,
-        Key=unprocess_file.replace(
-            unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
-        ),
-    )
+def timeout_handler(_signal, _frame):    
+    raise ValueError("Time exceeded!")
 
 
 signal.signal(signal.SIGALRM, timeout_handler)
@@ -831,6 +818,20 @@ def lambda_handler(event, context):
             }
         )
         logger.error(err_msg)
+        
+        logger.info("Creating unprocess File.")
+        global unprocess_bucket
+        global unprocess_file
+        
+        session = boto3.Session()
+        s3_client = session.client(service_name="s3")
+        s3_client.put_object(
+            Body="",
+            Bucket=unprocess_bucket,
+            Key=unprocess_file.replace(
+                unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
+            ),
+        )
 
-    if os.path.exists(lambda_write_path + folder_path):
-        rmtree(lambda_write_path + folder_path, ignore_errors=True)
+    if os.path.exists(lambda_write_path):
+        rmtree(lambda_write_path, ignore_errors=True)

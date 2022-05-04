@@ -235,6 +235,12 @@ def place_processed_control_files(s3_folder, exhibit_id, s3_client, bucket_name)
     s3_client.put_object(Body="", Bucket=bucket_name, Key=processed_control_files_path)
 
 
+def timeout_handler(_signal, _frame):
+    raise ValueError("Time exceeded!")
+
+signal.signal(signal.SIGALRM, timeout_handler)
+
+
 def lambda_handler(event, context):
     """
 
@@ -244,6 +250,7 @@ def lambda_handler(event, context):
     context: lambda context
     """
     try:
+        signal.alarm(int(context.get_remaining_time_in_millis() / 1000) - 60)
         logger.info(f"event: {event}")
         trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
         control_file = event["Records"][0]["s3"]["object"]["key"]
@@ -311,7 +318,7 @@ def lambda_handler(event, context):
         )
         logger.error(err_msg)
 
-        # Add unmerged files for Errors
+        logger.info("Creating unmerged control File.")
         session = boto3.Session()
         s3_client = session.client(service_name="s3")
         s3_client.put_object(
@@ -330,9 +337,7 @@ def lambda_handler(event, context):
         )
 
     if os.path.exists(
-        lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/"
-    ):
+        lambda_write_path):
         rmtree(
-            lambda_write_path + s3_folder + "/" + folder_type + "/" + exhibit_id + "/",
-            ignore_errors=True,
+            lambda_write_path,ignore_errors=True,
         )
