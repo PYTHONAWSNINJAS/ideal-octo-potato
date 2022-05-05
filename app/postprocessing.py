@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         with conn.cursor() as cur:
             logger.info("Checking for completed runs to place completed file in S3.")
             cur.execute(
-                "select * from jobexecution where total_control_files=total_control_files+unmerged_control_files+unprocessed_files_from_main"
+                "select * from jobexecution where total_control_files=processed_control_files+unmerged_control_files+unprocessed_files_from_main"
             )
             for row in cur:
                 logger.info(f"Found completed entries in rds - {row}")
