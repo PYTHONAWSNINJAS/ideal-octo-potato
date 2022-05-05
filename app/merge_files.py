@@ -19,6 +19,8 @@ import sys
 
 import pymysql
 
+import signal
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
