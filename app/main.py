@@ -731,13 +731,13 @@ def timeout_handler(_signal, _frame):
 signal.signal(signal.SIGALRM, timeout_handler)
 
 
-def update_rds_entry_on_unprocessed_files(s3_folder, exhibit_id):
+def update_rds_entry_on_unprocessed_files(s3_folder, unprocess_file):
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
     db_name = os.environ["db_name"]
 
-    logger.info(f"Updating RDS entry for unprocessed_files_from_main{exhibit_id}")
+    logger.info(f"Updating RDS entry for unprocessed_files_from_main{unprocess_file}")
 
     conn = pymysql.connect(
         host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
@@ -859,6 +859,7 @@ def lambda_handler(event, context):
                 unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
             ),
         )
+        update_rds_entry_on_unprocessed_files(s3_folder, unprocess_file)
 
     if os.path.exists(lambda_write_path):
         rmtree(lambda_write_path, ignore_errors=True)
