@@ -29,8 +29,6 @@ from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 import signal
 
-import pymysql
-
 FILE_PATTERN_TO_INCLUDE = "_unredacted_original"
 
 logger = logging.getLogger()
@@ -731,31 +729,6 @@ def timeout_handler(_signal, _frame):
 signal.signal(signal.SIGALRM, timeout_handler)
 
 
-def update_rds_entry_on_unprocessed_files(s3_folder, unprocess_file):
-    rds_host = os.environ["db_endpoint"]
-    name = os.environ["db_username"]
-    password = os.environ["db_password"]
-    db_name = os.environ["db_name"]
-
-    logger.info(f"Updating RDS entry for unprocessed_files_from_main{unprocess_file}")
-
-    conn = pymysql.connect(
-        host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
-    )
-
-    with conn.cursor() as cur:
-        cur.execute(
-            "update docviewer.jobexecution set jobexecution.unprocessed_files_from_main\
-            =jobexecution.unprocessed_files_from_main+1 , jobexecution.last_update_datetime\
-            =CURRENT_TIMESTAMP where jobexecution.case_id= %s;",
-            (s3_folder,),
-        )
-        conn.commit()
-        for row in cur:
-            logger.info(row)
-    conn.close()
-
-
 def lambda_handler(event, context):
     try:
         signal.alarm(int(context.get_remaining_time_in_millis() / 1000) - 60)
@@ -859,7 +832,6 @@ def lambda_handler(event, context):
                 unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
             ),
         )
-        update_rds_entry_on_unprocessed_files(s3_folder, unprocess_file)
 
     if os.path.exists(lambda_write_path):
         rmtree(lambda_write_path, ignore_errors=True)
