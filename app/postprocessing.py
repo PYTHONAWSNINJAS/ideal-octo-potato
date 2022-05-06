@@ -30,9 +30,9 @@ def count_unprocess_files(bucket, prefix):
     count = 0
     path = []
     for obj in s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["Contents"]:
-        path.append(obj['Key'])
-    
-    unprocess_paths = {x for x in path if len(x.split('/'))==5}
+        path.append(obj["Key"])
+
+    unprocess_paths = {x for x in path if len(x.split("/")) == 5}
     return len(unprocess_paths)
 
 
@@ -49,20 +49,25 @@ def lambda_handler(event, context):
             host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-        
-        unprocess_paths = count_unprocess_files(bucket_name, case_folder+"/doc_pdf/unprocessed_files/")
+
+        unprocess_paths = count_unprocess_files(
+            bucket_name, case_folder + "/doc_pdf/unprocessed_files/"
+        )
         with conn.cursor() as cur:
             logger.info("Updating unprocessed files count for all cases.")
-            cur.execute(
-                "select case_id from jobexecution"
-            )
+            cur.execute("select case_id from jobexecution")
             for row in cur:
                 case_folder = row[0]
-                unprocess_file_count = count_unprocess_files(bucket_name, case_folder+"/doc_pdf/unprocessed_files/")
+                unprocess_file_count = count_unprocess_files(
+                    bucket_name, case_folder + "/doc_pdf/unprocessed_files/"
+                )
                 cur.execute(
                     "update docviewer.jobexecution set jobexecution.unprocessed_files_from_main\
                     =%s where jobexecution.case_id= %s;",
-                    (unprocess_file_count, case_folder,),
+                    (
+                        unprocess_file_count,
+                        case_folder,
+                    ),
                 )
                 conn.commit()
 
