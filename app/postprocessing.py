@@ -23,7 +23,9 @@ s3_client = session.client(service_name="s3")
 
 def count_unprocess_files(bucket, prefix):
     """
-    Counts the number of unprocessed files in the given prefix
+    Counts the number of unprocessed files in the given prefix.
+    bucket: main bucket name
+    prefix: prefix to count files in
     """
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
