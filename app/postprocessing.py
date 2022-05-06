@@ -49,7 +49,7 @@ def lambda_handler(event, context):
             host=rds_host, user=name, passwd=password, db=db_name, connect_timeout=50
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
-    
+
         with conn.cursor() as cur:
             logger.info("Updating unprocessed files count for all cases.")
             cur.execute("select case_id from jobexecution")
