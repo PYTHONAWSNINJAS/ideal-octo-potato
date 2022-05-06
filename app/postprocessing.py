@@ -27,8 +27,6 @@ def count_unprocess_files(bucket, prefix):
     bucket: main bucket name
     prefix: prefix to count files in
     """
-    session = boto3.Session()
-    s3_client = session.client(service_name="s3")
     path = []
     for obj in s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["Contents"]:
         path.append(obj["Key"])
