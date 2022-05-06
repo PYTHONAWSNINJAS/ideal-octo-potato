@@ -10,4 +10,3 @@ openpyxl
 pypdf2
 extract-msg
 brotlipy
-PyMySQL
