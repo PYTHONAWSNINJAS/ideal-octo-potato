@@ -50,7 +50,7 @@ def lambda_handler(event, context):
         )
         logger.info("SUCCESS: Connection to RDS MySQL instance succeeded")
         
-        unprocess_paths = count_unprocess_files(bucket_name, case_folder+"/doc_pdf/unprocessed_files/")
+        unprocess_paths = count_unprocess_files(main_s3_bucket, case_folder+"/doc_pdf/unprocessed_files/")
         with conn.cursor() as cur:
             logger.info("Updating unprocessed files count for all cases.")
             cur.execute(
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
             )
             for row in cur:
                 case_folder = row[0]
-                unprocess_file_count = count_unprocess_files(bucket_name, case_folder+"/doc_pdf/unprocessed_files/")
+                unprocess_file_count = count_unprocess_files(main_s3_bucket, case_folder+"/doc_pdf/unprocessed_files/")
                 cur.execute(
                     "update docviewer.jobexecution set jobexecution.unprocessed_files_from_main\
                     =%s where jobexecution.case_id= %s;",
