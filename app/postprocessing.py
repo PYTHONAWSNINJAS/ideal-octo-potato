@@ -12,7 +12,6 @@ import boto3
 import os
 import traceback
 import json
-from shutil import rmtree
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -36,7 +35,6 @@ def count_unprocess_files(bucket, prefix):
 
 
 def lambda_handler(event, context):
-    lambda_write_path = os.environ["lambda_write_path"]
     rds_host = os.environ["db_endpoint"]
     name = os.environ["db_username"]
     password = os.environ["db_password"]
@@ -79,7 +77,7 @@ def lambda_handler(event, context):
 
                 with conn.cursor() as cur_insert:
                     cur_insert.execute(
-                        f"insert into jobexecution_history select * from jobexecution \
+                        "insert into jobexecution_history select * from jobexecution \
                                         where jobexecution.case_id=%s;",
                         (case_folder,),
                     )
