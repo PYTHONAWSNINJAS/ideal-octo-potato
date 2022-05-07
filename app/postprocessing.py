@@ -88,10 +88,6 @@ def lambda_handler(event, context):
                 )
                 logger.info(f"Placed Completed File for Case Folder - {case_folder}")
 
-                if os.path.exists(lambda_write_path + case_folder):
-                    rmtree(lambda_write_path + case_folder, ignore_errors=True)
-                logger.info(f"Deleted from EFS - {case_folder}")
-
             logger.info("Checking for empty table to disable cloudwatch.")
             cur.execute("select exists (select 1 from jobexecution);")
             for row in cur:
