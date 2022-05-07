@@ -30,7 +30,8 @@ def count_unprocess_files(bucket, prefix):
     for obj in s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["Contents"]:
         path.append(obj["Key"])
 
-    unprocess_paths = {x for x in path if len(x.split("/")) == 5}
+    logger.info(f"Found {len(path)} paths in {bucket}/{prefix}")
+    unprocess_paths = {x.split("/")[3] for x in path}
     return len(unprocess_paths)
 
 
