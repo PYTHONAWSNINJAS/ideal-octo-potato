@@ -76,23 +76,24 @@ def lambda_handler(event, context):
             for row in cur:
                 logger.info(f"Found completed entries in rds - {row}")
                 case_folder = row[0]
-                
+
                 with conn.cursor() as cur_insert:
                     cur_insert.execute(
                         f"insert into jobexecution_history select * from jobexecution \
-                                        where jobexecution.case_id=%s;", (case_folder,)
+                                        where jobexecution.case_id=%s;",
+                        (case_folder,),
                     )
 
                 logger.info(f"Placed Entry in jobexecution_history for - {case_folder}")
                 conn.commit()
-                
+
                 with conn.cursor() as cur_delete:
                     cur_delete.execute(
                         "delete from jobexecution where case_id = %s;", (case_folder,)
                     )
                 logger.info(f"Deleted Entry from jobexecution for - {case_folder}")
                 conn.commit()
-                
+
                 s3_client.put_object(
                     Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
                 )
