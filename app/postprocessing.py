@@ -28,8 +28,8 @@ def count_unprocess_files(bucket, prefix):
     """
     path = []
     logger.info(f"Prefix - {prefix}")
-    
-    if s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["KeyCount"]==0:
+
+    if s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["KeyCount"] == 0:
         return 0
     
     for obj in s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["Contents"]:
@@ -37,7 +37,6 @@ def count_unprocess_files(bucket, prefix):
     logger.info(f"unprocessed path - {path}")
     unprocess_paths = {x.split("/")[3] for x in path}
     return len(unprocess_paths)
-
 
 
 def lambda_handler(event, context):
