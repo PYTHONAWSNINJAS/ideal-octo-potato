@@ -94,19 +94,27 @@ def lambda_handler(event, context):
                 processed_control_files = row[2]
                 unmerged_control_files = row[3]
                 unprocessed_files_from_main = row[4]
-                
+
                 if total_control_files == processed_control_files:
                     s3_client.put_object(
-                        Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/COMPLETED"
+                        Body="",
+                        Bucket=main_s3_bucket,
+                        Key=case_folder + "/runs/COMPLETED",
                     )
-                    logger.info(f"Placed Completed File for Case Folder - {case_folder}")
-                
+                    logger.info(
+                        f"Placed Completed File for Case Folder - {case_folder}"
+                    )
+
                 if unmerged_control_files > 0 or unprocessed_files_from_main > 0:
                     s3_client.put_object(
-                        Body="", Bucket=main_s3_bucket, Key=case_folder + "/runs/INCOMPLETE"
+                        Body="",
+                        Bucket=main_s3_bucket,
+                        Key=case_folder + "/runs/INCOMPLETE",
                     )
-                    logger.info(f"Placed InComplete File for Case Folder - {case_folder}")
-                
+                    logger.info(
+                        f"Placed InComplete File for Case Folder - {case_folder}"
+                    )
+
                 with conn.cursor() as cur_delete:
                     cur_delete.execute(
                         "delete from jobexecution where case_id = %s;", (case_folder,)
