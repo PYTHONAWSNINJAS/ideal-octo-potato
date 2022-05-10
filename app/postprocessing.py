@@ -31,7 +31,7 @@ def count_unprocess_files(bucket, prefix):
 
     if s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["KeyCount"] == 0:
         return 0
-    
+
     for obj in s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)["Contents"]:
         path.append(obj["Key"])
     logger.info(f"unprocessed path - {path}")
