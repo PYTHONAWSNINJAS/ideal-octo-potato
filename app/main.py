@@ -184,6 +184,8 @@ def process_document_folders(
     unprocess_file = s3_input_file
     unprocess_bucket = bucket_name
 
+    Success_Flag = True    
+    
     download_file(
         prefix=s3_input_file,
         destination_pathname=input_file,
@@ -397,6 +399,18 @@ def process_document_folders(
                     }
                 )
                 logger.error(err_msg)
+                logger.info("Creating Unprocessed File.")
+
+                session = boto3.Session()
+                s3_client = session.client(service_name="s3")
+                s3_client.put_object(
+                    Body="",
+                    Bucket=unprocess_bucket,
+                    Key=unprocess_file.replace(
+                        unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
+                    ),
+                )
+                Success_Flag = False
         else:
             converted = True
     try:
@@ -406,7 +420,18 @@ def process_document_folders(
             with open(pdf_file_name, "rb") as data:
                 s3_client.upload_fileobj(data, bucket_name, s3_output_file)
         else:
-            logger.info(f"PDF not created for: {input_file}")
+            logger.info(f"PDF not created for: {input_file}. Creating Unprocessed File.")
+
+            session = boto3.Session()
+            s3_client = session.client(service_name="s3")
+            s3_client.put_object(
+                Body="",
+                Bucket=unprocess_bucket,
+                Key=unprocess_file.replace(
+                    unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
+                ),
+            )
+            Success_Flag = False
 
     except Exception as _:
         (
@@ -426,6 +451,20 @@ def process_document_folders(
         )
         logger.error(err_msg)
 
+        logger.info("Creating Unprocessed File.")
+
+        session = boto3.Session()
+        s3_client = session.client(service_name="s3")
+        s3_client.put_object(
+            Body="",
+            Bucket=unprocess_bucket,
+            Key=unprocess_file.replace(
+                unprocess_file.split("/")[1], "doc_pdf/unprocessed_files"
+            ),
+        )
+        Success_Flag = False
+    
+    return Success_Flag
 
 def list_dir(prefix, bucket, client):
     """
@@ -773,8 +812,9 @@ def lambda_handler(event, context):
             lambda_write_path=lambda_write_path,
         )
 
+        all_flags = []
         for item in filtered_control_file:
-            process_document_folders(
+            Success_Flag = process_document_folders(
                 s3_client,
                 item["s3_input"],
                 item["efs_input"],
@@ -782,6 +822,7 @@ def lambda_handler(event, context):
                 item["s3_output"],
                 bucket_name,
             )
+            all_flags.append(Success_Flag)
 
         s3_client.delete_object(Bucket=trigger_bucket_name, Key=folder_path)
 
@@ -795,19 +836,20 @@ def lambda_handler(event, context):
             s3_client, meta_data_object_folder, metadata_s3_bucket
         )
 
-        create_success_file(
-            s3_client,
-            metadata_s3_bucket,
-            meta_data_object_folder + "Success_" + trigger_folder,
-        )
+        if all(all_flags):
+            logger.info("All flags are True. Creating success file.")
+            create_success_file(
+                s3_client,
+                metadata_s3_bucket,
+                meta_data_object_folder + "Success_" + trigger_folder,
+            )
 
         no_of_success_files = count_success_files(
             s3_client, metadata_s3_bucket, meta_data_object_folder
         )
 
         if no_of_success_files == total_no_of_trigger_files:
-
-            logger.info(f"merge_trigger_file: {control_file_path}")
+            logger.info(f"All files are processed. Creating merge file {control_file_path}")
 
             try:
                 s3_client.head_object(
