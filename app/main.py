@@ -190,7 +190,9 @@ def process_document_folders(
         bucket=bucket_name,
         client=s3_client,
     )
-
+    
+    converted = False
+    
     try:
         logger.info(f"Processing:{input_file}")
         filename, _ = os.path.splitext(input_file)
@@ -228,7 +230,7 @@ def process_document_folders(
             update_image_dpi(temp_unredacted_file)
             converted = create_pdf(temp_unredacted_file, pdf_file_name)
 
-        elif input_file.lower().endswith((".png", ".jpg", ".gif")):
+        elif input_file.lower().endswith((".png", ".jpg", ".jpeg", ".gif")):
             update_image_dpi(input_file)
             converted = create_pdf(input_file, pdf_file_name)
 
