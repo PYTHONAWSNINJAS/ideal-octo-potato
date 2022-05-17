@@ -190,9 +190,9 @@ def process_document_folders(
         bucket=bucket_name,
         client=s3_client,
     )
-    
+
     converted = False
-    
+
     try:
         logger.info(f"Processing:{input_file}")
         filename, _ = os.path.splitext(input_file)
