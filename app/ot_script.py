@@ -1,6 +1,7 @@
 import json
 import boto3
 
+
 def list_dir(prefix, bucket, client):
     """
     Parameters
@@ -32,21 +33,25 @@ def list_dir(prefix, bucket, client):
                 keys.append(k)
         next_token = results.get("NextContinuationToken")
     return keys
-    
+
+
 def lambda_handler(event, context):
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
 
-    control_files = (list_dir("case_number/doc_pdf/control_files/","trigger-bucket-11", s3_client))
-    
+    control_files = list_dir(
+        "case_number/doc_pdf/control_files/", "trigger-bucket-11", s3_client
+    )
+
     for control_file in control_files:
-        prefix = control_file.replace("doc_pdf","exhibits").replace("control_files/","").replace(".json","")
+        prefix = (
+            control_file.replace("doc_pdf", "exhibits")
+            .replace("control_files/", "")
+            .replace(".json", "")
+        )
         print(prefix)
-        trigger_files = (list_dir(prefix,"pythonninjas", s3_client))
-        triggers = {'/'.join(item.split('/')[0:4]) for item in trigger_files}
+        trigger_files = list_dir(prefix, "pythonninjas", s3_client)
+        triggers = {"/".join(item.split("/")[0:4]) for item in trigger_files}
         print(triggers)
-    
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
-    }
+
+    return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
