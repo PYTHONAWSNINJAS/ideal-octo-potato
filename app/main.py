@@ -242,7 +242,7 @@ def process_document_folders(
 
             update_image_dpi(temp_unredacted_file)
             converted = create_pdf(temp_unredacted_file, pdf_file_name)
-        
+
         elif input_file.lower().endswith("".join([".jpg", FILE_PATTERN_TO_INCLUDE])):
             copyfile(
                 input_file,
