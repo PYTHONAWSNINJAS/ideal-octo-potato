@@ -788,7 +788,7 @@ signal.signal(signal.SIGALRM, timeout_handler)
 
 def lambda_handler(event, context):
     try:
-        signal.alarm(int(context.get_remaining_time_in_millis() / 1000) - 60)
+        signal.alarm(int(context.get_remaining_time_in_millis() / 1000) - 15)
         logger.info(f"event: {event}")
         trigger_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
         folder_path = event["Records"][0]["s3"]["object"]["key"]
