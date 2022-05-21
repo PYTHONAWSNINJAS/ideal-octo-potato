@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     control_files = list_dir(
         "case_183880001/doc_pdf/unmerged_control_files/", "trialmanager", s3_client
     )
-    # control_files = control_files[0:2]
+
     print(control_files)
 
     for control_file in control_files:
