@@ -1,6 +1,7 @@
 import json
 import boto3
 
+
 def list_dir(prefix, bucket, client):
     """
     Parameters
@@ -32,7 +33,8 @@ def list_dir(prefix, bucket, client):
                 keys.append(k)
         next_token = results.get("NextContinuationToken")
     return keys
-    
+
+
 def lambda_handler(event, context):
     session = boto3.Session()
     s3_client = session.client(service_name="s3")
