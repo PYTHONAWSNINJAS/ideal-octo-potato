@@ -121,6 +121,7 @@ def process(
     lambda_write_path,
     pdf_file_suffix,
     s3_folder,
+    copy_source_to_current,
 ):
     """
 
@@ -168,6 +169,21 @@ def process(
     logger.info(f"Uploading: {pdf_file_name}")
     if os.path.isfile(pdf_file_name):
         logger.info("File Exists after Merging. Uploading to S3.")
+        upload_to_s3(pdf_file_name, s3_client, bucket_name)
+    
+    if copy_source_to_current:
+        pdf_file_name = (
+            lambda_write_path
+            + s3_folder
+            + "/doc_pdf/"
+            + exhibit_id.replace("document_", "")
+            + "/"
+            + "current"
+            + pdf_file_suffix
+            + ".pdf"
+        )
+        
+        logger.info("copy_source_to_current is True. Uploading to S3.")
         upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
 
@@ -314,6 +330,22 @@ def lambda_handler(event, context):
 
         if not data["files"]:
             logger.info("Empty Control File.")
+        elif data["copy_source_to_current"] == "true":
+            for file_type in ["source"]:
+                process(
+                    file_type,
+                    exhibit_id,
+                    data,
+                    s3_client,
+                    main_s3_bucket,
+                    lambda_write_path,
+                    pdf_file_suffix,
+                    s3_folder,
+                    True
+                )
+
+                if os.path.exists(lambda_write_path):
+                    rmtree(lambda_write_path, ignore_errors=True)
         else:
             for file_type in ["source", "current"]:
                 process(
@@ -325,6 +357,7 @@ def lambda_handler(event, context):
                     lambda_write_path,
                     pdf_file_suffix,
                     s3_folder,
+                    False,
                 )
 
                 if os.path.exists(lambda_write_path):
