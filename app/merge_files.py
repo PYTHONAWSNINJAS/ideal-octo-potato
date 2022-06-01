@@ -170,7 +170,7 @@ def process(
     if os.path.isfile(pdf_file_name):
         logger.info("File Exists after Merging. Uploading to S3.")
         upload_to_s3(pdf_file_name, s3_client, bucket_name)
-    
+
     if copy_source_to_current:
         pdf_file_name = (
             lambda_write_path
@@ -182,7 +182,7 @@ def process(
             + pdf_file_suffix
             + ".pdf"
         )
-        
+
         logger.info("copy_source_to_current is True. Uploading to S3.")
         upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
@@ -341,7 +341,7 @@ def lambda_handler(event, context):
                     lambda_write_path,
                     pdf_file_suffix,
                     s3_folder,
-                    True
+                    True,
                 )
 
                 if os.path.exists(lambda_write_path):
