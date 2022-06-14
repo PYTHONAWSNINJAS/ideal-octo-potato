@@ -172,7 +172,7 @@ def process(
         upload_to_s3(pdf_file_name, s3_client, bucket_name)
 
     if copy_source_to_current:
-        pdf_file_name = (
+        pdf_file_name_current = (
             lambda_write_path
             + s3_folder
             + "/doc_pdf/"
@@ -182,9 +182,10 @@ def process(
             + pdf_file_suffix
             + ".pdf"
         )
+        copyfile(pdf_file_name, pdf_file_name_current)
 
         logger.info("copy_source_to_current is True. Uploading to S3.")
-        upload_to_s3(pdf_file_name, s3_client, bucket_name)
+        upload_to_s3(pdf_file_name_current, s3_client, bucket_name)
 
 
 def delete_metadata_folder(control_file_path, metadata_s3_bucket_name, folder_type):
