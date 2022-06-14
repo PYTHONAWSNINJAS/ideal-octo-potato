@@ -7,7 +7,7 @@ The control file has paths to the converted pdfs that needs to be merged.
 import json
 import os
 
-from shutil import copyfile,rmtree
+from shutil import copyfile, rmtree
 
 import boto3
 from PyPDF2 import PdfFileMerger, PdfFileReader
